@@ -3,53 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Proyecto de IA</title>
+    <title>Mi Chatbot de IA</title>
     <style>
-        /* Aquí va el diseño (CSS) */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            margin: 0;
-        }
-
-        h1 {
-            color: #1a73e8;
-        }
-
-        /* Esta es la "caja" donde vivirá el bot */
-        #contenedor-chatbot {
-            background-color: white;
-            width: 100%;
-            max-width: 450px;
-            height: 500px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-        }
-
-        .mensaje-temporal {
-            color: #888;
-            font-style: italic;
-        }
+        /* Diseño de la página y el chat */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; }
+        h1 { color: #1a73e8; }
+        #contenedor-chatbot { background-color: white; width: 100%; max-width: 450px; height: 550px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
+        
+        /* Zona de los mensajes */
+        #historial { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-color: #ffffff; }
+        .mensaje { padding: 12px 16px; border-radius: 18px; max-width: 80%; line-height: 1.4; font-size: 15px; }
+        .usuario { background-color: #1a73e8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bot { background-color: #f1f3f4; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; }
+        
+        /* Zona de escritura */
+        #zona-input { display: flex; padding: 15px; border-top: 1px solid #ddd; background: #fff; }
+        input { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; font-size: 15px; }
+        input:focus { border-color: #1a73e8; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; margin-left: 10px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 15px; transition: background 0.3s; }
+        button:hover { background-color: #1557b0; }
     </style>
 </head>
 <body>
 
-    <h1>Bienvenido a mi Web</h1>
-    <p>Estamos construyendo algo genial con Inteligencia Artificial.</p>
-
+    <h1>Mi Asistente Virtual</h1>
+    
     <div id="contenedor-chatbot">
-        <p class="mensaje-temporal">🚧 Aquí instalaremos el cerebro de Gemini pronto 🚧</p>
+        <div id="historial">
+            <div class="mensaje bot">¡Hola! Soy tu nuevo asistente impulsado por Gemini. ¿En qué te puedo ayudar hoy?</div>
+        </div>
+        <div id="zona-input">
+            <input type="text" id="mensaje-usuario" placeholder="Escribe tu mensaje aquí..." onkeypress="if(event.key === 'Enter') enviarMensaje()">
+            <button onclick="enviarMensaje()">Enviar</button>
+        </div>
     </div>
 
+    <script>
+        // 👇 PON TU API KEY AQUÍ ENTRE LAS COMILLAS 👇
+        const API_KEY = 'PEGA_AQUI_TU_API_KEY'; 
+
+        async function enviarMensaje() {
+            const inputElement = document.getElementById('mensaje-usuario');
+            const historial = document.getElementById('historial');
+            const mensaje = inputElement.value.trim();
+
+            if (!mensaje) return; // Si está vacío, no hace nada
+
+            // 1. Mostrar el mensaje del usuario en la pantalla
+            historial.innerHTML += `<div class="mensaje usuario">${mensaje}</div>`;
+            inputElement.value = ''; // Limpiar la caja de texto
+            historial.scrollTop = historial.scrollHeight; // Hacer scroll hacia abajo
+
+            // 2. Mostrar un mensaje temporal de "Escribiendo..."
+            const idCarga = "carga-" + Date.now();
+            historial.innerHTML += `<div class="mensaje bot" id="${idCarga}">Escribiendo... ✍️</div>`;
+            historial.scrollTop = historial.scrollHeight;
+
+            try {
+                // 3. Conectar con el cerebro de Gemini 2.5 Flash
+                const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: mensaje }] }]
+                    })
+                });
+
+                // 4. Recibir y mostrar la respuesta
+                const datos = await respuesta.json();
+                
+                if (datos.error) {
+                    throw new Error(datos.error.message);
+                }
+
+                const textoBot = datos.candidates[0].content.parts[0].text;
+                
+                // Reemplazamos el "Escribiendo..." por la respuesta real
+                document.getElementById(idCarga).innerText = textoBot;
+                
+            } catch (error) {
+                document.getElementById(idCarga).innerText = "❌ Ups, hubo un error al conectar con Gemini. Revisa la consola o tu API Key.";
+                console.error("Error de la API:", error);
+            }
+            
+            historial.scrollTop = historial.scrollHeight;
+        }
+    </script>
 </body>
 </html>
