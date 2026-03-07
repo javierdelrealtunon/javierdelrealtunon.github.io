@@ -3,93 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Chatbot de IA</title>
+    <title>Chatbot Experto en BiMEP</title>
     <style>
-        /* Diseño de la página y el chat */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; margin: 0; }
         h1 { color: #1a73e8; }
-        #contenedor-chatbot { background-color: white; width: 100%; max-width: 450px; height: 550px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
-        
-        /* Zona de los mensajes */
-        #historial { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-color: #ffffff; }
-        .mensaje { padding: 12px 16px; border-radius: 18px; max-width: 80%; line-height: 1.4; font-size: 15px; }
+        #contenedor-chatbot { background-color: white; width: 100%; max-width: 500px; height: 550px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
+        #historial { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .mensaje { padding: 12px 16px; border-radius: 18px; max-width: 85%; line-height: 1.4; font-size: 15px; }
         .usuario { background-color: #1a73e8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .bot { background-color: #f1f3f4; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; }
-        
-        /* Zona de escritura */
         #zona-input { display: flex; padding: 15px; border-top: 1px solid #ddd; background: #fff; }
         input { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 25px; outline: none; font-size: 15px; }
-        input:focus { border-color: #1a73e8; }
-        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; margin-left: 10px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 15px; transition: background 0.3s; }
-        button:hover { background-color: #1557b0; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; margin-left: 10px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <h1>Mi Asistente Virtual</h1>
+    <h1>Asistente Documental BiMEP</h1>
     
     <div id="contenedor-chatbot">
         <div id="historial">
-            <div class="mensaje bot">¡Hola! Soy tu nuevo asistente impulsado por Gemini. ¿En qué te puedo ayudar hoy?</div>
+            <div class="mensaje bot" id="mensaje-bienvenida">Cargando base de datos... ⏳</div>
         </div>
         <div id="zona-input">
-            <input type="text" id="mensaje-usuario" placeholder="Escribe tu mensaje aquí..." onkeypress="if(event.key === 'Enter') enviarMensaje()">
-            <button onclick="enviarMensaje()">Enviar</button>
+            <input type="text" id="mensaje-usuario" placeholder="Pregúntame sobre los documentos..." onkeypress="if(event.key === 'Enter') enviarMensaje()" disabled>
+            <button id="btn-enviar" onclick="enviarMensaje()" disabled>Enviar</button>
         </div>
     </div>
 
     <script>
-        // 👇 PON TU API KEY AQUÍ ENTRE LAS COMILLAS 👇
-        const API_KEY = 'AIzaSyBF2daJC809XIckbOGl7E9-OeByUGlwbm8'; 
+        // 👇 PON TU API KEY AQUÍ 👇
+        const API_KEY = 'AIzaSyAEXQ88kSygHqfdYvJJso3_ZpCMe9xtk5k'; 
+        
+        let datosExcel = "";
+
+        // Al cargar la página, leemos el archivo CSV de tu propio GitHub
+        window.onload = async function() {
+            try {
+                const respuestaCSV = await fetch('datos.csv');
+                datosExcel = await respuestaCSV.text();
+                
+                document.getElementById('mensaje-bienvenida').innerText = "¡Base de datos cargada! 📚 Soy tu experto en BiMEP. ¿Qué documento o infraestructura buscas?";
+                document.getElementById('mensaje-usuario').disabled = false;
+                document.getElementById('btn-enviar').disabled = false;
+            } catch (error) {
+                document.getElementById('mensaje-bienvenida').innerText = "❌ Error al cargar datos.csv. Comprueba que está subido a GitHub.";
+            }
+        };
 
         async function enviarMensaje() {
             const inputElement = document.getElementById('mensaje-usuario');
             const historial = document.getElementById('historial');
             const mensaje = inputElement.value.trim();
+            if (!mensaje) return;
 
-            if (!mensaje) return; // Si está vacío, no hace nada
-
-            // 1. Mostrar el mensaje del usuario en la pantalla
             historial.innerHTML += `<div class="mensaje usuario">${mensaje}</div>`;
-            inputElement.value = ''; // Limpiar la caja de texto
-            historial.scrollTop = historial.scrollHeight; // Hacer scroll hacia abajo
-
-            // 2. Mostrar un mensaje temporal de "Escribiendo..."
-            const idCarga = "carga-" + Date.now();
-            historial.innerHTML += `<div class="mensaje bot" id="${idCarga}">Escribiendo... ✍️</div>`;
+            inputElement.value = '';
             historial.scrollTop = historial.scrollHeight;
 
+            const idCarga = "carga-" + Date.now();
+            historial.innerHTML += `<div class="mensaje bot" id="${idCarga}">Analizando documentos... 🔍</div>`;
+            historial.scrollTop = historial.scrollHeight;
+
+            // Las instrucciones secretas que le dan su "personalidad" y los datos
+            const instruccionesSistema = `Eres un asistente experto en la infraestructura Biscay Marine Energy Platform (BiMEP). 
+            Tu trabajo es responder a las preguntas del usuario basándote ÚNICAMENTE en la siguiente tabla de datos (en formato CSV). 
+            Si te preguntan algo que no está en la tabla, di amablemente que no tienes esa información.
+            Aquí están los datos: \n\n ${datosExcel}`;
+
             try {
-                // 3. Conectar con el cerebro de Gemini 2.5 Flash
                 const respuesta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        systemInstruction: { parts: [{ text: instruccionesSistema }] },
                         contents: [{ parts: [{ text: mensaje }] }]
                     })
                 });
 
-                // 4. Recibir y mostrar la respuesta
                 const datos = await respuesta.json();
+                if (datos.error) throw new Error(datos.error.message);
                 
-                if (datos.error) {
-                    throw new Error(datos.error.message);
-                }
-
-                const textoBot = datos.candidates[0].content.parts[0].text;
-                
-                // Reemplazamos el "Escribiendo..." por la respuesta real
-                document.getElementById(idCarga).innerText = textoBot;
-                
+                document.getElementById(idCarga).innerText = datos.candidates[0].content.parts[0].text;
             } catch (error) {
-                document.getElementById(idCarga).innerText = "❌ Ups, hubo un error al conectar con Gemini. Revisa la consola o tu API Key.";
-                console.error("Error de la API:", error);
+                document.getElementById(idCarga).innerText = "❌ Ups, hubo un error de conexión.";
+                console.error(error);
             }
-            
             historial.scrollTop = historial.scrollHeight;
         }
     </script>
 </body>
 </html>
-
-
