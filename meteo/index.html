@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mapa meteorológico</title>
+  <title>Datos meteorológicos</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
   <style>
     :root {
       --bg: #08101d;
@@ -25,18 +32,18 @@
     }
 
     .wrap {
-      max-width: 1200px;
+      max-width: 1450px;
       margin: 0 auto;
       padding: 24px;
     }
 
     .topbar {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .back {
@@ -67,6 +74,12 @@
       margin-top: 24px;
     }
 
+    .left-panel {
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
     .panel {
       background: rgba(18, 32, 58, 0.94);
       border: 1px solid var(--border);
@@ -86,9 +99,23 @@
       color: var(--muted);
     }
 
+    .search {
+      width: 100%;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 12px;
+      outline: none;
+    }
+
     .site-list {
       display: grid;
       gap: 10px;
+      max-height: 65vh;
+      overflow: auto;
+      padding-right: 4px;
     }
 
     .site-btn {
@@ -125,9 +152,23 @@
       line-height: 1.6;
     }
 
+    .map-panel {
+      display: grid;
+      grid-template-rows: 430px auto;
+      gap: 20px;
+    }
+
+    #map {
+      width: 100%;
+      height: 430px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
@@ -150,6 +191,8 @@
       display: block;
       font-size: 1rem;
       font-weight: 700;
+      line-height: 1.35;
+      word-break: break-word;
     }
 
     .meta {
@@ -163,9 +206,25 @@
       color: #8fd3ff;
     }
 
-    @media (max-width: 900px) {
+    .leaflet-container {
+      background: #0b1220;
+    }
+
+    @media (max-width: 1000px) {
       .layout {
         grid-template-columns: 1fr;
+      }
+
+      .map-panel {
+        grid-template-rows: 360px auto;
+      }
+
+      #map {
+        height: 360px;
+      }
+
+      .site-list {
+        max-height: none;
       }
     }
   </style>
@@ -179,79 +238,46 @@
     <header>
       <h1>Datos meteorológicos</h1>
       <p class="subtitle">
-        Esta subweb lee los puntos desde <strong>datos.csv</strong> y muestra sus valores básicos.
+        La página se alimenta completamente desde <strong>datos.csv</strong>. Para actualizar el contenido, solo cambia ese archivo.
       </p>
     </header>
 
     <section class="layout">
-      <aside class="panel">
-        <h2>Sitios disponibles</h2>
-        <div id="status" class="status">Cargando datos...</div>
-        <div id="siteList" class="site-list"></div>
+      <aside class="left-panel">
+        <section class="panel">
+          <h2>Sitios disponibles</h2>
+          <div id="status" class="status">Cargando datos...</div>
+          <input id="searchInput" class="search" type="text" placeholder="Buscar sitio..." />
+          <div id="siteList" class="site-list"></div>
+        </section>
       </aside>
 
-      <section class="panel">
-        <h2>Detalle del sitio</h2>
-        <div id="detail" class="empty">Selecciona un sitio de la lista.</div>
+      <section class="map-panel">
+        <div id="map"></div>
+
+        <section class="panel">
+          <h2>Detalle del sitio</h2>
+          <div id="detail" class="empty">Selecciona un sitio de la lista o del mapa.</div>
+        </section>
       </section>
     </section>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
-    const fallbackSites = [
-      {
-        id: "bilbao-exterior",
-        name: "Bilbao exterior",
-        lat: 43.38,
-        lon: -3.05,
-        region: "Cantábrico",
-        source: "Portus",
-        temp: "15.2 °C",
-        wind: "12 kn",
-        wave: "1.3 m",
-        period: "8.8 s",
-        current: "0.5 kn",
-        updated: "2026-03-21 12:00",
-        url: "https://portus.puertos.es/"
-      },
-      {
-        id: "armintza-este",
-        name: "Armintza Este",
-        lat: 43.46,
-        lon: -2.88,
-        region: "Cantábrico",
-        source: "Portus",
-        temp: "14.9 °C",
-        wind: "10 kn",
-        wave: "1.1 m",
-        period: "8.2 s",
-        current: "0.4 kn",
-        updated: "2026-03-21 12:00",
-        url: "https://portus.puertos.es/"
-      },
-      {
-        id: "gran-canaria-ne",
-        name: "Gran Canaria NE",
-        lat: 28.18,
-        lon: -15.34,
-        region: "Canarias",
-        source: "Windy",
-        temp: "21.8 °C",
-        wind: "16 kn",
-        wave: "0.8 m",
-        period: "6.1 s",
-        current: "0.3 kn",
-        updated: "2026-03-21 12:00",
-        url: "https://www.windy.com/"
-      }
-    ];
+    const REQUIRED_KEYS = ["name", "lat", "lon"];
+    const RESERVED_KEYS = ["id", "name", "lat", "lon"];
 
-    let sites = [];
+    let allSites = [];
+    let filteredSites = [];
     let selectedId = null;
+    let map;
+    let markers = [];
 
     const statusEl = document.getElementById("status");
     const siteListEl = document.getElementById("siteList");
     const detailEl = document.getElementById("detail");
+    const searchInput = document.getElementById("searchInput");
 
     function splitCSVLine(line) {
       const result = [];
@@ -281,40 +307,8 @@
       return result;
     }
 
-    function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/).filter(Boolean);
-      if (lines.length < 2) return [];
-
-      const headers = splitCSVLine(lines[0]).map(h => h.trim());
-
-      return lines.slice(1).map(line => {
-        const values = splitCSVLine(line);
-        const row = {};
-
-        headers.forEach((header, i) => {
-          row[header] = (values[i] || "").trim();
-        });
-
-        return {
-          id: row.id || slugify(row.name || "site"),
-          name: row.name || "Sitio sin nombre",
-          lat: row.lat || "",
-          lon: row.lon || "",
-          region: row.region || "",
-          source: row.source || "",
-          temp: row.temp || "",
-          wind: row.wind || "",
-          wave: row.wave || "",
-          period: row.period || "",
-          current: row.current || "",
-          updated: row.updated || "",
-          url: row.url || ""
-        };
-      });
-    }
-
     function slugify(text) {
-      return String(text)
+      return String(text || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -322,60 +316,35 @@
         .replace(/(^-|-$)/g, "");
     }
 
-    function renderList() {
-      siteListEl.innerHTML = "";
+    function labelFromKey(key) {
+      const labels = {
+        name: "Nombre",
+        lat: "Latitud",
+        lon: "Longitud",
+        region: "Región",
+        source: "Fuente",
+        temp: "Temperatura",
+        wind: "Viento",
+        wave: "Oleaje",
+        period: "Periodo",
+        current: "Corriente",
+        updated: "Actualizado",
+        url: "URL",
+        hm0: "Hm0",
+        tp: "Tp",
+        dir_ola: "Dirección de ola",
+        viento_dir: "Dirección de viento"
+      };
 
-      if (!sites.length) {
-        siteListEl.innerHTML = '<div class="empty">No hay datos disponibles.</div>';
-        return;
-      }
+      if (labels[key]) return labels[key];
 
-      sites.forEach(site => {
-        const btn = document.createElement("button");
-        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
-        btn.innerHTML = `
-          <strong>${escapeHtml(site.name)}</strong>
-          <span>${escapeHtml(site.region || "Sin región")} · ${escapeHtml(site.source || "Sin fuente")}</span>
-        `;
-        btn.addEventListener("click", () => {
-          selectedId = site.id;
-          renderList();
-          renderDetail();
-        });
-        siteListEl.appendChild(btn);
-      });
-    }
-
-    function renderDetail() {
-      const site = sites.find(s => s.id === selectedId);
-      if (!site) {
-        detailEl.innerHTML = '<div class="empty">Selecciona un sitio de la lista.</div>';
-        return;
-      }
-
-      detailEl.innerHTML = `
-        <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
-        <div style="color:#9db0d1;">${escapeHtml(site.region || "Sin región")} · ${escapeHtml(site.source || "Sin fuente")}</div>
-
-        <div class="detail-grid">
-          <div class="metric"><span class="k">Temperatura</span><span class="v">${escapeHtml(site.temp || "-")}</span></div>
-          <div class="metric"><span class="k">Viento</span><span class="v">${escapeHtml(site.wind || "-")}</span></div>
-          <div class="metric"><span class="k">Oleaje</span><span class="v">${escapeHtml(site.wave || "-")}</span></div>
-          <div class="metric"><span class="k">Periodo</span><span class="v">${escapeHtml(site.period || "-")}</span></div>
-          <div class="metric"><span class="k">Corriente</span><span class="v">${escapeHtml(site.current || "-")}</span></div>
-          <div class="metric"><span class="k">Actualizado</span><span class="v">${escapeHtml(site.updated || "-")}</span></div>
-        </div>
-
-        <div class="meta">
-          <div><strong>Latitud:</strong> ${escapeHtml(site.lat || "-")}</div>
-          <div><strong>Longitud:</strong> ${escapeHtml(site.lon || "-")}</div>
-          ${site.url ? `<div><strong>Fuente:</strong> <a class="source-link" href="${escapeAttr(site.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.url)}</a></div>` : ""}
-        </div>
-      `;
+      return key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
     }
 
     function escapeHtml(value) {
-      return String(value)
+      return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -387,28 +356,214 @@
       return escapeHtml(value).replace(/`/g, "&#96;");
     }
 
-    async function loadData() {
-      try {
-        const response = await fetch("./datos.csv", { cache: "no-store" });
-        if (!response.ok) throw new Error("No se encontró datos.csv");
-        const text = await response.text();
-        const parsed = parseCSV(text);
-        if (!parsed.length) throw new Error("CSV vacío o inválido");
-        sites = parsed;
-        statusEl.textContent = "Datos cargados desde datos.csv";
-      } catch (error) {
-        sites = fallbackSites;
-        statusEl.textContent = "Usando datos de ejemplo. Añade meteo/datos.csv para tus datos reales.";
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) throw new Error("CSV vacío o sin filas de datos");
+
+      const headers = splitCSVLine(lines[0]).map(h => h.trim());
+      const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
+
+      if (missing.length) {
+        throw new Error("Faltan columnas obligatorias: " + missing.join(", "));
       }
 
-      if (sites.length) {
-        selectedId = sites[0].id;
+      return lines.slice(1).map((line, idx) => {
+        const values = splitCSVLine(line);
+        const raw = {};
+
+        headers.forEach((header, i) => {
+          raw[header] = (values[i] || "").trim();
+        });
+
+        const site = {
+          id: raw.id || slugify(raw.name) || `site-${idx + 1}`,
+          name: raw.name || `Sitio ${idx + 1}`,
+          lat: parseFloat(String(raw.lat).replace(",", ".")),
+          lon: parseFloat(String(raw.lon).replace(",", ".")),
+          raw
+        };
+
+        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) {
+          return null;
+        }
+
+        return site;
+      }).filter(Boolean);
+    }
+
+    function getListSubtitle(site) {
+      const candidates = ["region", "source", "updated"];
+      const parts = candidates
+        .map(k => site.raw[k])
+        .filter(v => v && String(v).trim() !== "");
+      return parts.join(" · ") || "Sin datos complementarios";
+    }
+
+    function getDisplayKeys(site) {
+      return Object.keys(site.raw).filter(key => {
+        if (RESERVED_KEYS.includes(key)) return false;
+        const value = site.raw[key];
+        return value !== undefined && value !== null && String(value).trim() !== "";
+      });
+    }
+
+    function renderList() {
+      siteListEl.innerHTML = "";
+
+      if (!filteredSites.length) {
+        siteListEl.innerHTML = '<div class="empty">No hay sitios que coincidan con la búsqueda.</div>';
+        return;
+      }
+
+      filteredSites.forEach(site => {
+        const btn = document.createElement("button");
+        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
+        btn.innerHTML = `
+          <strong>${escapeHtml(site.name)}</strong>
+          <span>${escapeHtml(getListSubtitle(site))}</span>
+        `;
+        btn.addEventListener("click", () => selectSite(site.id, true));
+        siteListEl.appendChild(btn);
+      });
+    }
+
+    function renderDetail() {
+      const site = allSites.find(s => s.id === selectedId);
+
+      if (!site) {
+        detailEl.innerHTML = '<div class="empty">Selecciona un sitio de la lista o del mapa.</div>';
+        return;
+      }
+
+      const displayKeys = getDisplayKeys(site);
+
+      const metricsHtml = displayKeys.length
+        ? displayKeys.map(key => {
+            const value = site.raw[key];
+            if (key.toLowerCase() === "url") {
+              return `
+                <div class="metric">
+                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                  <span class="v"><a class="source-link" href="${escapeAttr(value)}" target="_blank" rel="noopener noreferrer">Abrir enlace</a></span>
+                </div>
+              `;
+            }
+            return `
+              <div class="metric">
+                <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                <span class="v">${escapeHtml(value)}</span>
+              </div>
+            `;
+          }).join("")
+        : '<div class="empty">No hay campos adicionales para mostrar.</div>';
+
+      detailEl.innerHTML = `
+        <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
+        <div style="color:#9db0d1;">Lat ${site.lat}, Lon ${site.lon}</div>
+        <div class="detail-grid">${metricsHtml}</div>
+      `;
+    }
+
+    function initMap() {
+      map = L.map("map").setView([40.4, -3.7], 5);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+    }
+
+    function renderMarkers() {
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = [];
+
+      if (!filteredSites.length) return;
+
+      const bounds = [];
+
+      filteredSites.forEach(site => {
+        const popupLines = getDisplayKeys(site)
+          .slice(0, 3)
+          .map(key => `<div><strong>${escapeHtml(labelFromKey(key))}:</strong> ${escapeHtml(site.raw[key])}</div>`)
+          .join("");
+
+        const marker = L.marker([site.lat, site.lon]).addTo(map);
+        marker.bindPopup(`
+          <div>
+            <strong>${escapeHtml(site.name)}</strong>
+            <div>${escapeHtml(getListSubtitle(site))}</div>
+            ${popupLines}
+          </div>
+        `);
+        marker.on("click", () => selectSite(site.id, false));
+        markers.push(marker);
+        bounds.push([site.lat, site.lon]);
+      });
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    }
+
+    function applyFilter() {
+      const q = searchInput.value.trim().toLowerCase();
+
+      filteredSites = allSites.filter(site => {
+        const haystack = Object.values(site.raw).join(" ").toLowerCase();
+        return !q || haystack.includes(q);
+      });
+
+      if (!filteredSites.some(site => site.id === selectedId)) {
+        selectedId = filteredSites.length ? filteredSites[0].id : null;
       }
 
       renderList();
       renderDetail();
+      renderMarkers();
     }
 
+    function selectSite(id, centerMap) {
+      selectedId = id;
+      renderList();
+      renderDetail();
+
+      if (centerMap && map) {
+        const site = allSites.find(s => s.id === id);
+        if (site) {
+          map.setView([site.lat, site.lon], 8);
+        }
+      }
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch("./datos.csv", { cache: "no-store" });
+        if (!response.ok) throw new Error("No se encontró datos.csv");
+
+        const text = await response.text();
+        allSites = parseCSV(text);
+
+        if (!allSites.length) {
+          throw new Error("No hay registros válidos");
+        }
+
+        statusEl.textContent = `Datos cargados desde datos.csv · ${allSites.length} sitios`;
+      } catch (error) {
+        statusEl.textContent = "Error al leer datos.csv: " + error.message;
+        allSites = [];
+      }
+
+      filteredSites = [...allSites];
+      selectedId = filteredSites.length ? filteredSites[0].id : null;
+
+      renderList();
+      renderDetail();
+      renderMarkers();
+    }
+
+    searchInput.addEventListener("input", applyFilter);
+
+    initMap();
     loadData();
   </script>
 </body>
