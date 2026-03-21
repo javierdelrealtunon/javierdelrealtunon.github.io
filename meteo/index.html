@@ -154,13 +154,13 @@
 
     .map-panel {
       display: grid;
-      grid-template-rows: 430px auto;
+      grid-template-rows: 380px auto auto;
       gap: 20px;
     }
 
     #map {
       width: 100%;
-      height: 430px;
+      height: 380px;
       border-radius: 20px;
       overflow: hidden;
       border: 1px solid var(--border);
@@ -195,11 +195,19 @@
       word-break: break-word;
     }
 
-    .meta {
-      margin-top: 18px;
+    .widget-frame {
+      width: 100%;
+      height: 520px;
+      border: 0;
+      border-radius: 14px;
+      background: white;
+    }
+
+    .widget-note {
+      margin-top: 10px;
       color: var(--muted);
-      line-height: 1.7;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
 
     a.source-link {
@@ -216,15 +224,19 @@
       }
 
       .map-panel {
-        grid-template-rows: 360px auto;
+        grid-template-rows: 320px auto auto;
       }
 
       #map {
-        height: 360px;
+        height: 320px;
       }
 
       .site-list {
         max-height: none;
+      }
+
+      .widget-frame {
+        height: 460px;
       }
     }
   </style>
@@ -259,6 +271,11 @@
           <h2>Detalle del sitio</h2>
           <div id="detail" class="empty">Selecciona un sitio de la lista o del mapa.</div>
         </section>
+
+        <section class="panel">
+          <h2>Oleaje (widget Portus)</h2>
+          <div id="widgetContainer" class="empty">Selecciona un sitio con columna <strong>widget_url</strong> en el CSV.</div>
+        </section>
       </section>
     </section>
   </main>
@@ -266,7 +283,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
     const REQUIRED_KEYS = ["name", "lat", "lon"];
-    const RESERVED_KEYS = ["id", "name", "lat", "lon"];
+    const RESERVED_KEYS = ["id", "name", "lat", "lon", "widget_url"];
 
     let allSites = [];
     let filteredSites = [];
@@ -277,6 +294,7 @@
     const statusEl = document.getElementById("status");
     const siteListEl = document.getElementById("siteList");
     const detailEl = document.getElementById("detail");
+    const widgetContainerEl = document.getElementById("widgetContainer");
     const searchInput = document.getElementById("searchInput");
 
     function splitCSVLine(line) {
@@ -323,17 +341,8 @@
         lon: "Longitud",
         region: "Región",
         source: "Fuente",
-        temp: "Temperatura",
-        wind: "Viento",
-        wave: "Oleaje",
-        period: "Periodo",
-        current: "Corriente",
-        updated: "Actualizado",
-        url: "URL",
-        hm0: "Hm0",
-        tp: "Tp",
-        dir_ola: "Dirección de ola",
-        viento_dir: "Dirección de viento"
+        widget_url: "Widget",
+        url: "URL"
       };
 
       if (labels[key]) return labels[key];
@@ -383,16 +392,13 @@
           raw
         };
 
-        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) {
-          return null;
-        }
-
+        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
         return site;
       }).filter(Boolean);
     }
 
     function getListSubtitle(site) {
-      const candidates = ["region", "source", "updated"];
+      const candidates = ["region", "source"];
       const parts = candidates
         .map(k => site.raw[k])
         .filter(v => v && String(v).trim() !== "");
@@ -438,23 +444,12 @@
       const displayKeys = getDisplayKeys(site);
 
       const metricsHtml = displayKeys.length
-        ? displayKeys.map(key => {
-            const value = site.raw[key];
-            if (key.toLowerCase() === "url") {
-              return `
-                <div class="metric">
-                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                  <span class="v"><a class="source-link" href="${escapeAttr(value)}" target="_blank" rel="noopener noreferrer">Abrir enlace</a></span>
-                </div>
-              `;
-            }
-            return `
-              <div class="metric">
-                <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                <span class="v">${escapeHtml(value)}</span>
-              </div>
-            `;
-          }).join("")
+        ? displayKeys.map(key => `
+            <div class="metric">
+              <span class="k">${escapeHtml(labelFromKey(key))}</span>
+              <span class="v">${escapeHtml(site.raw[key])}</span>
+            </div>
+          `).join("")
         : '<div class="empty">No hay campos adicionales para mostrar.</div>';
 
       detailEl.innerHTML = `
@@ -464,8 +459,42 @@
       `;
     }
 
+    function renderWidget() {
+      const site = allSites.find(s => s.id === selectedId);
+
+      if (!site) {
+        widgetContainerEl.innerHTML = '<div class="empty">Selecciona un sitio.</div>';
+        return;
+      }
+
+      const widgetUrl = site.raw.widget_url;
+
+      if (!widgetUrl) {
+        widgetContainerEl.innerHTML = `
+          <div class="empty">
+            Este sitio no tiene <strong>widget_url</strong> definido en el CSV.
+          </div>
+        `;
+        return;
+      }
+
+      widgetContainerEl.innerHTML = `
+        <iframe
+          class="widget-frame"
+          src="${escapeAttr(widgetUrl)}"
+          title="Widget de oleaje"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        <div class="widget-note">
+          Si el proveedor impide la carga embebida, abre el enlace externo:
+          <a class="source-link" href="${escapeAttr(widgetUrl)}" target="_blank" rel="noopener noreferrer">abrir widget</a>.
+        </div>
+      `;
+    }
+
     function initMap() {
-      map = L.map("map").setView([40.4, -3.7], 5);
+      map = L.map("map").setView([43.46, -2.90], 10);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -482,17 +511,11 @@
       const bounds = [];
 
       filteredSites.forEach(site => {
-        const popupLines = getDisplayKeys(site)
-          .slice(0, 3)
-          .map(key => `<div><strong>${escapeHtml(labelFromKey(key))}:</strong> ${escapeHtml(site.raw[key])}</div>`)
-          .join("");
-
         const marker = L.marker([site.lat, site.lon]).addTo(map);
         marker.bindPopup(`
           <div>
-            <strong>${escapeHtml(site.name)}</strong>
-            <div>${escapeHtml(getListSubtitle(site))}</div>
-            ${popupLines}
+            <strong>${escapeHtml(site.name)}</strong><br>
+            ${escapeHtml(getListSubtitle(site))}
           </div>
         `);
         marker.on("click", () => selectSite(site.id, false));
@@ -500,7 +523,9 @@
         bounds.push([site.lat, site.lon]);
       });
 
-      if (bounds.length) {
+      if (bounds.length === 1) {
+        map.setView(bounds[0], 11);
+      } else if (bounds.length > 1) {
         map.fitBounds(bounds, { padding: [40, 40] });
       }
     }
@@ -519,6 +544,7 @@
 
       renderList();
       renderDetail();
+      renderWidget();
       renderMarkers();
     }
 
@@ -526,11 +552,12 @@
       selectedId = id;
       renderList();
       renderDetail();
+      renderWidget();
 
       if (centerMap && map) {
         const site = allSites.find(s => s.id === id);
         if (site) {
-          map.setView([site.lat, site.lon], 8);
+          map.setView([site.lat, site.lon], 11);
         }
       }
     }
@@ -558,6 +585,7 @@
 
       renderList();
       renderDetail();
+      renderWidget();
       renderMarkers();
     }
 
