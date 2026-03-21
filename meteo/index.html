@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Datos meteorológicos</title>
+  <title>Datos metoceánicos</title>
 
   <link
     rel="stylesheet"
@@ -59,12 +59,6 @@
     h1 {
       margin: 0;
       font-size: clamp(2rem, 4vw, 3rem);
-    }
-
-    .subtitle {
-      margin: 8px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
     }
 
     .layout {
@@ -248,10 +242,7 @@
     </div>
 
     <header>
-      <h1>Datos meteorológicos</h1>
-      <p class="subtitle">
-        La página se alimenta completamente desde <strong>datos.csv</strong>. Para actualizar el contenido, solo cambia ese archivo.
-      </p>
+      <h1>Datos metoceánicos</h1>
     </header>
 
     <section class="layout">
@@ -268,7 +259,6 @@
         <div id="map"></div>
 
         <section class="panel">
-          <h2>Detalle del sitio</h2>
           <div id="detail" class="empty">Selecciona un sitio de la lista o del mapa.</div>
         </section>
 
@@ -283,7 +273,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
     const REQUIRED_KEYS = ["name", "lat", "lon"];
-    const RESERVED_KEYS = ["id", "name", "lat", "lon", "widget_url"];
+    const RESERVED_KEYS = ["id", "name", "lat", "lon", "widget_url", "region", "source"];
 
     let allSites = [];
     let filteredSites = [];
@@ -339,8 +329,6 @@
         name: "Nombre",
         lat: "Latitud",
         lon: "Longitud",
-        region: "Región",
-        source: "Fuente",
         widget_url: "Widget",
         url: "URL"
       };
@@ -444,18 +432,20 @@
       const displayKeys = getDisplayKeys(site);
 
       const metricsHtml = displayKeys.length
-        ? displayKeys.map(key => `
-            <div class="metric">
-              <span class="k">${escapeHtml(labelFromKey(key))}</span>
-              <span class="v">${escapeHtml(site.raw[key])}</span>
-            </div>
-          `).join("")
-        : '<div class="empty">No hay campos adicionales para mostrar.</div>';
+        ? `<div class="detail-grid">${
+            displayKeys.map(key => `
+              <div class="metric">
+                <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                <span class="v">${escapeHtml(site.raw[key])}</span>
+              </div>
+            `).join("")
+          }</div>`
+        : "";
 
       detailEl.innerHTML = `
         <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
         <div style="color:#9db0d1;">Lat ${site.lat}, Lon ${site.lon}</div>
-        <div class="detail-grid">${metricsHtml}</div>
+        ${metricsHtml}
       `;
     }
 
