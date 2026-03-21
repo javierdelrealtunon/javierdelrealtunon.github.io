@@ -1,3 +1,3 @@
 id,name,lat,lon,region,source,widget_url
-bimep-oeste,Bimep Oeste,43.46,-2.92,BiMEP,Portus,"https://portus.puertos.es/PortusData/predChart?code=3159035&modelo=portus&var=Hm0,Tm02&dirVar=MeanDir180&int=default&locale=es"
-bimep-este,Bimep Este,43.46,-2.88,BiMEP,Portus,"https://portus.puertos.es/PortusData/predChart?code=3159035&modelo=portus&var=Hm0,Tm02&dirVar=MeanDir180&int=default&locale=es"
+bimep-oeste,Bimep Oeste,43.46,-2.92,BiMEP,Portus, <iframe width="1516" height="262" src="https://portus.puertos.es/PortusData/predChart?code=3158035&modelo=portus&var=Hm0,Tm02&dirVar=MeanDir180&int=default&locale=es" frameborder="0"></iframe>
+bimep-este,Bimep Este,43.46,-2.88,BiMEP,Portus, <iframe width="1516" height="262" src="https://portus.puertos.es/PortusData/predChart?code=3158035&modelo=portus&var=Hm0,Tm02&dirVar=MeanDir180&int=default&locale=es" frameborder="0"></iframe>
