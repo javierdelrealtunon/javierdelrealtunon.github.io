@@ -212,6 +212,10 @@
       background: #0b1220;
     }
 
+    .leaflet-control-layers {
+      border-radius: 12px;
+    }
+
     @media (max-width: 1000px) {
       .layout {
         grid-template-columns: 1fr;
@@ -275,11 +279,16 @@
     const REQUIRED_KEYS = ["name", "lat", "lon"];
     const RESERVED_KEYS = ["id", "name", "lat", "lon", "widget_url", "region", "source"];
 
+    const INITIAL_CENTER = [43.455, -2.90];
+    const INITIAL_ZOOM = 10;
+
     let allSites = [];
     let filteredSites = [];
     let selectedId = null;
     let map;
     let markers = [];
+    let cartoLayer;
+    let orthoLayer;
 
     const statusEl = document.getElementById("status");
     const siteListEl = document.getElementById("siteList");
@@ -484,21 +493,41 @@
     }
 
     function initMap() {
-      map = L.map("map").setView([43.46, -2.90], 10);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
+      });
+
+      orthoLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          attribution: "Tiles &copy; Esri"
+        }
+      );
+
+      map = L.map("map", {
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+        layers: [cartoLayer]
+      });
+
+      const baseLayers = {
+        "Cartografía": cartoLayer,
+        "Ortofoto": orthoLayer
+      };
+
+      L.control.layers(baseLayers, null, { collapsed: false }).addTo(map);
     }
 
     function renderMarkers() {
       markers.forEach(marker => map.removeLayer(marker));
       markers = [];
 
-      if (!filteredSites.length) return;
-
-      const bounds = [];
+      if (!filteredSites.length) {
+        map.setView(INITIAL_CENTER, INITIAL_ZOOM);
+        return;
+      }
 
       filteredSites.forEach(site => {
         const marker = L.marker([site.lat, site.lon]).addTo(map);
@@ -510,14 +539,14 @@
         `);
         marker.on("click", () => selectSite(site.id, false));
         markers.push(marker);
-        bounds.push([site.lat, site.lon]);
       });
 
-      if (bounds.length === 1) {
-        map.setView(bounds[0], 11);
-      } else if (bounds.length > 1) {
-        map.fitBounds(bounds, { padding: [40, 40] });
-      }
+      // Mantener un encuadre útil y estable para BiMEP
+      const fixedBounds = L.latLngBounds(
+        [43.33, -3.18], // SW
+        [43.57, -2.60]  // NE
+      );
+      map.fitBounds(fixedBounds, { padding: [20, 20] });
     }
 
     function applyFilter() {
