@@ -1,21 +1,415 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meteo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa meteorológico</title>
   <style>
+    :root {
+      --bg: #08101d;
+      --panel: #12203a;
+      --panel-2: #172844;
+      --border: #2a3c5f;
+      --text: #eaf1ff;
+      --muted: #9db0d1;
+      --accent: #66b3ff;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 40px;
-      font-family: Arial, sans-serif;
-      background: #0b1220;
-      color: white;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #08101d 0%, #0d1830 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .back {
+      display: inline-block;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .panel {
+      background: rgba(18, 32, 58, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-bottom: 14px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .site-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .site-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .site-btn:hover,
+    .site-btn.active {
+      border-color: var(--accent);
+    }
+
+    .site-btn strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .site-btn span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .empty {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .metric .k {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .metric .v {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .meta {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+
+    a.source-link {
+      color: #8fd3ff;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>La subweb /meteo/ funciona</h1>
-  <p>Si ves este texto, la ruta está bien y el problema estaba en el código anterior.</p>
+  <main class="wrap">
+    <div class="topbar">
+      <a class="back" href="../">← Volver al índice</a>
+    </div>
+
+    <header>
+      <h1>Datos meteorológicos</h1>
+      <p class="subtitle">
+        Esta subweb lee los puntos desde <strong>datos.csv</strong> y muestra sus valores básicos.
+      </p>
+    </header>
+
+    <section class="layout">
+      <aside class="panel">
+        <h2>Sitios disponibles</h2>
+        <div id="status" class="status">Cargando datos...</div>
+        <div id="siteList" class="site-list"></div>
+      </aside>
+
+      <section class="panel">
+        <h2>Detalle del sitio</h2>
+        <div id="detail" class="empty">Selecciona un sitio de la lista.</div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const fallbackSites = [
+      {
+        id: "bilbao-exterior",
+        name: "Bilbao exterior",
+        lat: 43.38,
+        lon: -3.05,
+        region: "Cantábrico",
+        source: "Portus",
+        temp: "15.2 °C",
+        wind: "12 kn",
+        wave: "1.3 m",
+        period: "8.8 s",
+        current: "0.5 kn",
+        updated: "2026-03-21 12:00",
+        url: "https://portus.puertos.es/"
+      },
+      {
+        id: "armintza-este",
+        name: "Armintza Este",
+        lat: 43.46,
+        lon: -2.88,
+        region: "Cantábrico",
+        source: "Portus",
+        temp: "14.9 °C",
+        wind: "10 kn",
+        wave: "1.1 m",
+        period: "8.2 s",
+        current: "0.4 kn",
+        updated: "2026-03-21 12:00",
+        url: "https://portus.puertos.es/"
+      },
+      {
+        id: "gran-canaria-ne",
+        name: "Gran Canaria NE",
+        lat: 28.18,
+        lon: -15.34,
+        region: "Canarias",
+        source: "Windy",
+        temp: "21.8 °C",
+        wind: "16 kn",
+        wave: "0.8 m",
+        period: "6.1 s",
+        current: "0.3 kn",
+        updated: "2026-03-21 12:00",
+        url: "https://www.windy.com/"
+      }
+    ];
+
+    let sites = [];
+    let selectedId = null;
+
+    const statusEl = document.getElementById("status");
+    const siteListEl = document.getElementById("siteList");
+    const detailEl = document.getElementById("detail");
+
+    function splitCSVLine(line) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === "," && !inQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      const headers = splitCSVLine(lines[0]).map(h => h.trim());
+
+      return lines.slice(1).map(line => {
+        const values = splitCSVLine(line);
+        const row = {};
+
+        headers.forEach((header, i) => {
+          row[header] = (values[i] || "").trim();
+        });
+
+        return {
+          id: row.id || slugify(row.name || "site"),
+          name: row.name || "Sitio sin nombre",
+          lat: row.lat || "",
+          lon: row.lon || "",
+          region: row.region || "",
+          source: row.source || "",
+          temp: row.temp || "",
+          wind: row.wind || "",
+          wave: row.wave || "",
+          period: row.period || "",
+          current: row.current || "",
+          updated: row.updated || "",
+          url: row.url || ""
+        };
+      });
+    }
+
+    function slugify(text) {
+      return String(text)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    function renderList() {
+      siteListEl.innerHTML = "";
+
+      if (!sites.length) {
+        siteListEl.innerHTML = '<div class="empty">No hay datos disponibles.</div>';
+        return;
+      }
+
+      sites.forEach(site => {
+        const btn = document.createElement("button");
+        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
+        btn.innerHTML = `
+          <strong>${escapeHtml(site.name)}</strong>
+          <span>${escapeHtml(site.region || "Sin región")} · ${escapeHtml(site.source || "Sin fuente")}</span>
+        `;
+        btn.addEventListener("click", () => {
+          selectedId = site.id;
+          renderList();
+          renderDetail();
+        });
+        siteListEl.appendChild(btn);
+      });
+    }
+
+    function renderDetail() {
+      const site = sites.find(s => s.id === selectedId);
+      if (!site) {
+        detailEl.innerHTML = '<div class="empty">Selecciona un sitio de la lista.</div>';
+        return;
+      }
+
+      detailEl.innerHTML = `
+        <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
+        <div style="color:#9db0d1;">${escapeHtml(site.region || "Sin región")} · ${escapeHtml(site.source || "Sin fuente")}</div>
+
+        <div class="detail-grid">
+          <div class="metric"><span class="k">Temperatura</span><span class="v">${escapeHtml(site.temp || "-")}</span></div>
+          <div class="metric"><span class="k">Viento</span><span class="v">${escapeHtml(site.wind || "-")}</span></div>
+          <div class="metric"><span class="k">Oleaje</span><span class="v">${escapeHtml(site.wave || "-")}</span></div>
+          <div class="metric"><span class="k">Periodo</span><span class="v">${escapeHtml(site.period || "-")}</span></div>
+          <div class="metric"><span class="k">Corriente</span><span class="v">${escapeHtml(site.current || "-")}</span></div>
+          <div class="metric"><span class="k">Actualizado</span><span class="v">${escapeHtml(site.updated || "-")}</span></div>
+        </div>
+
+        <div class="meta">
+          <div><strong>Latitud:</strong> ${escapeHtml(site.lat || "-")}</div>
+          <div><strong>Longitud:</strong> ${escapeHtml(site.lon || "-")}</div>
+          ${site.url ? `<div><strong>Fuente:</strong> <a class="source-link" href="${escapeAttr(site.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.url)}</a></div>` : ""}
+        </div>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#96;");
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch("./datos.csv", { cache: "no-store" });
+        if (!response.ok) throw new Error("No se encontró datos.csv");
+        const text = await response.text();
+        const parsed = parseCSV(text);
+        if (!parsed.length) throw new Error("CSV vacío o inválido");
+        sites = parsed;
+        statusEl.textContent = "Datos cargados desde datos.csv";
+      } catch (error) {
+        sites = fallbackSites;
+        statusEl.textContent = "Usando datos de ejemplo. Añade meteo/datos.csv para tus datos reales.";
+      }
+
+      if (sites.length) {
+        selectedId = sites[0].id;
+      }
+
+      renderList();
+      renderDetail();
+    }
+
+    loadData();
+  </script>
 </body>
 </html>
