@@ -427,7 +427,8 @@
       "widget_url",
       "widget_url_oleaje",
       "widget_url_viento",
-      "widget_url_corriente"
+      "widget_url_corriente",
+      "widget_url_marea"
     ];
 
     const INITIAL_CENTER = [43.455, -2.90];
@@ -499,6 +500,7 @@
         widget_url_oleaje: "Widget oleaje",
         widget_url_viento: "Widget viento",
         widget_url_corriente: "Widget corriente",
+        widget_url_marea: "Widget marea",
         url: "URL"
       };
 
@@ -660,6 +662,11 @@
           key: "corriente",
           label: "Corrientes",
           url: site.raw.widget_url_corriente || ""
+        },
+        {
+          key: "marea",
+          label: "Marea",
+          url: site.raw.widget_url_marea || ""
         }
       ];
     }
