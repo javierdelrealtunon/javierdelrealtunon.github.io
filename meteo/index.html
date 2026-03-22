@@ -435,6 +435,10 @@
     const INITIAL_CENTER = [43.455, -2.90];
     const INITIAL_ZOOM = 10;
 
+    // Sustituye estos dos valores por el servicio real
+    const WMS_URL = "https://TU_SERVICIO_WMS";
+    const WMS_LAYER_NAME = "NOMBRE_DE_LA_CAPA";
+
     let allSites = [];
     let filteredSites = [];
     let selectedId = null;
@@ -444,6 +448,7 @@
     let orthoLayer;
     let layerControl;
     let kmlLayer;
+    let nauticalWmsLayer;
 
     const statusEl = document.getElementById("status");
     const siteListEl = document.getElementById("siteList");
@@ -767,6 +772,20 @@
       renderPopupContent(containerId, tabKey);
     };
 
+    function createNauticalWmsLayer() {
+      if (!WMS_URL || WMS_URL.includes("TU_SERVICIO_WMS")) return null;
+      if (!WMS_LAYER_NAME || WMS_LAYER_NAME === "NOMBRE_DE_LA_CAPA") return null;
+
+      return L.tileLayer.wms(WMS_URL, {
+        layers: WMS_LAYER_NAME,
+        format: "image/png",
+        transparent: true,
+        version: "1.1.1",
+        opacity: 0.65,
+        attribution: "Carta náutica / batimetría WMS"
+      });
+    }
+
     function initMap() {
       cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -781,6 +800,8 @@
         }
       );
 
+      nauticalWmsLayer = createNauticalWmsLayer();
+
       map = L.map("map", {
         center: INITIAL_CENTER,
         zoom: INITIAL_ZOOM,
@@ -793,6 +814,11 @@
       };
 
       const overlayLayers = {};
+
+      if (nauticalWmsLayer) {
+        overlayLayers["Carta náutica WMS"] = nauticalWmsLayer;
+        // nauticalWmsLayer.addTo(map); // descomenta esta línea si quieres verla activada desde el inicio
+      }
 
       layerControl = L.control.layers(baseLayers, overlayLayers, { collapsed: false }).addTo(map);
     }
