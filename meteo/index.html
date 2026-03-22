@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Previsión de datos metoceánicos (Portus)</title>
+  <title>Datos metoceánicos</title>
 
   <link
     rel="stylesheet"
@@ -391,7 +391,7 @@
     </div>
 
     <header>
-      <h1>Previsión de datos metoceánicos (Portus)</h1>
+      <h1>Datos metoceánicos</h1>
     </header>
 
     <section class="layout">
@@ -415,6 +415,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
   <script>
     const REQUIRED_KEYS = ["name", "lat", "lon"];
     const RESERVED_KEYS = [
@@ -441,6 +442,8 @@
     let markers = [];
     let cartoLayer;
     let orthoLayer;
+    let layerControl;
+    let kmlLayer;
 
     const statusEl = document.getElementById("status");
     const siteListEl = document.getElementById("siteList");
@@ -789,7 +792,38 @@
         "Ortofoto": orthoLayer
       };
 
-      L.control.layers(baseLayers, null, { collapsed: false }).addTo(map);
+      const overlayLayers = {};
+
+      layerControl = L.control.layers(baseLayers, overlayLayers, { collapsed: false }).addTo(map);
+    }
+
+    function loadKMLLayer() {
+      kmlLayer = omnivore.kml("./bimep.kml")
+        .on("ready", function () {
+          kmlLayer.eachLayer(function (layer) {
+            if (layer.setStyle) {
+              layer.setStyle({
+                color: "#ff7800",
+                weight: 2,
+                opacity: 0.9,
+                fillColor: "#ffb347",
+                fillOpacity: 0.2
+              });
+            }
+
+            if (layer.feature && layer.feature.properties) {
+              const props = layer.feature.properties;
+              const nombre = props.name || "Elemento KML";
+              layer.bindPopup(`<strong>${nombre}</strong>`);
+            }
+          });
+
+          kmlLayer.addTo(map);
+          layerControl.addOverlay(kmlLayer, "BiMEP KML");
+        })
+        .on("error", function (e) {
+          console.error("Error cargando KML:", e);
+        });
     }
 
     function renderMarkers() {
@@ -892,6 +926,7 @@
     searchInput.addEventListener("input", applyFilter);
 
     initMap();
+    loadKMLLayer();
     loadData();
   </script>
 </body>
