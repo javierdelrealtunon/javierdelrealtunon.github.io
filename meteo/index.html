@@ -195,6 +195,7 @@
       border: 0;
       border-radius: 14px;
       background: white;
+      margin-top: 12px;
     }
 
     .widget-note {
@@ -214,6 +215,54 @@
 
     .leaflet-control-layers {
       border-radius: 12px;
+    }
+
+    .accordion {
+      display: grid;
+      gap: 12px;
+    }
+
+    .accordion-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+
+    .accordion-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .accordion-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .accordion-item summary::after {
+      content: "▾";
+      color: var(--accent);
+      font-size: 1rem;
+      transition: transform 0.2s ease;
+    }
+
+    .accordion-item[open] summary::after {
+      transform: rotate(180deg);
+    }
+
+    .accordion-body {
+      padding: 0 16px 16px;
+    }
+
+    .section-tag {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 400;
     }
 
     @media (max-width: 1000px) {
@@ -267,8 +316,8 @@
         </section>
 
         <section class="panel">
-          <h2>Oleaje (widget Portus)</h2>
-          <div id="widgetContainer" class="empty">Selecciona un sitio con columna <strong>widget_url</strong> en el CSV.</div>
+          <h2>Predicciones Portus</h2>
+          <div id="widgetContainer" class="empty">Selecciona un sitio con widgets definidos en el CSV.</div>
         </section>
       </section>
     </section>
@@ -277,7 +326,18 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
     const REQUIRED_KEYS = ["name", "lat", "lon"];
-    const RESERVED_KEYS = ["id", "name", "lat", "lon", "widget_url", "region", "source"];
+    const RESERVED_KEYS = [
+      "id",
+      "name",
+      "lat",
+      "lon",
+      "region",
+      "source",
+      "widget_url",
+      "widget_url_oleaje",
+      "widget_url_viento",
+      "widget_url_corriente"
+    ];
 
     const INITIAL_CENTER = [43.455, -2.90];
     const INITIAL_ZOOM = 10;
@@ -296,7 +356,13 @@
     const widgetContainerEl = document.getElementById("widgetContainer");
     const searchInput = document.getElementById("searchInput");
 
-    function splitCSVLine(line) {
+    function detectDelimiter(headerLine) {
+      const semicolons = (headerLine.match(/;/g) || []).length;
+      const commas = (headerLine.match(/,/g) || []).length;
+      return semicolons > commas ? ";" : ",";
+    }
+
+    function splitCSVLine(line, delimiter) {
       const result = [];
       let current = "";
       let inQuotes = false;
@@ -312,7 +378,7 @@
           } else {
             inQuotes = !inQuotes;
           }
-        } else if (char === "," && !inQuotes) {
+        } else if (char === delimiter && !inQuotes) {
           result.push(current);
           current = "";
         } else {
@@ -338,7 +404,11 @@
         name: "Nombre",
         lat: "Latitud",
         lon: "Longitud",
-        widget_url: "Widget",
+        region: "Región",
+        source: "Fuente",
+        widget_url_oleaje: "Widget oleaje",
+        widget_url_viento: "Widget viento",
+        widget_url_corriente: "Widget corriente",
         url: "URL"
       };
 
@@ -362,11 +432,36 @@
       return escapeHtml(value).replace(/`/g, "&#96;");
     }
 
+    function parseCoordinate(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return NaN;
+
+      if (/[.,]/.test(raw)) {
+        return parseFloat(raw.replace(",", "."));
+      }
+
+      const sign = raw.startsWith("-") ? -1 : 1;
+      const digits = raw.replace(/^[+-]/, "");
+
+      if (!/^\d+$/.test(digits)) {
+        return NaN;
+      }
+
+      if (digits.length >= 3) {
+        const whole = digits.slice(0, digits.length - 2);
+        const decimal = digits.slice(-2);
+        return sign * parseFloat(`${whole}.${decimal}`);
+      }
+
+      return sign * parseFloat(digits);
+    }
+
     function parseCSV(text) {
       const lines = text.trim().split(/\r?\n/).filter(Boolean);
       if (lines.length < 2) throw new Error("CSV vacío o sin filas de datos");
 
-      const headers = splitCSVLine(lines[0]).map(h => h.trim());
+      const delimiter = detectDelimiter(lines[0]);
+      const headers = splitCSVLine(lines[0], delimiter).map(h => h.trim());
       const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
 
       if (missing.length) {
@@ -374,7 +469,7 @@
       }
 
       return lines.slice(1).map((line, idx) => {
-        const values = splitCSVLine(line);
+        const values = splitCSVLine(line, delimiter);
         const raw = {};
 
         headers.forEach((header, i) => {
@@ -384,8 +479,8 @@
         const site = {
           id: raw.id || slugify(raw.name) || `site-${idx + 1}`,
           name: raw.name || `Sitio ${idx + 1}`,
-          lat: parseFloat(String(raw.lat).replace(",", ".")),
-          lon: parseFloat(String(raw.lon).replace(",", ".")),
+          lat: parseCoordinate(raw.lat),
+          lon: parseCoordinate(raw.lon),
           raw
         };
 
@@ -453,8 +548,48 @@
 
       detailEl.innerHTML = `
         <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
-        <div style="color:#9db0d1;">Lat ${site.lat}, Lon ${site.lon}</div>
+        <div style="color:#9db0d1;">Lat ${site.lat.toFixed(2)}, Lon ${site.lon.toFixed(2)}</div>
         ${metricsHtml}
+      `;
+    }
+
+    function renderWidgetBlock(title, url, key, openByDefault = false) {
+      if (!url) {
+        return `
+          <details class="accordion-item" ${openByDefault ? "open" : ""}>
+            <summary>
+              <span>${escapeHtml(title)}</span>
+              <span class="section-tag">sin widget</span>
+            </summary>
+            <div class="accordion-body">
+              <div class="empty">
+                Este sitio no tiene <strong>${escapeHtml(key)}</strong> definido en el CSV.
+              </div>
+            </div>
+          </details>
+        `;
+      }
+
+      return `
+        <details class="accordion-item" ${openByDefault ? "open" : ""}>
+          <summary>
+            <span>${escapeHtml(title)}</span>
+            <span class="section-tag">Portus</span>
+          </summary>
+          <div class="accordion-body">
+            <iframe
+              class="widget-frame"
+              src="${escapeAttr(url)}"
+              title="${escapeAttr(title)}"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+            <div class="widget-note">
+              Si el proveedor impide la carga embebida, abre el enlace externo:
+              <a class="source-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">abrir widget</a>.
+            </div>
+          </div>
+        </details>
       `;
     }
 
@@ -466,28 +601,15 @@
         return;
       }
 
-      const widgetUrl = site.raw.widget_url;
-
-      if (!widgetUrl) {
-        widgetContainerEl.innerHTML = `
-          <div class="empty">
-            Este sitio no tiene <strong>widget_url</strong> definido en el CSV.
-          </div>
-        `;
-        return;
-      }
+      const oleajeUrl = site.raw.widget_url_oleaje || site.raw.widget_url || "";
+      const vientoUrl = site.raw.widget_url_viento || "";
+      const corrienteUrl = site.raw.widget_url_corriente || "";
 
       widgetContainerEl.innerHTML = `
-        <iframe
-          class="widget-frame"
-          src="${escapeAttr(widgetUrl)}"
-          title="Widget de oleaje"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-        <div class="widget-note">
-          Si el proveedor impide la carga embebida, abre el enlace externo:
-          <a class="source-link" href="${escapeAttr(widgetUrl)}" target="_blank" rel="noopener noreferrer">abrir widget</a>.
+        <div class="accordion">
+          ${renderWidgetBlock("Oleaje", oleajeUrl, "widget_url_oleaje", true)}
+          ${renderWidgetBlock("Viento", vientoUrl, "widget_url_viento", false)}
+          ${renderWidgetBlock("Corrientes", corrienteUrl, "widget_url_corriente", false)}
         </div>
       `;
     }
@@ -541,10 +663,9 @@
         markers.push(marker);
       });
 
-      // Mantener un encuadre útil y estable para BiMEP
       const fixedBounds = L.latLngBounds(
         [43.20, -3.45],
-  [43.55, -2.35]
+        [43.55, -2.35]
       );
       map.fitBounds(fixedBounds, { padding: [20, 20] });
     }
