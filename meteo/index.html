@@ -20,7 +20,6 @@
       --text: #eaf1ff;
       --muted: #9db0d1;
       --accent: #66b3ff;
-      --accent-2: #8fd3ff;
     }
 
     * { box-sizing: border-box; }
@@ -618,44 +617,37 @@
       ];
     }
 
+    function createPopupId(siteId) {
+      return `popup-${siteId}`;
+    }
+
     function buildPopupHtml(site) {
       const tabs = getPopupTabs(site);
       const defaultTab = tabs.find(t => t.url) || tabs[0];
+      const popupId = createPopupId(site.id);
 
       const tabsHtml = tabs.map(tab => `
         <button
           type="button"
           class="popup-tab ${tab.key === defaultTab.key ? "active" : ""}"
-          data-tab="${escapeAttr(tab.key)}"
-          data-url="${escapeAttr(tab.url)}"
-          data-site="${escapeAttr(site.id)}"
+          onclick="switchPopupTab('${escapeAttr(popupId)}','${escapeAttr(tab.key)}')"
         >
           ${escapeHtml(tab.label)}
         </button>
       `).join("");
 
-      const contentHtml = defaultTab.url
-        ? `
-          <iframe
-            class="popup-frame"
-            src="${escapeAttr(defaultTab.url)}"
-            title="${escapeAttr(defaultTab.label)} - ${escapeAttr(site.name)}"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
-          <div class="popup-note">
-            Si el proveedor impide la carga embebida, abre el enlace externo:
-            <a href="${escapeAttr(defaultTab.url)}" target="_blank" rel="noopener noreferrer">abrir ${escapeHtml(defaultTab.label.toLowerCase())}</a>.
-          </div>
-        `
-        : `
-          <div class="popup-empty">
-            No hay widget disponible para ${escapeHtml(defaultTab.label.toLowerCase())} en este punto.
-          </div>
-        `;
+      const hiddenData = tabs.map(tab => `
+        <span
+          data-role="tab-data"
+          data-tab="${escapeAttr(tab.key)}"
+          data-label="${escapeAttr(tab.label)}"
+          data-url="${escapeAttr(tab.url)}"
+          hidden
+        ></span>
+      `).join("");
 
       return `
-        <div class="popup-shell" data-popup-site="${escapeAttr(site.id)}">
+        <div class="popup-shell" id="${escapeAttr(popupId)}">
           <div class="popup-head">
             <div class="popup-title">${escapeHtml(site.name)}</div>
             <div class="popup-subtitle">${escapeHtml(getListSubtitle(site))}</div>
@@ -665,63 +657,58 @@
             ${tabsHtml}
           </div>
 
-          <div class="popup-frame-wrap" data-popup-content="${escapeAttr(site.id)}">
-            ${contentHtml}
-          </div>
+          ${hiddenData}
+
+          <div class="popup-frame-wrap" data-role="content"></div>
         </div>
       `;
     }
 
-    function bindPopupInteractions(marker, site) {
-      marker.on("popupopen", (event) => {
-        const popupEl = event.popup.getElement();
-        if (!popupEl) return;
+    function renderPopupContent(containerId, tabKey) {
+      const root = document.getElementById(containerId);
+      if (!root) return;
 
-        const buttons = popupEl.querySelectorAll(".popup-tab");
-        const contentEl = popupEl.querySelector(`[data-popup-content="${CSS.escape(site.id)}"]`);
-        if (!contentEl) return;
+      const tabData = Array.from(root.querySelectorAll('[data-role="tab-data"]'));
+      const selected = tabData.find(el => el.dataset.tab === tabKey);
+      const content = root.querySelector('[data-role="content"]');
+      const buttons = Array.from(root.querySelectorAll('.popup-tab'));
 
-        buttons.forEach(button => {
-          button.addEventListener("click", () => {
-            buttons.forEach(b => b.classList.remove("active"));
-            button.classList.add("active");
+      if (!selected || !content) return;
 
-            const label = button.textContent.trim();
-            const url = button.dataset.url || "";
-
-            if (url) {
-              contentEl.innerHTML = `
-                <iframe
-                  class="popup-frame"
-                  src="${escapeAttr(url)}"
-                  title="${escapeAttr(label)} - ${escapeAttr(site.name)}"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
-                <div class="popup-note">
-                  Si el proveedor impide la carga embebida, abre el enlace externo:
-                  <a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">abrir ${escapeHtml(label.toLowerCase())}</a>.
-                </div>
-              `;
-            } else {
-              contentEl.innerHTML = `
-                <div class="popup-empty">
-                  No hay widget disponible para ${escapeHtml(label.toLowerCase())} en este punto.
-                </div>
-              `;
-            }
-
-            setTimeout(() => {
-              event.popup.update();
-            }, 0);
-          });
-        });
-
-        setTimeout(() => {
-          event.popup.update();
-        }, 0);
+      buttons.forEach(btn => {
+        const isActive = btn.getAttribute("onclick").includes(`'${tabKey}'`);
+        btn.classList.toggle("active", isActive);
       });
+
+      const label = selected.dataset.label || tabKey;
+      const url = selected.dataset.url || "";
+
+      if (url) {
+        content.innerHTML = `
+          <iframe
+            class="popup-frame"
+            src="${url}"
+            title="${label}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+          <div class="popup-note">
+            Si el proveedor impide la carga embebida, abre el enlace externo:
+            <a href="${url}" target="_blank" rel="noopener noreferrer">abrir ${label.toLowerCase()}</a>.
+          </div>
+        `;
+      } else {
+        content.innerHTML = `
+          <div class="popup-empty">
+            No hay widget disponible para ${label.toLowerCase()} en este punto.
+          </div>
+        `;
+      }
     }
+
+    window.switchPopupTab = function(containerId, tabKey) {
+      renderPopupContent(containerId, tabKey);
+    };
 
     function initMap() {
       cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -769,7 +756,12 @@
           autoPan: true
         });
 
-        bindPopupInteractions(marker, site);
+        marker.on("popupopen", () => {
+          const tabs = getPopupTabs(site);
+          const firstAvailable = tabs.find(t => t.url) || tabs[0];
+          renderPopupContent(createPopupId(site.id), firstAvailable.key);
+          setTimeout(() => marker.getPopup().update(), 0);
+        });
 
         marker.on("click", () => {
           selectedId = site.id;
