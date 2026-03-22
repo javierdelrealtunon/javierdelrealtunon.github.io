@@ -1,1 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPD geolocalizadas</title>
 
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg: #08101d;
+      --panel: #12203a;
+      --panel-2: #172844;
+      --border: #2a3c5f;
+      --text: #eaf1ff;
+      --muted: #9db0d1;
+      --accent: #66b3ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #08101d 0%, #0d1830 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      width: min(98vw, 1900px);
+      margin: 0 auto;
+      padding: 10px 14px 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .back {
+      display: inline-block;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      font-size: 0.95rem;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2.1rem, 3vw, 3.4rem);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.55;
+      max-width: 1000px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .left-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .panel {
+      background: rgba(18, 32, 58, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-bottom: 12px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .search {
+      width: 100%;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .site-list {
+      display: grid;
+      gap: 8px;
+      max-height: calc(100vh - 260px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .site-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .site-btn:hover,
+    .site-btn.active {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .site-btn strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .site-btn span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .empty {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .main-panel {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 200px);
+      min-height: 700px;
+      max-height: 1100px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0b1220;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .metric .k {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .metric .v {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .leaflet-container {
+      background: #0b1220;
+    }
+
+    .leaflet-control-layers {
+      border-radius: 12px;
+    }
+
+    .leaflet-popup-content {
+      margin: 14px 16px;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px;
+    }
+
+    .popup-shell {
+      width: min(72vw, 520px);
+    }
+
+    .popup-head {
+      margin-bottom: 12px;
+    }
+
+    .popup-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 2px;
+      line-height: 1.35;
+    }
+
+    .popup-subtitle {
+      font-size: 0.86rem;
+      color: #667085;
+      line-height: 1.45;
+    }
+
+    .popup-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .popup-item {
+      background: #f7f9fc;
+      border: 1px solid #dbe4f0;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .popup-item .k {
+      display: block;
+      color: #667085;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+    }
+
+    .popup-item .v {
+      display: block;
+      color: #111827;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .popup-links {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .popup-link {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #66b3ff;
+      background: #dcedff;
+      color: #0d3f74;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .popup-link:hover {
+      background: #cfe8ff;
+    }
+
+    @media (min-width: 1700px) {
+      .layout {
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+
+      #map {
+        height: calc(100vh - 185px);
+      }
+
+      .popup-shell {
+        width: min(68vw, 560px);
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .wrap {
+        width: min(99vw, 1400px);
+        padding: 10px 10px 16px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .site-list {
+        max-height: none;
+      }
+
+      #map {
+        height: 68vh;
+        min-height: 540px;
+      }
+
+      .popup-shell {
+        width: min(84vw, 520px);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        width: 100vw;
+        padding: 8px;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 8vw, 2.6rem);
+      }
+
+      #map {
+        height: 60vh;
+        min-height: 420px;
+      }
+
+      .popup-shell {
+        width: min(88vw, 520px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <a class="back" href="../">← Volver al índice</a>
+    </div>
+
+    <header>
+      <h1>EPD geolocalizadas</h1>
+      <div class="subtitle">
+        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>.
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="left-panel">
+        <section class="panel">
+          <h2>EPD disponibles</h2>
+          <div id="status" class="status">Cargando datos...</div>
+          <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
+          <div id="siteList" class="site-list"></div>
+        </section>
+      </aside>
+
+      <section class="main-panel">
+        <div id="map"></div>
+
+        <section class="panel">
+          <div id="detail" class="empty">Selecciona una EPD de la lista o del mapa.</div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    const REQUIRED_KEYS = ["name", "lat", "lon"];
+    const RESERVED_KEYS = ["id", "name", "lat", "lon"];
+
+    const INITIAL_CENTER = [20, 0];
+    const INITIAL_ZOOM = 2;
+
+    let allSites = [];
+    let filteredSites = [];
+    let selectedId = null;
+    let map;
+    let markers = [];
+    let cartoLayer;
+    let orthoLayer;
+    let layerControl;
+
+    const statusEl = document.getElementById("status");
+    const siteListEl = document.getElementById("siteList");
+    const detailEl = document.getElementById("detail");
+    const searchInput = document.getElementById("searchInput");
+
+    function detectDelimiter(headerLine) {
+      const semicolons = (headerLine.match(/;/g) || []).length;
+      const commas = (headerLine.match(/,/g) || []).length;
+      return semicolons > commas ? ";" : ",";
+    }
+
+    function splitCSVLine(line, delimiter) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    function slugify(text) {
+      return String(text || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    function labelFromKey(key) {
+      const labels = {
+        name: "Nombre",
+        lat: "Latitud",
+        lon: "Longitud",
+        codigo_epd: "Código EPD",
+        producto: "Producto",
+        producto_asignado: "Producto asignado",
+        pais_produccion: "País producción",
+        ciudad_produccion: "Ciudad producción",
+        centro_produccion: "Centro de producción",
+        titular: "Titular",
+        compania_verificadora: "Compañía verificadora",
+        referencia: "Referencia",
+        ruta_de_produccion: "Ruta de producción",
+        contenido_reciclado_pct: "Contenido reciclado %",
+        gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
+        archivo: "Archivo",
+        pdf_url: "PDF",
+        caracteristicas_funcionales: "Características funcionales"
+      };
+
+      if (labels[key]) return labels[key];
+
+      return key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function parseCoordinate(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return NaN;
+
+      if (/[.,]/.test(raw)) {
+        return parseFloat(raw.replace(",", "."));
+      }
+
+      const sign = raw.startsWith("-") ? -1 : 1;
+      const digits = raw.replace(/^[+-]/, "");
+
+      if (!/^\d+$/.test(digits)) {
+        return NaN;
+      }
+
+      if (digits.length >= 3) {
+        const whole = digits.slice(0, digits.length - 2);
+        const decimal = digits.slice(-2);
+        return sign * parseFloat(`${whole}.${decimal}`);
+      }
+
+      return sign * parseFloat(digits);
+    }
+
+    function parseCSV(text) {
+      const cleanedText = text.replace(/^\uFEFF/, "").trim();
+      const lines = cleanedText.split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) throw new Error("CSV vacío o sin filas de datos");
+
+      const delimiter = detectDelimiter(lines[0]);
+      const headers = splitCSVLine(lines[0], delimiter).map(h => h.trim());
+      const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
+
+      if (missing.length) {
+        throw new Error("Faltan columnas obligatorias: " + missing.join(", "));
+      }
+
+      return lines.slice(1).map((line, idx) => {
+        const values = splitCSVLine(line, delimiter);
+        const raw = {};
+
+        headers.forEach((header, i) => {
+          raw[header] = (values[i] || "").trim();
+        });
+
+        const site = {
+          id: raw.id || slugify(raw.name) || `epd-${idx + 1}`,
+          name: raw.name || `EPD ${idx + 1}`,
+          lat: parseCoordinate(raw.lat),
+          lon: parseCoordinate(raw.lon),
+          raw
+        };
+
+        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
+        return site;
+      }).filter(Boolean);
+    }
+
+    function getListSubtitle(site) {
+      const candidates = [
+        "pais_produccion",
+        "ciudad_produccion",
+        "producto_asignado",
+        "producto"
+      ];
+
+      const parts = candidates
+        .map(k => site.raw[k])
+        .filter(v => v && String(v).trim() !== "");
+
+      return parts.join(" · ") || "Sin datos complementarios";
+    }
+
+    function getDisplayKeys(site) {
+      return Object.keys(site.raw).filter(key => {
+        if (RESERVED_KEYS.includes(key)) return false;
+        const value = site.raw[key];
+        return value !== undefined && value !== null && String(value).trim() !== "";
+      });
+    }
+
+    function renderList() {
+      siteListEl.innerHTML = "";
+
+      if (!filteredSites.length) {
+        siteListEl.innerHTML = '<div class="empty">No hay EPD que coincidan con la búsqueda.</div>';
+        return;
+      }
+
+      filteredSites.forEach(site => {
+        const btn = document.createElement("button");
+        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
+        btn.innerHTML = `
+          <strong>${escapeHtml(site.name)}</strong>
+          <span>${escapeHtml(getListSubtitle(site))}</span>
+        `;
+        btn.addEventListener("click", () => selectSite(site.id, true));
+        siteListEl.appendChild(btn);
+      });
+    }
+
+    function renderDetail() {
+      const site = allSites.find(s => s.id === selectedId);
+
+      if (!site) {
+        detailEl.innerHTML = '<div class="empty">Selecciona una EPD de la lista o del mapa.</div>';
+        return;
+      }
+
+      const displayKeys = getDisplayKeys(site);
+
+      const metricsHtml = displayKeys.length
+        ? `<div class="detail-grid">${
+            displayKeys.map(key => `
+              <div class="metric">
+                <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                <span class="v">${
+                  key === "pdf_url" && /^https?:\/\//i.test(site.raw[key])
+                    ? `<a href="${escapeHtml(site.raw[key])}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a>`
+                    : escapeHtml(site.raw[key])
+                }</span>
+              </div>
+            `).join("")
+          }</div>`
+        : "";
+
+      detailEl.innerHTML = `
+        <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
+        <div style="color:#9db0d1;">
+          Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)}
+        </div>
+        ${metricsHtml}
+      `;
+    }
+
+    function buildPopupHtml(site) {
+      const popupKeys = [
+        "codigo_epd",
+        "producto_asignado",
+        "producto",
+        "pais_produccion",
+        "ciudad_produccion",
+        "ruta_de_produccion",
+        "gwp_total_kg_co2e_t"
+      ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
+
+      const popupItems = popupKeys.length
+        ? popupKeys.map(key => `
+            <div class="popup-item">
+              <span class="k">${escapeHtml(labelFromKey(key))}</span>
+              <span class="v">${escapeHtml(site.raw[key])}</span>
+            </div>
+          `).join("")
+        : `
+            <div class="popup-item">
+              <span class="k">Ubicación</span>
+              <span class="v">Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)}</span>
+            </div>
+          `;
+
+      const hasPdf = site.raw.pdf_url && /^https?:\/\//i.test(site.raw.pdf_url);
+
+      return `
+        <div class="popup-shell">
+          <div class="popup-head">
+            <div class="popup-title">${escapeHtml(site.name)}</div>
+            <div class="popup-subtitle">${escapeHtml(getListSubtitle(site))}</div>
+          </div>
+
+          <div class="popup-grid">
+            ${popupItems}
+          </div>
+
+          <div class="popup-links">
+            ${hasPdf ? `<a class="popup-link" href="${escapeHtml(site.raw.pdf_url)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
+            <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function initMap() {
+      cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      });
+
+      orthoLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          attribution: "Tiles &copy; Esri"
+        }
+      );
+
+      map = L.map("map", {
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+        layers: [cartoLayer]
+      });
+
+      const baseLayers = {
+        "Cartografía": cartoLayer,
+        "Ortofoto": orthoLayer
+      };
+
+      layerControl = L.control.layers(baseLayers, {}, { collapsed: false }).addTo(map);
+    }
+
+    function renderMarkers() {
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = [];
+
+      if (!filteredSites.length) {
+        map.setView(INITIAL_CENTER, INITIAL_ZOOM);
+        return;
+      }
+
+      const bounds = [];
+
+      filteredSites.forEach(site => {
+        const marker = L.marker([site.lat, site.lon]).addTo(map);
+
+        marker.bindPopup(buildPopupHtml(site), {
+          maxWidth: 580,
+          minWidth: 320,
+          autoPan: true
+        });
+
+        marker.on("click", () => {
+          selectedId = site.id;
+          renderList();
+          renderDetail();
+        });
+
+        markers.push(marker);
+        bounds.push([site.lat, site.lon]);
+      });
+
+      if (bounds.length === 1) {
+        map.setView(bounds[0], 6);
+      } else {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    function applyFilter() {
+      const q = searchInput.value.trim().toLowerCase();
+
+      filteredSites = allSites.filter(site => {
+        const haystack = Object.values(site.raw).join(" ").toLowerCase();
+        return !q || haystack.includes(q);
+      });
+
+      if (!filteredSites.some(site => site.id === selectedId)) {
+        selectedId = filteredSites.length ? filteredSites[0].id : null;
+      }
+
+      renderList();
+      renderDetail();
+      renderMarkers();
+    }
+
+    function selectSite(id, centerMap) {
+      selectedId = id;
+      renderList();
+      renderDetail();
+
+      if (centerMap && map) {
+        const site = allSites.find(s => s.id === id);
+        if (site) {
+          map.setView([site.lat, site.lon], 7);
+        }
+      }
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch("./datos.csv", { cache: "no-store" });
+        if (!response.ok) throw new Error("No se encontró datos.csv");
+
+        const text = await response.text();
+        allSites = parseCSV(text);
+
+        if (!allSites.length) {
+          throw new Error("No hay registros válidos");
+        }
+
+        statusEl.textContent = `Datos cargados desde datos.csv · ${allSites.length} EPD`;
+      } catch (error) {
+        statusEl.textContent = "Error al leer datos.csv: " + error.message;
+        allSites = [];
+      }
+
+      filteredSites = [...allSites];
+      selectedId = filteredSites.length ? filteredSites[0].id : null;
+
+      renderList();
+      renderDetail();
+      renderMarkers();
+    }
+
+    searchInput.addEventListener("input", applyFilter);
+
+    initMap();
+    loadData();
+  </script>
+</body>
+</html>
