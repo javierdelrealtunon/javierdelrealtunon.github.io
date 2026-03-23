@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -77,7 +77,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-columns: 320px minmax(0, 1fr);
       gap: 14px;
       align-items: start;
     }
@@ -93,6 +93,7 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 14px;
+      min-width: 0;
     }
 
     .panel h2 {
@@ -105,9 +106,11 @@
       margin-bottom: 12px;
       font-size: 0.92rem;
       color: var(--muted);
+      line-height: 1.45;
     }
 
-    .search {
+    .search,
+    .filter-select {
       width: 100%;
       margin-bottom: 12px;
       border: 1px solid var(--border);
@@ -118,10 +121,24 @@
       outline: none;
     }
 
+    .filter-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .legend-note {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
     .site-list {
       display: grid;
       gap: 8px;
-      max-height: calc(100vh - 260px);
+      max-height: calc(100vh - 370px);
       overflow: auto;
       padding-right: 4px;
     }
@@ -145,7 +162,9 @@
     }
 
     .site-btn strong {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-bottom: 4px;
       font-size: 1rem;
     }
@@ -155,6 +174,15 @@
       color: var(--muted);
       font-size: 0.88rem;
       line-height: 1.4;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      display: inline-block;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,0.5);
     }
 
     .empty {
@@ -170,13 +198,24 @@
 
     #map {
       width: 100%;
-      height: calc(100vh - 200px);
-      min-height: 700px;
-      max-height: 1100px;
+      height: min(60vh, 760px);
+      min-height: 520px;
       border-radius: 18px;
       overflow: hidden;
       border: 1px solid var(--border);
       background: #0b1220;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 430px;
+      min-height: 320px;
+    }
+
+    #scatterChart {
+      width: 100%;
+      height: 100%;
     }
 
     .detail-grid {
@@ -281,7 +320,8 @@
       flex-wrap: wrap;
     }
 
-    .popup-link {
+    .popup-link,
+    .detail-link {
       display: inline-block;
       padding: 8px 12px;
       border-radius: 999px;
@@ -293,17 +333,21 @@
       font-weight: 700;
     }
 
-    .popup-link:hover {
+    .popup-link:hover,
+    .detail-link:hover {
       background: #cfe8ff;
+    }
+
+    .detail-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     @media (min-width: 1700px) {
       .layout {
-        grid-template-columns: 320px minmax(0, 1fr);
-      }
-
-      #map {
-        height: calc(100vh - 185px);
+        grid-template-columns: 340px minmax(0, 1fr);
       }
 
       .popup-shell {
@@ -326,8 +370,12 @@
       }
 
       #map {
-        height: 68vh;
-        min-height: 540px;
+        height: 64vh;
+        min-height: 500px;
+      }
+
+      .chart-wrap {
+        height: 360px;
       }
 
       .popup-shell {
@@ -346,8 +394,12 @@
       }
 
       #map {
-        height: 60vh;
-        min-height: 420px;
+        height: 58vh;
+        min-height: 400px;
+      }
+
+      .chart-wrap {
+        height: 320px;
       }
 
       .popup-shell {
@@ -365,7 +417,7 @@
     <header>
       <h1>EPD geolocalizadas</h1>
       <div class="subtitle">
-        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>.
+        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.
       </div>
     </header>
 
@@ -374,7 +426,17 @@
         <section class="panel">
           <h2>EPD disponibles</h2>
           <div id="status" class="status">Cargando datos...</div>
+
+          <label class="filter-label" for="productFilter">Producto asignado</label>
+          <select id="productFilter" class="filter-select">
+            <option value="">Todos</option>
+          </select>
+
           <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
+          <div class="legend-note">
+            El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.
+          </div>
+
           <div id="siteList" class="site-list"></div>
         </section>
       </aside>
@@ -383,13 +445,23 @@
         <div id="map"></div>
 
         <section class="panel">
-          <div id="detail" class="empty">Selecciona una EPD de la lista o del mapa.</div>
+          <h2>Reciclaje vs emisiones</h2>
+          <div id="chartStatus" class="status">Preparando gráfico...</div>
+          <div class="chart-wrap">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div id="detail" class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>
         </section>
       </section>
     </section>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     const REQUIRED_KEYS = ["name", "lat", "lon"];
     const RESERVED_KEYS = ["id", "name", "lat", "lon"];
@@ -397,19 +469,32 @@
     const INITIAL_CENTER = [20, 0];
     const INITIAL_ZOOM = 2;
 
+    const CATEGORY_COLORS = [
+      "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
+      "#00a950", "#58595b", "#8549ba", "#ffb000", "#00bcd4", "#ff7043",
+      "#7e57c2", "#66bb6a", "#ef5350", "#26a69a", "#ab47bc", "#ffa726",
+      "#8d6e63", "#42a5f5"
+    ];
+
     let allSites = [];
     let filteredSites = [];
     let selectedId = null;
+
     let map;
-    let markers = [];
     let cartoLayer;
     let orthoLayer;
-    let layerControl;
+    let markers = [];
+    let markerById = new Map();
+
+    let scatterChart = null;
+    const categoryColorMap = new Map();
 
     const statusEl = document.getElementById("status");
+    const chartStatusEl = document.getElementById("chartStatus");
     const siteListEl = document.getElementById("siteList");
     const detailEl = document.getElementById("detail");
     const searchInput = document.getElementById("searchInput");
+    const productFilterEl = document.getElementById("productFilter");
 
     function detectDelimiter(headerLine) {
       const semicolons = (headerLine.match(/;/g) || []).length;
@@ -471,7 +556,7 @@
         ruta_de_produccion: "Ruta de producción",
         contenido_reciclado_pct: "Contenido reciclado %",
         gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-        archivo: "Archivo",
+        archivo: "Archivo PDF",
         pdf_url: "PDF",
         caracteristicas_funcionales: "Características funcionales"
       };
@@ -503,9 +588,7 @@
       const sign = raw.startsWith("-") ? -1 : 1;
       const digits = raw.replace(/^[+-]/, "");
 
-      if (!/^\d+$/.test(digits)) {
-        return NaN;
-      }
+      if (!/^\d+$/.test(digits)) return NaN;
 
       if (digits.length >= 3) {
         const whole = digits.slice(0, digits.length - 2);
@@ -514,6 +597,34 @@
       }
 
       return sign * parseFloat(digits);
+    }
+
+    function parseLocaleNumber(value) {
+      let raw = String(value ?? "").trim();
+      if (!raw) return NaN;
+
+      raw = raw
+        .replace(/\s+/g, "")
+        .replace(/[%‰]/g, "")
+        .replace(/[^\d,.\-]/g, "");
+
+      if (!raw) return NaN;
+
+      const hasComma = raw.includes(",");
+      const hasDot = raw.includes(".");
+
+      if (hasComma && hasDot) {
+        if (raw.lastIndexOf(",") > raw.lastIndexOf(".")) {
+          raw = raw.replace(/\./g, "").replace(",", ".");
+        } else {
+          raw = raw.replace(/,/g, "");
+        }
+      } else if (hasComma) {
+        raw = raw.replace(",", ".");
+      }
+
+      const n = parseFloat(raw);
+      return Number.isFinite(n) ? n : NaN;
     }
 
     function parseCSV(text) {
@@ -546,8 +657,49 @@
         };
 
         if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
+
+        site.productAssigned = getAssignedProduct(site);
+        site.recycledPct = parseLocaleNumber(site.raw.contenido_reciclado_pct);
+        site.gwp = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
+
         return site;
       }).filter(Boolean);
+    }
+
+    function getAssignedProduct(site) {
+      const value = site?.raw?.producto_asignado;
+      return value && String(value).trim() !== "" ? String(value).trim() : "Sin asignar";
+    }
+
+    function getColorForCategory(category) {
+      const key = category || "Sin asignar";
+      if (!categoryColorMap.has(key)) {
+        categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
+      }
+      return categoryColorMap.get(key);
+    }
+
+    function buildPdfHref(site) {
+      const archivo = String(site?.raw?.archivo || "").trim();
+
+      if (archivo) {
+        const normalized = archivo.replace(/\\/g, "/").replace(/^\/+/, "");
+        const encoded = normalized
+          .split("/")
+          .filter(Boolean)
+          .map(part => encodeURIComponent(part))
+          .join("/");
+        return `./pdffiles/${encoded}`;
+      }
+
+      const pdfUrl = String(site?.raw?.pdf_url || "").trim();
+      if (pdfUrl) return pdfUrl;
+
+      return "";
+    }
+
+    function hasPdf(site) {
+      return !!buildPdfHref(site);
     }
 
     function getListSubtitle(site) {
@@ -573,11 +725,21 @@
       });
     }
 
+    function populateProductFilter() {
+      const products = Array.from(new Set(allSites.map(site => site.productAssigned)))
+        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+
+      productFilterEl.innerHTML = `<option value="">Todos</option>` +
+        products.map(product => `
+          <option value="${escapeHtml(product)}">${escapeHtml(product)}</option>
+        `).join("");
+    }
+
     function renderList() {
       siteListEl.innerHTML = "";
 
       if (!filteredSites.length) {
-        siteListEl.innerHTML = '<div class="empty">No hay EPD que coincidan con la búsqueda.</div>';
+        siteListEl.innerHTML = '<div class="empty">No hay EPD que coincidan con el filtro actual.</div>';
         return;
       }
 
@@ -585,10 +747,13 @@
         const btn = document.createElement("button");
         btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
         btn.innerHTML = `
-          <strong>${escapeHtml(site.name)}</strong>
+          <strong>
+            <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))};"></span>
+            ${escapeHtml(site.name)}
+          </strong>
           <span>${escapeHtml(getListSubtitle(site))}</span>
         `;
-        btn.addEventListener("click", () => selectSite(site.id, true));
+        btn.addEventListener("click", () => selectSite(site.id, true, true));
         siteListEl.appendChild(btn);
       });
     }
@@ -597,33 +762,59 @@
       const site = allSites.find(s => s.id === selectedId);
 
       if (!site) {
-        detailEl.innerHTML = '<div class="empty">Selecciona una EPD de la lista o del mapa.</div>';
+        detailEl.innerHTML = '<div class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>';
         return;
       }
 
       const displayKeys = getDisplayKeys(site);
+      const pdfHref = buildPdfHref(site);
 
       const metricsHtml = displayKeys.length
         ? `<div class="detail-grid">${
-            displayKeys.map(key => `
-              <div class="metric">
-                <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                <span class="v">${
-                  key === "pdf_url" && /^https?:\/\//i.test(site.raw[key])
-                    ? `<a href="${escapeHtml(site.raw[key])}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a>`
-                    : escapeHtml(site.raw[key])
-                }</span>
-              </div>
-            `).join("")
+            displayKeys.map(key => {
+              const value = site.raw[key];
+
+              if (key === "archivo" && pdfHref) {
+                return `
+                  <div class="metric">
+                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                    <span class="v"><a href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
+                  </div>
+                `;
+              }
+
+              if (key === "pdf_url" && String(value).trim() !== "") {
+                return `
+                  <div class="metric">
+                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                    <span class="v"><a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
+                  </div>
+                `;
+              }
+
+              return `
+                <div class="metric">
+                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                  <span class="v">${escapeHtml(value)}</span>
+                </div>
+              `;
+            }).join("")
           }</div>`
         : "";
 
       detailEl.innerHTML = `
-        <h3 style="margin:0 0 6px; font-size:1.3rem;">${escapeHtml(site.name)}</h3>
-        <div style="color:#9db0d1;">
-          Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)}
+        <h3 style="margin:0 0 6px; font-size:1.3rem; display:flex; align-items:center; gap:10px;">
+          <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))}; width:14px; height:14px;"></span>
+          ${escapeHtml(site.name)}
+        </h3>
+        <div style="color:#9db0d1; line-height:1.5;">
+          Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)} · ${escapeHtml(site.productAssigned)}
         </div>
         ${metricsHtml}
+        <div class="detail-actions">
+          ${pdfHref ? `<a class="detail-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
+          <a class="detail-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
+        </div>
       `;
     }
 
@@ -635,6 +826,7 @@
         "pais_produccion",
         "ciudad_produccion",
         "ruta_de_produccion",
+        "contenido_reciclado_pct",
         "gwp_total_kg_co2e_t"
       ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
 
@@ -652,7 +844,7 @@
             </div>
           `;
 
-      const hasPdf = site.raw.pdf_url && /^https?:\/\//i.test(site.raw.pdf_url);
+      const pdfHref = buildPdfHref(site);
 
       return `
         <div class="popup-shell">
@@ -666,7 +858,7 @@
           </div>
 
           <div class="popup-links">
-            ${hasPdf ? `<a class="popup-link" href="${escapeHtml(site.raw.pdf_url)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
+            ${pdfHref ? `<a class="popup-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
             <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
           </div>
         </div>
@@ -693,17 +885,39 @@
         layers: [cartoLayer]
       });
 
-      const baseLayers = {
-        "Cartografía": cartoLayer,
-        "Ortofoto": orthoLayer
-      };
+      L.control.layers(
+        {
+          "Cartografía": cartoLayer,
+          "Ortofoto": orthoLayer
+        },
+        {},
+        { collapsed: false }
+      ).addTo(map);
+    }
 
-      layerControl = L.control.layers(baseLayers, {}, { collapsed: false }).addTo(map);
+    function getMarkerStyle(site, isSelected = false) {
+      return {
+        radius: isSelected ? 10 : 7,
+        fillColor: getColorForCategory(site.productAssigned),
+        color: isSelected ? "#ffffff" : "rgba(255,255,255,0.72)",
+        weight: isSelected ? 3 : 1.5,
+        opacity: 1,
+        fillOpacity: isSelected ? 1 : 0.88
+      };
+    }
+
+    function updateMarkerStyles() {
+      markerById.forEach((marker, id) => {
+        const site = allSites.find(s => s.id === id);
+        if (!site) return;
+        marker.setStyle(getMarkerStyle(site, id === selectedId));
+      });
     }
 
     function renderMarkers() {
       markers.forEach(marker => map.removeLayer(marker));
       markers = [];
+      markerById = new Map();
 
       if (!filteredSites.length) {
         map.setView(INITIAL_CENTER, INITIAL_ZOOM);
@@ -713,7 +927,8 @@
       const bounds = [];
 
       filteredSites.forEach(site => {
-        const marker = L.marker([site.lat, site.lon]).addTo(map);
+        const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId))
+          .addTo(map);
 
         marker.bindPopup(buildPopupHtml(site), {
           maxWidth: 580,
@@ -725,9 +940,12 @@
           selectedId = site.id;
           renderList();
           renderDetail();
+          updateMarkerStyles();
+          renderScatterPlot();
         });
 
         markers.push(marker);
+        markerById.set(site.id, marker);
         bounds.push([site.lat, site.lon]);
       });
 
@@ -738,33 +956,160 @@
       }
     }
 
+    function renderScatterPlot() {
+      const chartCanvas = document.getElementById("scatterChart");
+      const validSites = filteredSites.filter(site =>
+        Number.isFinite(site.recycledPct) && Number.isFinite(site.gwp)
+      );
+
+      if (scatterChart) {
+        scatterChart.destroy();
+        scatterChart = null;
+      }
+
+      if (!validSites.length) {
+        chartStatusEl.textContent = "No hay registros con valores numéricos válidos en contenido reciclado y GWP-total.";
+        return;
+      }
+
+      const grouped = new Map();
+
+      validSites.forEach(site => {
+        const category = site.productAssigned;
+        if (!grouped.has(category)) grouped.set(category, []);
+
+        grouped.get(category).push({
+          x: site.recycledPct,
+          y: site.gwp,
+          siteId: site.id,
+          label: site.name,
+          productAssigned: site.productAssigned,
+          codigo: site.raw.codigo_epd || "",
+          archivo: site.raw.archivo || ""
+        });
+      });
+
+      const datasets = Array.from(grouped.entries())
+        .sort((a, b) => a[0].localeCompare(b[0], "es", { sensitivity: "base" }))
+        .map(([category, data]) => {
+          const color = getColorForCategory(category);
+          return {
+            label: category,
+            data,
+            showLine: false,
+            borderColor: color,
+            backgroundColor: color,
+            pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
+            pointHoverRadius: 9,
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2
+          };
+        });
+
+      scatterChart = new Chart(chartCanvas, {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          parsing: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#eaf1ff"
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const raw = context.raw;
+                  return [
+                    raw.label,
+                    `Producto asignado: ${raw.productAssigned}`,
+                    `Reciclaje: ${raw.x} %`,
+                    `CO₂: ${raw.y} kg CO₂e/t`,
+                    raw.codigo ? `Código EPD: ${raw.codigo}` : null
+                  ].filter(Boolean);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Contenido reciclado (%)",
+                color: "#eaf1ff"
+              },
+              ticks: { color: "#9db0d1" },
+              grid: { color: "rgba(157,176,209,0.15)" }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "GWP-total (kg CO₂e/t)",
+                color: "#eaf1ff"
+              },
+              ticks: { color: "#9db0d1" },
+              grid: { color: "rgba(157,176,209,0.15)" }
+            }
+          },
+          onClick(event, elements, chart) {
+            if (!elements.length) return;
+            const first = elements[0];
+            const raw = chart.data.datasets[first.datasetIndex].data[first.index];
+            if (raw?.siteId) {
+              selectSite(raw.siteId, true, true);
+            }
+          }
+        }
+      });
+
+      chartStatusEl.textContent = `Puntos representados: ${validSites.length} de ${filteredSites.length} EPD filtradas.`;
+    }
+
     function applyFilter() {
       const q = searchInput.value.trim().toLowerCase();
+      const selectedProduct = productFilterEl.value.trim();
 
       filteredSites = allSites.filter(site => {
+        const matchesProduct = !selectedProduct || site.productAssigned === selectedProduct;
         const haystack = Object.values(site.raw).join(" ").toLowerCase();
-        return !q || haystack.includes(q);
+        const matchesSearch = !q || haystack.includes(q);
+        return matchesProduct && matchesSearch;
       });
 
       if (!filteredSites.some(site => site.id === selectedId)) {
         selectedId = filteredSites.length ? filteredSites[0].id : null;
       }
 
+      statusEl.textContent = `Datos cargados desde datos.csv · ${filteredSites.length} / ${allSites.length} EPD visibles`;
+
       renderList();
       renderDetail();
       renderMarkers();
+      renderScatterPlot();
     }
 
-    function selectSite(id, centerMap) {
+    function selectSite(id, centerMap, openPopup) {
       selectedId = id;
       renderList();
       renderDetail();
+      updateMarkerStyles();
+      renderScatterPlot();
 
-      if (centerMap && map) {
-        const site = allSites.find(s => s.id === id);
-        if (site) {
-          map.setView([site.lat, site.lon], 7);
-        }
+      if (!map) return;
+
+      const site = allSites.find(s => s.id === id);
+      const marker = markerById.get(id);
+
+      if (site && centerMap) {
+        map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
+      }
+
+      if (marker && openPopup) {
+        marker.openPopup();
       }
     }
 
@@ -780,21 +1125,31 @@
           throw new Error("No hay registros válidos");
         }
 
+        populateProductFilter();
+
+        filteredSites = [...allSites];
+        selectedId = filteredSites.length ? filteredSites[0].id : null;
+
         statusEl.textContent = `Datos cargados desde datos.csv · ${allSites.length} EPD`;
+        renderList();
+        renderDetail();
+        renderMarkers();
+        renderScatterPlot();
+
+        setTimeout(() => map.invalidateSize(), 50);
       } catch (error) {
         statusEl.textContent = "Error al leer datos.csv: " + error.message;
+        chartStatusEl.textContent = "No se pudo construir el gráfico.";
         allSites = [];
+        filteredSites = [];
+        selectedId = null;
+        renderList();
+        renderDetail();
       }
-
-      filteredSites = [...allSites];
-      selectedId = filteredSites.length ? filteredSites[0].id : null;
-
-      renderList();
-      renderDetail();
-      renderMarkers();
     }
 
     searchInput.addEventListener("input", applyFilter);
+    productFilterEl.addEventListener("change", applyFilter);
 
     initMap();
     loadData();
