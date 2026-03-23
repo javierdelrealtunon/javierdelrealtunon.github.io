@@ -469,6 +469,7 @@
 
     const INITIAL_CENTER = [20, 0];
     const INITIAL_ZOOM = 2;
+    const PDF_BASE_PATH = "./pdffiles/";
 
     const CATEGORY_COLORS = [
       "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
@@ -641,23 +642,54 @@
       return categoryColorMap.get(key);
     }
 
-    function buildPdfHref(site) {
-      const archivo = String(site?.raw?.archivo || "").trim();
+    function getPdfSubdir(site) {
+      const explicitFolder =
+        String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
 
-      if (archivo) {
-        const normalized = archivo.replace(/\\/g, "/").replace(/^\/+/, "");
-        const encoded = normalized
-          .split("/")
-          .filter(Boolean)
-          .map(part => encodeURIComponent(part))
-          .join("/");
-        return `./pdffiles/${encoded}`;
+      if (explicitFolder) {
+        return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
       }
 
-      const pdfUrl = String(site?.raw?.pdf_url || "").trim();
-      if (pdfUrl) return pdfUrl;
+      const productAssigned = String(site?.productAssigned || "").trim();
+      const normalized = productAssigned
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 
-      return "";
+      if (normalized.includes("b500sd")) return "B500SD";
+      if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
+      if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
+
+      return slugify(productAssigned).replace(/-/g, "_");
+    }
+
+    function buildPdfHref(site) {
+      const archivoRaw = String(site?.raw?.archivo || "").trim();
+      if (!archivoRaw) {
+        const pdfUrl = String(site?.raw?.pdf_url || "").trim();
+        return pdfUrl || "";
+      }
+
+      const fileName = archivoRaw.split(/[\\/]/).pop().trim();
+      const subdir = getPdfSubdir(site);
+
+      const safeFileName = fileName
+        .split("/")
+        .filter(Boolean)
+        .map(part => encodeURIComponent(part))
+        .join("/");
+
+      const safeSubdir = String(subdir || "")
+        .split("/")
+        .filter(Boolean)
+        .map(part => encodeURIComponent(part))
+        .join("/");
+
+      if (safeSubdir) {
+        return `${PDF_BASE_PATH}${safeSubdir}/${safeFileName}`;
+      }
+
+      return `${PDF_BASE_PATH}${safeFileName}`;
     }
 
     function getListSubtitle(site) {
@@ -822,7 +854,6 @@
 
     function buildPopupHtml(site) {
       const popupKeys = [
-        "producto",
         "contenido_reciclado_pct",
         "gwp_total_kg_co2e_t"
       ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
