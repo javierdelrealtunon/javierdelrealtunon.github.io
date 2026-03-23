@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -433,6 +433,7 @@
           </select>
 
           <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
+
           <div class="legend-note">
             El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.
           </div>
@@ -627,6 +628,66 @@
       return Number.isFinite(n) ? n : NaN;
     }
 
+    function getAssignedProduct(site) {
+      const value = site?.raw?.producto_asignado;
+      return value && String(value).trim() !== "" ? String(value).trim() : "Sin asignar";
+    }
+
+    function getColorForCategory(category) {
+      const key = category || "Sin asignar";
+      if (!categoryColorMap.has(key)) {
+        categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
+      }
+      return categoryColorMap.get(key);
+    }
+
+    function buildPdfHref(site) {
+      const archivo = String(site?.raw?.archivo || "").trim();
+
+      if (archivo) {
+        const normalized = archivo.replace(/\\/g, "/").replace(/^\/+/, "");
+        const encoded = normalized
+          .split("/")
+          .filter(Boolean)
+          .map(part => encodeURIComponent(part))
+          .join("/");
+        return `./pdffiles/${encoded}`;
+      }
+
+      const pdfUrl = String(site?.raw?.pdf_url || "").trim();
+      if (pdfUrl) return pdfUrl;
+
+      return "";
+    }
+
+    function getListSubtitle(site) {
+      const candidates = [
+        "pais_produccion",
+        "ciudad_produccion",
+        "producto_asignado",
+        "producto"
+      ];
+
+      const parts = candidates
+        .map(k => site.raw[k])
+        .filter(v => v && String(v).trim() !== "");
+
+      return parts.join(" · ") || "Sin datos complementarios";
+    }
+
+    function getPopupSubtitle(site) {
+      const producto = String(site.raw.producto || "").trim();
+      return producto || "EPD geolocalizada";
+    }
+
+    function getDisplayKeys(site) {
+      return Object.keys(site.raw).filter(key => {
+        if (RESERVED_KEYS.includes(key)) return false;
+        const value = site.raw[key];
+        return value !== undefined && value !== null && String(value).trim() !== "";
+      });
+    }
+
     function parseCSV(text) {
       const cleanedText = text.replace(/^\uFEFF/, "").trim();
       const lines = cleanedText.split(/\r?\n/).filter(Boolean);
@@ -664,65 +725,6 @@
 
         return site;
       }).filter(Boolean);
-    }
-
-    function getAssignedProduct(site) {
-      const value = site?.raw?.producto_asignado;
-      return value && String(value).trim() !== "" ? String(value).trim() : "Sin asignar";
-    }
-
-    function getColorForCategory(category) {
-      const key = category || "Sin asignar";
-      if (!categoryColorMap.has(key)) {
-        categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
-      }
-      return categoryColorMap.get(key);
-    }
-
-    function buildPdfHref(site) {
-      const archivo = String(site?.raw?.archivo || "").trim();
-
-      if (archivo) {
-        const normalized = archivo.replace(/\\/g, "/").replace(/^\/+/, "");
-        const encoded = normalized
-          .split("/")
-          .filter(Boolean)
-          .map(part => encodeURIComponent(part))
-          .join("/");
-        return `./pdffiles/${encoded}`;
-      }
-
-      const pdfUrl = String(site?.raw?.pdf_url || "").trim();
-      if (pdfUrl) return pdfUrl;
-
-      return "";
-    }
-
-    function hasPdf(site) {
-      return !!buildPdfHref(site);
-    }
-
-    function getListSubtitle(site) {
-      const candidates = [
-        "pais_produccion",
-        "ciudad_produccion",
-        "producto_asignado",
-        "producto"
-      ];
-
-      const parts = candidates
-        .map(k => site.raw[k])
-        .filter(v => v && String(v).trim() !== "");
-
-      return parts.join(" · ") || "Sin datos complementarios";
-    }
-
-    function getDisplayKeys(site) {
-      return Object.keys(site.raw).filter(key => {
-        if (RESERVED_KEYS.includes(key)) return false;
-        const value = site.raw[key];
-        return value !== undefined && value !== null && String(value).trim() !== "";
-      });
     }
 
     function populateProductFilter() {
@@ -820,12 +822,7 @@
 
     function buildPopupHtml(site) {
       const popupKeys = [
-        "codigo_epd",
-        "producto_asignado",
         "producto",
-        "pais_produccion",
-        "ciudad_produccion",
-        "ruta_de_produccion",
         "contenido_reciclado_pct",
         "gwp_total_kg_co2e_t"
       ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
@@ -850,7 +847,7 @@
         <div class="popup-shell">
           <div class="popup-head">
             <div class="popup-title">${escapeHtml(site.name)}</div>
-            <div class="popup-subtitle">${escapeHtml(getListSubtitle(site))}</div>
+            <div class="popup-subtitle">${escapeHtml(getPopupSubtitle(site))}</div>
           </div>
 
           <div class="popup-grid">
@@ -1037,22 +1034,33 @@
           },
           scales: {
             x: {
+              min: 0,
+              max: 100,
               title: {
                 display: true,
                 text: "Contenido reciclado (%)",
                 color: "#eaf1ff"
               },
-              ticks: { color: "#9db0d1" },
-              grid: { color: "rgba(157,176,209,0.15)" }
+              ticks: {
+                color: "#9db0d1"
+              },
+              grid: {
+                color: "rgba(157,176,209,0.15)"
+              }
             },
             y: {
+              beginAtZero: true,
               title: {
                 display: true,
                 text: "GWP-total (kg CO₂e/t)",
                 color: "#eaf1ff"
               },
-              ticks: { color: "#9db0d1" },
-              grid: { color: "rgba(157,176,209,0.15)" }
+              ticks: {
+                color: "#9db0d1"
+              },
+              grid: {
+                color: "rgba(157,176,209,0.15)"
+              }
             }
           },
           onClick(event, elements, chart) {
