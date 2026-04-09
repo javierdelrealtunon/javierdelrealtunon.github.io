@@ -14,12 +14,25 @@
   <style>
     :root {
       --bg: #08101d;
-      --panel: #12203a;
+      --bg-2: #0d1830;
+      --panel: rgba(18, 32, 58, 0.92);
       --panel-2: #172844;
+      --panel-3: rgba(255,255,255,0.03);
       --border: #2a3c5f;
+      --border-soft: rgba(255,255,255,0.08);
       --text: #eaf1ff;
       --muted: #9db0d1;
+      --muted-2: #7f95bb;
       --accent: #66b3ff;
+      --accent-2: #9fd0ff;
+      --shadow: 0 10px 30px rgba(0,0,0,0.22);
+      --radius-xl: 22px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+      --top-row-height: 540px;
+      --left-col-width: 330px;
+      --map-col-width: 560px;
     }
 
     * { box-sizing: border-box; }
@@ -31,22 +44,25 @@
 
     body {
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #08101d 0%, #0d1830 100%);
+      background:
+        radial-gradient(circle at top left, rgba(102,179,255,0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(159,208,255,0.08), transparent 22%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
       color: var(--text);
     }
 
     .wrap {
-      width: min(98vw, 1900px);
+      width: min(98vw, 1920px);
       margin: 0 auto;
-      padding: 10px 14px 18px;
+      padding: 14px 16px 20px;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      gap: 10px;
+      margin-bottom: 12px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -58,72 +74,98 @@
     }
 
     .back {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       text-decoration: none;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.03);
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
       font-size: 0.95rem;
+      transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .back:hover {
+      border-color: var(--accent);
+      background: rgba(102,179,255,0.08);
+      transform: translateY(-1px);
     }
 
     .lang-select {
       border: 1px solid var(--border);
       background: var(--panel-2);
       color: var(--text);
-      padding: 8px 12px;
-      border-radius: 12px;
+      padding: 9px 14px;
+      border-radius: 999px;
       outline: none;
       font-size: 0.95rem;
+      min-width: 138px;
+    }
+
+    .hero {
+      margin-bottom: 16px;
+      padding: 22px 24px;
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+        rgba(18, 32, 58, 0.78);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow);
     }
 
     h1 {
       margin: 0 0 10px;
-      font-size: clamp(2.1rem, 3vw, 3.4rem);
-      line-height: 1.05;
+      font-size: clamp(2.2rem, 3vw, 3.5rem);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      margin: 0 0 14px;
+      margin: 0;
       color: var(--muted);
-      font-size: 0.98rem;
-      line-height: 1.55;
-      max-width: 1000px;
+      font-size: 1rem;
+      line-height: 1.6;
+      max-width: 1100px;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-      gap: 14px;
+      grid-template-columns: var(--left-col-width) minmax(0, 1fr);
+      gap: 16px;
       align-items: start;
     }
 
     .left-panel {
       display: grid;
-      gap: 14px;
+      gap: 16px;
       align-content: start;
     }
 
     .panel {
-      background: rgba(18, 32, 58, 0.94);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 16px;
       min-width: 0;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
     }
 
     .panel h2 {
       margin: 0 0 12px;
       font-size: 1rem;
       color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
     .status {
       margin-bottom: 12px;
       font-size: 0.92rem;
       color: var(--muted);
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .search,
@@ -133,64 +175,88 @@
       border: 1px solid var(--border);
       background: var(--panel-2);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
+      padding: 11px 13px;
+      border-radius: 14px;
       outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search:focus,
+    .filter-select:focus,
+    .lang-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(102,179,255,0.14);
     }
 
     .filter-label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
+      font-weight: 600;
     }
 
     .legend-note {
       margin: 0 0 12px;
       color: var(--muted);
       font-size: 0.84rem;
-      line-height: 1.45;
+      line-height: 1.5;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
     }
 
     .site-list {
       display: grid;
-      gap: 8px;
-      max-height: calc(100vh - 370px);
+      gap: 10px;
+      max-height: calc(100vh - 390px);
       overflow: auto;
       padding-right: 4px;
+    }
+
+    .site-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .site-list::-webkit-scrollbar-thumb {
+      background: rgba(157,176,209,0.3);
+      border-radius: 999px;
     }
 
     .site-btn {
       width: 100%;
       text-align: left;
       border: 1px solid var(--border);
-      background: var(--panel-2);
+      background: linear-gradient(180deg, rgba(23,40,68,1) 0%, rgba(19,34,59,1) 100%);
       color: var(--text);
-      padding: 12px;
-      border-radius: 14px;
+      padding: 12px 13px;
+      border-radius: 16px;
       cursor: pointer;
-      transition: border-color 0.2s ease, transform 0.15s ease;
+      transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
     }
 
     .site-btn:hover,
     .site-btn.active {
       border-color: var(--accent);
       transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
     }
 
     .site-btn strong {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 4px;
-      font-size: 1rem;
+      margin-bottom: 5px;
+      font-size: 0.98rem;
+      font-weight: 700;
     }
 
     .site-btn span {
       display: block;
       color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.4;
+      font-size: 0.87rem;
+      line-height: 1.45;
     }
 
     .dot {
@@ -199,7 +265,8 @@
       border-radius: 999px;
       display: inline-block;
       flex: 0 0 auto;
-      border: 1px solid rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.55);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.06);
     }
 
     .empty {
@@ -209,14 +276,14 @@
 
     .main-panel {
       display: grid;
-      gap: 14px;
+      gap: 16px;
       min-width: 0;
     }
 
     .top-row {
       display: grid;
-      grid-template-columns: 520px minmax(0, 1fr);
-      gap: 14px;
+      grid-template-columns: var(--map-col-width) minmax(0, 1fr);
+      gap: 16px;
       align-items: stretch;
     }
 
@@ -225,50 +292,66 @@
       min-width: 0;
     }
 
+    .map-shell {
+      height: var(--top-row-height);
+      display: flex;
+      flex-direction: column;
+    }
+
     #map {
       width: 100%;
-      height: 520px;
-      border-radius: 18px;
+      height: 100%;
+      border-radius: var(--radius-xl);
       overflow: hidden;
       border: 1px solid var(--border);
       background: #0b1220;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .boxplot-panel {
+      display: flex;
+      flex-direction: column;
     }
 
     .boxplot-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 14px;
       min-width: 0;
-      height: 520px;
+      height: var(--top-row-height);
     }
 
     .mini-plot {
-      background: rgba(23, 40, 68, 0.58);
+      background: linear-gradient(180deg, rgba(23,40,68,0.82), rgba(17,30,52,0.82));
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 10px;
+      border-radius: var(--radius-xl);
+      padding: 12px 12px 10px;
       min-width: 0;
+      min-height: 0;
       display: flex;
       flex-direction: column;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
     }
 
     .mini-plot h3 {
       margin: 0 0 4px;
-      font-size: 0.96rem;
+      font-size: 0.98rem;
       color: var(--text);
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
     .mini-plot .mini-subtitle {
-      margin: 0 0 8px;
-      color: var(--muted);
+      margin: 0 0 10px;
+      color: var(--muted-2);
       font-size: 0.8rem;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .boxplot-wrap {
       position: relative;
       width: 100%;
-      height: 100%;
+      flex: 1;
       min-height: 0;
     }
 
@@ -283,6 +366,7 @@
       width: 100%;
       height: 430px;
       min-height: 320px;
+      padding: 4px 2px 0;
     }
 
     #scatterChart {
@@ -292,15 +376,15 @@
 
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
       margin-top: 14px;
     }
 
     .metric {
-      background: var(--panel-2);
+      background: linear-gradient(180deg, rgba(23,40,68,0.95), rgba(18,32,58,0.95));
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 12px;
     }
 
@@ -324,7 +408,10 @@
     }
 
     .leaflet-control-layers {
-      border-radius: 12px;
+      border-radius: 14px !important;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      border: 1px solid rgba(0,0,0,0.08);
     }
 
     .leaflet-popup-content {
@@ -332,7 +419,7 @@
     }
 
     .leaflet-popup-content-wrapper {
-      border-radius: 16px;
+      border-radius: 18px;
     }
 
     .popup-shell {
@@ -365,7 +452,7 @@
     .popup-item {
       background: #f7f9fc;
       border: 1px solid #dbe4f0;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 8px 10px;
     }
 
@@ -395,7 +482,7 @@
     .popup-link,
     .detail-link {
       display: inline-block;
-      padding: 8px 12px;
+      padding: 9px 13px;
       border-radius: 999px;
       border: 1px solid #66b3ff;
       background: #dcedff;
@@ -403,11 +490,13 @@
       text-decoration: none;
       font-size: 0.9rem;
       font-weight: 700;
+      transition: transform 0.15s ease, background 0.2s ease;
     }
 
     .popup-link:hover,
     .detail-link:hover {
       background: #cfe8ff;
+      transform: translateY(-1px);
     }
 
     .detail-actions {
@@ -419,7 +508,7 @@
 
     @media (min-width: 1700px) {
       .layout {
-        grid-template-columns: 340px minmax(0, 1fr);
+        grid-template-columns: 350px minmax(0, 1fr);
       }
 
       .popup-shell {
@@ -427,20 +516,20 @@
       }
     }
 
-    @media (max-width: 1380px) {
-      .top-row {
-        grid-template-columns: 460px minmax(0, 1fr);
-      }
-
-      #map,
-      .boxplot-grid {
-        height: 460px;
+    @media (max-width: 1480px) {
+      :root {
+        --map-col-width: 500px;
+        --top-row-height: 500px;
       }
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1200px) {
+      :root {
+        --left-col-width: 1fr;
+      }
+
       .wrap {
-        width: min(99vw, 1400px);
+        width: min(99vw, 1440px);
         padding: 10px 10px 16px;
       }
 
@@ -457,7 +546,6 @@
       }
 
       #map {
-        height: 64vh;
         min-height: 500px;
       }
 
@@ -471,7 +559,7 @@
       }
 
       .chart-wrap {
-        height: 360px;
+        height: 380px;
       }
 
       .popup-shell {
@@ -479,10 +567,14 @@
       }
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 760px) {
       .wrap {
         width: 100vw;
         padding: 8px;
+      }
+
+      .hero {
+        padding: 18px 16px;
       }
 
       h1 {
@@ -490,8 +582,7 @@
       }
 
       #map {
-        height: 58vh;
-        min-height: 400px;
+        min-height: 420px;
       }
 
       .boxplot-grid {
@@ -525,7 +616,7 @@
       </div>
     </div>
 
-    <header>
+    <header class="hero">
       <h1 id="pageTitle">EPD geolocalizadas</h1>
       <div id="pageSubtitle" class="subtitle">
         Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.
@@ -556,12 +647,14 @@
       <section class="main-panel">
         <section class="top-row">
           <div class="map-panel">
-            <div id="map"></div>
+            <div class="map-shell">
+              <div id="map"></div>
+            </div>
           </div>
 
           <section class="panel boxplot-panel">
             <h2 id="distributionTitle">Distribución por tipo de acero</h2>
-            <div id="distributionStatus" class="status" style="margin-bottom:10px;">
+            <div id="distributionStatus" class="status" style="margin-bottom:12px;">
               El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.
             </div>
 
@@ -1129,11 +1222,11 @@
         : "";
 
       detailEl.innerHTML = `
-        <h3 style="margin:0 0 6px; font-size:1.3rem; display:flex; align-items:center; gap:10px;">
+        <h3 style="margin:0 0 8px; font-size:1.35rem; display:flex; align-items:center; gap:10px;">
           <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))}; width:14px; height:14px;"></span>
           ${escapeHtml(site.name)}
         </h3>
-        <div style="color:#9db0d1; line-height:1.5;">
+        <div style="color:#9db0d1; line-height:1.55;">
           ${escapeHtml(t("latitude"))} ${site.lat.toFixed(4)}, ${escapeHtml(t("longitude"))} ${site.lon.toFixed(4)} · ${escapeHtml(site.productAssigned)}
         </div>
         ${metricsHtml}
@@ -1342,6 +1435,11 @@
               }
             },
             tooltip: {
+              backgroundColor: "rgba(10,16,29,0.95)",
+              borderColor: "rgba(102,179,255,0.35)",
+              borderWidth: 1,
+              titleColor: "#ffffff",
+              bodyColor: "#eaf1ff",
               callbacks: {
                 label(context) {
                   const raw = context.raw;
@@ -1405,7 +1503,8 @@
       return {
         paper_bgcolor: "rgba(0,0,0,0)",
         plot_bgcolor: "rgba(0,0,0,0)",
-        margin: { l: 60, r: 15, t: 10, b: 90 },
+        margin: { l: 56, r: 12, t: 8, b: 72 },
+        autosize: true,
         showlegend: false,
         font: {
           color: "#eaf1ff",
@@ -1413,10 +1512,10 @@
         },
         xaxis: {
           title: "",
-          tickangle: -28,
+          tickangle: -24,
           automargin: true,
           color: "#9db0d1",
-          gridcolor: "rgba(157,176,209,0.10)",
+          gridcolor: "rgba(157,176,209,0.08)",
           zeroline: false
         },
         yaxis: {
@@ -1444,18 +1543,20 @@
 
       const traces = categories.map(category => {
         const sitesInCategory = validSites.filter(site => site.productAssigned === category);
+        const color = getColorForCategory(category);
+
         return {
           type: "box",
           name: category,
           y: sitesInCategory.map(site => accessor(site)),
           boxpoints: false,
           line: {
-            color: getColorForCategory(category),
-            width: 1.6
+            color,
+            width: 1.8
           },
-          fillcolor: "rgba(102,179,255,0.16)",
+          fillcolor: "rgba(102,179,255,0.14)",
           marker: {
-            color: getColorForCategory(category)
+            color
           },
           hovertemplate:
             `<b>${escapeHtml(category)}</b><br>` +
