@@ -1,39 +1,34 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EPD geolocalizadas</title>
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
   />
-
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
   <style>
     :root {
-      --bg: #f7f9fc;
-      --card: #ffffff;
-      --border: #d9e1ea;
-      --text: #1f2a37;
-      --muted: #5b6875;
-      --accent: #1d4ed8;
-      --shadow: 0 2px 10px rgba(0,0,0,0.06);
-      --radius: 14px;
-      --map-height: 560px; /* mantenemos altura generosa */
+      --bg: #f2f5fa;
+      --panel: #ffffff;
+      --border: #cfd8e3;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --blue: #2563eb;
+      --shadow: 0 1px 4px rgba(0,0,0,0.05);
+      --radius: 8px;
+      --map-height: 430px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -42,149 +37,137 @@
       color: var(--text);
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
     .page {
-      max-width: 1700px;
+      max-width: 1660px;
       margin: 0 auto;
-      padding: 18px;
+      padding: 14px 18px 20px;
     }
 
     .back-link {
       display: inline-block;
-      margin-bottom: 10px;
-      font-size: 14px;
+      font-size: 12px;
+      color: #3468c9;
+      text-decoration: none;
+      margin-bottom: 6px;
     }
 
     h1 {
-      margin: 4px 0 8px 0;
-      font-size: 30px;
-      line-height: 1.1;
-    }
-
-    .intro {
-      margin: 0 0 16px 0;
-      color: var(--muted);
-      max-width: 1200px;
-    }
-
-    .controls-card,
-    .panel-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .controls-card {
-      padding: 14px 16px;
-      margin-bottom: 16px;
-    }
-
-    .controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: end;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 240px;
-    }
-
-    label {
-      font-size: 14px;
+      margin: 0 0 6px;
+      font-size: 20px;
       font-weight: 700;
     }
 
-    select {
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 14px;
-      background: white;
-    }
-
-    .legend-note {
-      margin-top: 10px;
-      font-size: 13px;
+    .intro {
+      margin: 0 0 10px;
+      font-size: 11px;
       color: var(--muted);
     }
 
-    .top-layout {
-      display: grid;
-      grid-template-columns: 560px 1fr;
-      gap: 16px;
-      align-items: stretch;
-      margin-bottom: 16px;
-    }
-
-    .map-card,
-    .boxplots-card {
-      padding: 12px;
-      background: var(--card);
+    .panel {
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
 
-    .section-title {
-      margin: 0 0 8px 0;
-      font-size: 18px;
+    .controls {
+      padding: 10px 12px;
+      margin-bottom: 10px;
     }
 
-    .section-subtitle {
-      margin: 0 0 10px 0;
-      font-size: 13px;
+    .control-group {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 240px;
+    }
+
+    .control-group label {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .control-group select {
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      padding: 0 8px;
+      background: #fff;
+    }
+
+    .legend-note {
+      margin-top: 6px;
+      font-size: 10px;
       color: var(--muted);
     }
 
-    /* mapa cuadrado manteniendo la altura */
+    .top-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: stretch;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .section {
+      padding: 8px;
+    }
+
+    .section-title {
+      margin: 0 0 3px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-subtitle {
+      margin: 0 0 8px;
+      font-size: 9px;
+      color: var(--muted);
+    }
+
     #map {
       width: 100%;
       height: var(--map-height);
       aspect-ratio: 1 / 1;
-      border-radius: 12px;
-      overflow: hidden;
       border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
-    .boxplots-grid {
+    .boxplots-wrap {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      height: calc(var(--map-height) + 2px);
+      gap: 8px;
+      height: var(--map-height);
     }
 
-    .plot-panel {
+    .plot-card {
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px;
+      border-radius: 6px;
+      padding: 6px;
+      min-width: 0;
       background: #fff;
-      min-height: 0;
       display: flex;
       flex-direction: column;
     }
 
     .plot-title {
-      margin: 0 0 6px 0;
-      font-size: 15px;
+      margin: 0 0 2px;
+      font-size: 10px;
       font-weight: 700;
     }
 
     .plot-subtitle {
-      margin: 0 0 8px 0;
-      font-size: 12px;
+      margin: 0 0 4px;
+      font-size: 8px;
       color: var(--muted);
     }
 
@@ -193,127 +176,85 @@
       min-height: 0;
     }
 
-    .bottom-layout {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 16px;
-      align-items: start;
+    .list-scroll {
+      height: 330px;
+      overflow-y: auto;
+      padding-right: 2px;
     }
 
-    .list-card,
-    .scatter-card {
-      padding: 14px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .epd-list {
-      max-height: 720px;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .list-meta {
+      font-size: 10px;
+      margin-bottom: 6px;
+      color: var(--muted);
     }
 
     .epd-item {
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 8px;
       background: #fff;
       cursor: pointer;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
-    }
-
-    .epd-item:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .epd-item.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(29,78,216,0.12);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.15);
       background: #f8fbff;
     }
 
     .epd-item-title {
-      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
       font-weight: 700;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    .epd-item-meta {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex: 0 0 auto;
     }
 
-    .epd-color-chip {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      margin-right: 6px;
-      vertical-align: middle;
+    .epd-item-body {
+      font-size: 9px;
+      color: #334155;
+      line-height: 1.3;
     }
 
     #scatterPlot {
       width: 100%;
-      height: 720px;
+      height: 330px;
     }
 
-    .status {
-      font-size: 14px;
+    .empty-note {
+      font-size: 10px;
       color: var(--muted);
+      padding: 8px 0;
     }
 
-    @media (max-width: 1350px) {
-      .top-layout {
-        grid-template-columns: 480px 1fr;
-      }
-    }
-
-    @media (max-width: 1150px) {
-      .top-layout {
+    @media (max-width: 1100px) {
+      .top-grid,
+      .bottom-grid {
         grid-template-columns: 1fr;
       }
 
-      .boxplots-grid {
+      .boxplots-wrap {
         height: auto;
         grid-template-columns: 1fr 1fr;
       }
 
-      .plot-panel {
-        min-height: 420px;
+      .plot-card {
+        min-height: 300px;
       }
     }
 
-    @media (max-width: 980px) {
-      .bottom-layout {
+    @media (max-width: 760px) {
+      .boxplots-wrap {
         grid-template-columns: 1fr;
-      }
-
-      .boxplots-grid {
-        grid-template-columns: 1fr;
-      }
-
-      #scatterPlot {
-        height: 560px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .page {
-        padding: 12px;
-      }
-
-      h1 {
-        font-size: 25px;
-      }
-
-      #map {
-        height: 420px;
       }
     }
   </style>
@@ -321,30 +262,26 @@
 <body>
   <div class="page">
     <a class="back-link" href="../">← Volver al índice</a>
-
     <h1>EPD geolocalizadas</h1>
     <p class="intro">
-      Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo
-      <strong>datos.csv</strong>, con filtro por producto asignado, gráfico de reciclaje vs emisiones
-      y boxplots comparativos por tipo de acero.
+      Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>,
+      con filtro por producto asignado, gráfico de reciclaje vs emisiones y boxplots comparativos por tipo de acero.
     </p>
 
-    <div class="controls-card">
-      <div class="controls-row">
-        <div class="control-group">
-          <label for="productoFilter">Producto asignado</label>
-          <select id="productoFilter">
-            <option value="__ALL__">Todos</option>
-          </select>
-        </div>
+    <div class="panel controls">
+      <div class="control-group">
+        <label for="productoFilter">Producto asignado</label>
+        <select id="productoFilter">
+          <option value="__ALL__">Todos</option>
+        </select>
       </div>
       <div class="legend-note">
         El color representa el producto asignado y se mantiene igual en mapa, lista y gráficos.
       </div>
     </div>
 
-    <div class="top-layout">
-      <div class="map-card">
+    <div class="top-grid">
+      <div class="panel section">
         <h2 class="section-title">Mapa</h2>
         <p class="section-subtitle">
           Selecciona una EPD en el mapa para ver su posición dentro del rango de su tipo de acero.
@@ -352,20 +289,20 @@
         <div id="map"></div>
       </div>
 
-      <div class="boxplots-card">
+      <div class="panel section">
         <h2 class="section-title">Distribución por tipo de acero</h2>
         <p class="section-subtitle">
           El punto negro resalta la EPD seleccionada dentro de su categoría.
         </p>
 
-        <div class="boxplots-grid">
-          <div class="plot-panel">
+        <div class="boxplots-wrap">
+          <div class="plot-card">
             <div class="plot-title">Emisiones</div>
             <div class="plot-subtitle">GWP-total por tipo de acero</div>
             <div id="boxplotEmisiones" class="plot-box"></div>
           </div>
 
-          <div class="plot-panel">
+          <div class="plot-card">
             <div class="plot-title">Contenido reciclado</div>
             <div class="plot-subtitle">Porcentaje por tipo de acero</div>
             <div id="boxplotReciclado" class="plot-box"></div>
@@ -374,14 +311,14 @@
       </div>
     </div>
 
-    <div class="bottom-layout">
-      <div class="list-card">
+    <div class="bottom-grid">
+      <div class="panel section">
         <h2 class="section-title">EPD disponibles</h2>
-        <div id="listStatus" class="status">Cargando datos...</div>
-        <div id="epdList" class="epd-list"></div>
+        <div id="listCount" class="list-meta">Cargando datos...</div>
+        <div id="epdList" class="list-scroll"></div>
       </div>
 
-      <div class="scatter-card">
+      <div class="panel section">
         <h2 class="section-title">Reciclaje vs emisiones</h2>
         <p class="section-subtitle">
           Selecciona una EPD de la lista, del mapa o del gráfico.
@@ -392,45 +329,52 @@
   </div>
 
   <script>
-    /******************************************************************
-     * CONFIGURACIÓN Y ESTADO
-     ******************************************************************/
-    const CSV_URL = "datos.csv";
-    const DEFAULT_MAP_CENTER = [20, 0];
-    const DEFAULT_MAP_ZOOM = 2;
+    const CSV_FILE = "datos.csv";
+    const DEFAULT_CENTER = [20, 0];
+    const DEFAULT_ZOOM = 2;
 
-    let rawData = [];
+    let allData = [];
     let filteredData = [];
     let selectedId = null;
 
     let map;
-    let mapLayerGroup;
-    let markerById = new Map();
-    let plotlyReady = false;
+    let markersLayer;
+    let markerMap = new Map();
+    let colorMap = new Map();
 
-    const productoFilterEl = document.getElementById("productoFilter");
-    const epdListEl = document.getElementById("epdList");
-    const listStatusEl = document.getElementById("listStatus");
+    const productoFilter = document.getElementById("productoFilter");
+    const epdList = document.getElementById("epdList");
+    const listCount = document.getElementById("listCount");
 
-    /******************************************************************
-     * UTILIDADES GENERALES
-     ******************************************************************/
-    function normKey(str) {
+    function normalizeText(str) {
       return String(str || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, " ")
         .trim()
         .toLowerCase();
     }
 
-    function firstExisting(obj, aliases) {
+    function getValueByAliases(obj, aliases) {
       const entries = Object.entries(obj || {});
-      const aliasNorm = aliases.map(normKey);
+      for (const alias of aliases) {
+        const aliasNorm = normalizeText(alias);
+        for (const [key, value] of entries) {
+          if (normalizeText(key) === aliasNorm) return value;
+        }
+      }
+      return "";
+    }
 
-      for (const [key, value] of entries) {
-        if (aliasNorm.includes(normKey(key))) {
-          return value;
+    function getFirstValue(obj, aliases) {
+      const exact = getValueByAliases(obj, aliases);
+      if (exact !== "") return exact;
+
+      const entries = Object.entries(obj || {});
+      for (const alias of aliases) {
+        const a = normalizeText(alias);
+        for (const [key, value] of entries) {
+          const k = normalizeText(key);
+          if (k.includes(a) || a.includes(k)) return value;
         }
       }
       return "";
@@ -441,28 +385,37 @@
       let s = String(value).trim();
       if (!s) return null;
 
-      s = s.replace(/\u00A0/g, " ");
-      s = s.replace(/[%]/g, "");
+      s = s.replace(/\u00A0/g, "");
+      s = s.replace(/%/g, "");
+      s = s.replace(/CO₂/g, "CO2");
       s = s.replace(/[^\d,.\-]/g, "");
 
-      const commaCount = (s.match(/,/g) || []).length;
-      const dotCount = (s.match(/\./g) || []).length;
+      const hasComma = s.includes(",");
+      const hasDot = s.includes(".");
 
-      if (commaCount > 0 && dotCount > 0) {
+      if (hasComma && hasDot) {
         if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
           s = s.replace(/\./g, "").replace(",", ".");
         } else {
           s = s.replace(/,/g, "");
         }
-      } else if (commaCount > 0 && dotCount === 0) {
+      } else if (hasComma && !hasDot) {
         s = s.replace(",", ".");
       }
 
-      const num = Number(s);
-      return Number.isFinite(num) ? num : null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
     }
 
-    function escapeHtml(str) {
+    function formatNum(v, dec = 2) {
+      if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+      return new Intl.NumberFormat("es-ES", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: dec
+      }).format(v);
+    }
+
+    function esc(str) {
       return String(str ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -470,163 +423,95 @@
         .replace(/"/g, "&quot;");
     }
 
-    function truncate(str, max = 70) {
-      const s = String(str || "");
-      return s.length <= max ? s : s.slice(0, max - 1) + "…";
-    }
+    function inferSteelGroup(row) {
+      const prodAsignado = String(getFirstValue(row, ["Producto asignado"]) || "").trim();
+      const producto = String(getFirstValue(row, ["Producto"]) || "").trim();
+      const ruta = String(getFirstValue(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim();
 
-    function formatNumber(value, decimals = 2) {
-      if (value === null || value === undefined || !Number.isFinite(value)) return "—";
-      return new Intl.NumberFormat("es-ES", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: decimals
-      }).format(value);
-    }
-
-    function pickSteelGroup(row) {
-      const candidates = [
-        firstExisting(row, ["Producto asignado"]),
-        firstExisting(row, ["Producto"]),
-        firstExisting(row, ["Ruta de producción"]),
-        firstExisting(row, ["Tipo de acero"]),
-        firstExisting(row, ["Steel type"])
-      ].filter(Boolean);
-
-      for (const c of candidates) {
-        const v = normKey(c);
-
-        if (v.includes("stainless") || v.includes("inox")) return "Acero inoxidable";
-        if (v.includes("weathering") || v.includes("corten")) return "Acero patinable";
-        if (v.includes("offshore")) return "Acero offshore";
-        if (v.includes("plate")) return "Chapa de acero";
-        if (v.includes("section")) return "Perfiles de acero";
-        if (v.includes("rebar") || v.includes("corrug")) return "Acero corrugado";
-        if (v.includes("hot rolled") || v.includes("laminado")) return "Acero laminado";
-        if (v.includes("structural")) return "Acero estructural";
-        if (v.includes("coil")) return "Bobina de acero";
-      }
-
-      return firstExisting(row, ["Producto asignado"]) || "Sin clasificar";
+      if (prodAsignado) return prodAsignado;
+      if (producto) return producto;
+      if (ruta) return ruta;
+      return "Sin clasificar";
     }
 
     function inferPdfUrl(row) {
-      const direct = firstExisting(row, [
-        "PDF",
-        "Link PDF",
-        "URL",
-        "url",
-        "Enlace",
-        "Archivo",
-        "Documento"
-      ]);
-
-      if (direct && /^https?:\/\//i.test(String(direct).trim())) {
-        return String(direct).trim();
-      }
+      const url = getFirstValue(row, ["PDF", "URL", "Enlace", "Archivo", "Link PDF"]);
+      if (url && /^https?:\/\//i.test(String(url).trim())) return String(url).trim();
       return "";
     }
 
-    function createStableId(row, index) {
-      const code = firstExisting(row, ["Código EPD", "Codigo EPD", "EPD code"]);
-      const company = firstExisting(row, ["Titular", "Empresa", "Company"]);
-      const product = firstExisting(row, ["Producto asignado", "Producto"]);
-      const city = firstExisting(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]);
-      return [code, company, product, city, index].map(v => String(v || "")).join(" | ");
+    function buildId(row, i) {
+      return [
+        getFirstValue(row, ["Código EPD", "Codigo EPD", "EPD code"]),
+        getFirstValue(row, ["Producto asignado"]),
+        getFirstValue(row, ["Producto"]),
+        getFirstValue(row, ["Titular", "Empresa"]),
+        i
+      ].join(" | ");
     }
 
-    /******************************************************************
-     * COLOR POR CATEGORÍA
-     ******************************************************************/
+    function normalizeRow(row, i) {
+      const productoAsignado = String(getFirstValue(row, ["Producto asignado"]) || "").trim() || "Sin clasificar";
+
+      return {
+        id: buildId(row, i),
+        raw: row,
+        codigo: String(getFirstValue(row, ["Código EPD", "Codigo EPD", "EPD code"]) || "").trim(),
+        producto: String(getFirstValue(row, ["Producto"]) || "").trim(),
+        productoAsignado,
+        titular: String(getFirstValue(row, ["Titular", "Empresa", "Company"]) || "").trim(),
+        pais: String(getFirstValue(row, ["País Producción", "Pais Produccion", "País", "Pais"]) || "").trim(),
+        ciudad: String(getFirstValue(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]) || "").trim(),
+        ruta: String(getFirstValue(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim(),
+        lat: parseNumber(getFirstValue(row, ["Latitud", "Latitude", "lat"])),
+        lon: parseNumber(getFirstValue(row, ["Longitud", "Longitude", "lon", "lng"])),
+        gwp: parseNumber(getFirstValue(row, [
+          "GWP-total (kg CO2e/t steel)",
+          "GWP-total (kg CO₂e/t steel)",
+          "GWP-total",
+          "GWP total",
+          "GWP"
+        ])),
+        reciclado: parseNumber(getFirstValue(row, [
+          "Contenido reciclado %",
+          "Contenido reciclado",
+          "% reciclado",
+          "Recycled content %",
+          "Recycled content"
+        ])),
+        steelGroup: inferSteelGroup(row),
+        pdfUrl: inferPdfUrl(row)
+      };
+    }
+
     const palette = [
       "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
       "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
       "#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2"
     ];
 
-    function buildColorMap(rows) {
-      const categories = [...new Set(rows.map(r => r.productoAsignado || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
-      const map = new Map();
-      categories.forEach((cat, i) => map.set(cat, palette[i % palette.length]));
-      return map;
+    function buildColorMap(data) {
+      const cats = [...new Set(data.map(d => d.productoAsignado || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
+      const m = new Map();
+      cats.forEach((c, i) => m.set(c, palette[i % palette.length]));
+      return m;
     }
 
-    let colorMap = new Map();
-
-    /******************************************************************
-     * NORMALIZACIÓN DEL CSV
-     ******************************************************************/
-    function normalizeRow(row, index) {
-      const lat = parseNumber(firstExisting(row, ["Latitud", "Latitude", "lat"]));
-      const lon = parseNumber(firstExisting(row, ["Longitud", "Longitude", "lon", "lng"]));
-      const productoAsignado = String(firstExisting(row, ["Producto asignado"]) || "").trim() || "Sin clasificar";
-
-      const gwp = parseNumber(firstExisting(row, [
-        "GWP-total (kg CO2e/t steel)",
-        "GWP-total (kg CO₂e/t steel)",
-        "GWP-total",
-        "GWP total",
-        "GWP",
-        "Emisiones",
-        "kg CO2e/t steel",
-        "kg CO₂e/t steel"
-      ]));
-
-      const reciclado = parseNumber(firstExisting(row, [
-        "Contenido reciclado %",
-        "Contenido reciclado",
-        "% reciclado",
-        "Recycled content %",
-        "Recycled content"
-      ]));
-
-      const codigo = String(firstExisting(row, ["Código EPD", "Codigo EPD", "EPD code"]) || "").trim();
-      const producto = String(firstExisting(row, ["Producto"]) || "").trim();
-      const titular = String(firstExisting(row, ["Titular", "Empresa", "Company"]) || "").trim();
-      const pais = String(firstExisting(row, ["País Producción", "Pais Produccion", "País", "Pais"]) || "").trim();
-      const ciudad = String(firstExisting(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]) || "").trim();
-      const ruta = String(firstExisting(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim();
-      const pdfUrl = inferPdfUrl(row);
-
-      const steelGroup = pickSteelGroup(row);
-      const id = createStableId(row, index);
-
-      return {
-        id,
-        raw: row,
-        lat,
-        lon,
-        productoAsignado,
-        steelGroup,
-        gwp,
-        reciclado,
-        codigo,
-        producto,
-        titular,
-        pais,
-        ciudad,
-        ruta,
-        pdfUrl
-      };
-    }
-
-    /******************************************************************
-     * MAPA
-     ******************************************************************/
     function initMap() {
       map = L.map("map", {
         worldCopyJump: true
-      }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+      }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      mapLayerGroup = L.layerGroup().addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
     }
 
-    function markerHtml(color, isSelected = false) {
-      const size = isSelected ? 18 : 14;
-      const border = isSelected ? 4 : 2;
+    function markerHTML(color, selected = false) {
+      const size = selected ? 12 : 9;
+      const border = selected ? 2.5 : 1.5;
       return `
         <div style="
           width:${size}px;
@@ -634,124 +519,105 @@
           border-radius:50%;
           background:${color};
           border:${border}px solid white;
-          box-shadow:0 0 0 ${isSelected ? 2 : 1}px rgba(0,0,0,0.25);
+          box-shadow:0 0 0 1px rgba(0,0,0,0.18);
         "></div>
       `;
     }
 
-    function buildPopupHtml(d) {
+    function popupHTML(d) {
       return `
-        <div style="min-width:220px; line-height:1.45;">
-          <div style="font-weight:700; margin-bottom:6px;">
-            ${escapeHtml(d.codigo || d.productoAsignado || "EPD")}
-          </div>
-          <div><strong>Producto asignado:</strong> ${escapeHtml(d.productoAsignado || "—")}</div>
-          <div><strong>Producto:</strong> ${escapeHtml(d.producto || "—")}</div>
-          <div><strong>Empresa:</strong> ${escapeHtml(d.titular || "—")}</div>
-          <div><strong>Ubicación:</strong> ${escapeHtml([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
-          <div><strong>Ruta:</strong> ${escapeHtml(d.ruta || "—")}</div>
-          <div><strong>GWP-total:</strong> ${formatNumber(d.gwp, 2)}</div>
-          <div><strong>Contenido reciclado:</strong> ${formatNumber(d.reciclado, 2)}%</div>
-          ${d.pdfUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(d.pdfUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a></div>` : ""}
+        <div style="font-size:12px; line-height:1.45; min-width:210px;">
+          <div style="font-weight:700; margin-bottom:5px;">${esc(d.codigo || d.productoAsignado || "EPD")}</div>
+          <div><strong>Tipo:</strong> ${esc(d.productoAsignado || "—")}</div>
+          <div><strong>Ubicación:</strong> ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
+          <div><strong>GWP-total:</strong> ${formatNum(d.gwp)}</div>
+          <div><strong>Contenido reciclado:</strong> ${formatNum(d.reciclado)}%</div>
+          ${d.pdfUrl ? `<div style="margin-top:5px;"><a href="${esc(d.pdfUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a></div>` : ""}
         </div>
       `;
     }
 
-    function renderMap(rows) {
-      markerById.clear();
-      mapLayerGroup.clearLayers();
+    function renderMap(data) {
+      markersLayer.clearLayers();
+      markerMap.clear();
 
       const bounds = [];
 
-      rows.forEach(d => {
+      data.forEach(d => {
         if (!Number.isFinite(d.lat) || !Number.isFinite(d.lon)) return;
 
         const color = colorMap.get(d.productoAsignado) || "#1f77b4";
-
         const icon = L.divIcon({
-          html: markerHtml(color, d.id === selectedId),
+          html: markerHTML(color, d.id === selectedId),
           className: "",
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-          popupAnchor: [0, -10]
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+          popupAnchor: [0, -6]
         });
 
-        const marker = L.marker([d.lat, d.lon], { icon });
-        marker.bindPopup(buildPopupHtml(d));
+        const marker = L.marker([d.lat, d.lon], { icon })
+          .bindPopup(popupHTML(d))
+          .on("click", () => selectItem(d.id, "map"))
+          .addTo(markersLayer);
 
-        marker.on("click", () => {
-          selectItem(d.id, { source: "map" });
-        });
-
-        marker.addTo(mapLayerGroup);
-        markerById.set(d.id, marker);
+        markerMap.set(d.id, marker);
         bounds.push([d.lat, d.lon]);
       });
 
-      if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [30, 30] });
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [20, 20] });
       } else {
-        map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
       }
     }
 
     function refreshMapSelection() {
-      markerById.forEach((marker, id) => {
+      markerMap.forEach((marker, id) => {
         const d = filteredData.find(x => x.id === id);
         if (!d) return;
-
         const color = colorMap.get(d.productoAsignado) || "#1f77b4";
-        const icon = L.divIcon({
-          html: markerHtml(color, id === selectedId),
+        marker.setIcon(L.divIcon({
+          html: markerHTML(color, id === selectedId),
           className: "",
-          iconSize: [22, 22],
-          iconAnchor: [11, 11],
-          popupAnchor: [0, -10]
-        });
-        marker.setIcon(icon);
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+          popupAnchor: [0, -6]
+        }));
       });
     }
 
-    /******************************************************************
-     * LISTA
-     ******************************************************************/
-    function renderList(rows) {
-      epdListEl.innerHTML = "";
+    function renderList(data) {
+      epdList.innerHTML = "";
+      listCount.textContent = `${data.length} EPD mostradas.`;
 
-      if (!rows.length) {
-        listStatusEl.textContent = "No hay EPD que cumplan el filtro.";
+      if (!data.length) {
+        epdList.innerHTML = `<div class="empty-note">No hay datos para este filtro.</div>`;
         return;
       }
 
-      listStatusEl.textContent = `${rows.length} EPD mostradas.`;
-
-      rows.forEach(d => {
-        const item = document.createElement("div");
-        item.className = "epd-item" + (d.id === selectedId ? " selected" : "");
-        item.dataset.id = d.id;
+      data.forEach(d => {
+        const el = document.createElement("div");
+        el.className = "epd-item" + (d.id === selectedId ? " selected" : "");
+        el.dataset.id = d.id;
 
         const color = colorMap.get(d.productoAsignado) || "#1f77b4";
 
-        item.innerHTML = `
+        el.innerHTML = `
           <div class="epd-item-title">
-            <span class="epd-color-chip" style="background:${color};"></span>
-            ${escapeHtml(d.codigo || d.productoAsignado || "EPD")}
+            <span class="dot" style="background:${color}"></span>
+            ${esc(d.codigo || d.productoAsignado || "EPD")}
           </div>
-          <div class="epd-item-meta">
-            <div><strong>Tipo:</strong> ${escapeHtml(d.productoAsignado || "—")}</div>
-            <div><strong>Grupo boxplot:</strong> ${escapeHtml(d.steelGroup || "—")}</div>
-            <div><strong>Ubicación:</strong> ${escapeHtml([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
-            <div><strong>GWP-total:</strong> ${formatNumber(d.gwp, 2)}</div>
-            <div><strong>Contenido reciclado:</strong> ${formatNumber(d.reciclado, 2)}%</div>
-            ${d.ruta ? `<div><strong>Ruta:</strong> ${escapeHtml(truncate(d.ruta, 70))}</div>` : ""}
+          <div class="epd-item-body">
+            <div><strong>Tipo:</strong> ${esc(d.productoAsignado || "—")}</div>
+            <div><strong>Grupo boxplot:</strong> ${esc(d.steelGroup || "—")}</div>
+            <div><strong>Ubicación:</strong> ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
+            <div><strong>GWP-total:</strong> ${formatNum(d.gwp)}</div>
+            <div><strong>Contenido reciclado:</strong> ${formatNum(d.reciclado)}%</div>
           </div>
         `;
 
-        item.addEventListener("click", () => {
-          selectItem(d.id, { source: "list" });
-        });
-
-        epdListEl.appendChild(item);
+        el.addEventListener("click", () => selectItem(d.id, "list"));
+        epdList.appendChild(el);
       });
     }
 
@@ -761,186 +627,146 @@
       });
     }
 
-    /******************************************************************
-     * PLOTLY
-     ******************************************************************/
-    function commonPlotLayout(titleY) {
+    function basePlotLayout(yTitle) {
       return {
-        margin: { l: 60, r: 18, t: 20, b: 90 },
+        margin: { l: 50, r: 10, t: 10, b: 55 },
         paper_bgcolor: "#ffffff",
         plot_bgcolor: "#ffffff",
         showlegend: false,
         xaxis: {
-          title: "",
-          tickangle: -25,
+          tickangle: -30,
           automargin: true
         },
         yaxis: {
-          title: titleY,
-          zeroline: false,
-          automargin: true
+          title: yTitle,
+          automargin: true,
+          zeroline: false
         },
         hovermode: "closest"
       };
     }
 
-    function renderScatter(rows) {
-      const x = rows.map(d => d.reciclado);
-      const y = rows.map(d => d.gwp);
-      const text = rows.map(d =>
-        [
-          d.codigo || "EPD",
-          `Tipo: ${d.productoAsignado || "—"}`,
-          `Grupo: ${d.steelGroup || "—"}`,
-          `Ubicación: ${[d.ciudad, d.pais].filter(Boolean).join(", ") || "—"}`,
-          `Reciclado: ${formatNumber(d.reciclado, 2)}%`,
-          `GWP-total: ${formatNumber(d.gwp, 2)}`
-        ].join("<br>")
-      );
-
-      const colors = rows.map(d => colorMap.get(d.productoAsignado) || "#1f77b4");
-      const sizes = rows.map(d => (d.id === selectedId ? 15 : 10));
-      const lineWidths = rows.map(d => (d.id === selectedId ? 2.5 : 0.8));
-
+    function renderScatter(data) {
       const trace = {
         type: "scatter",
         mode: "markers",
-        x,
-        y,
-        text,
+        x: data.map(d => d.reciclado),
+        y: data.map(d => d.gwp),
+        customdata: data.map(d => d.id),
+        text: data.map(d => (
+          `<b>${esc(d.codigo || "EPD")}</b><br>` +
+          `Tipo: ${esc(d.productoAsignado || "—")}<br>` +
+          `Grupo: ${esc(d.steelGroup || "—")}<br>` +
+          `Ubicación: ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}<br>` +
+          `Reciclado: ${formatNum(d.reciclado)}%<br>` +
+          `GWP-total: ${formatNum(d.gwp)}`
+        )),
         hovertemplate: "%{text}<extra></extra>",
-        customdata: rows.map(d => d.id),
         marker: {
-          size: sizes,
-          color: colors,
+          size: data.map(d => d.id === selectedId ? 11 : 8),
+          color: data.map(d => colorMap.get(d.productoAsignado) || "#1f77b4"),
           opacity: 0.85,
           line: {
-            color: rows.map(d => (d.id === selectedId ? "#111111" : "#ffffff")),
-            width: lineWidths
+            width: data.map(d => d.id === selectedId ? 2 : 0.8),
+            color: data.map(d => d.id === selectedId ? "#111111" : "#ffffff")
           }
         }
       };
 
       const layout = {
-        ...commonPlotLayout("GWP-total"),
+        ...basePlotLayout("GWP-total"),
         xaxis: {
           title: "Contenido reciclado (%)",
           zeroline: false
         },
         yaxis: {
-          title: "GWP-total"
+          title: "GWP-total",
+          zeroline: false
         }
       };
 
-      Plotly.react("scatterPlot", [trace], layout, { responsive: true, displayModeBar: true });
+      Plotly.react("scatterPlot", [trace], layout, {
+        responsive: true,
+        displayModeBar: true
+      });
 
-      const scatterDiv = document.getElementById("scatterPlot");
-      scatterDiv.on("plotly_click", ev => {
+      document.getElementById("scatterPlot").on("plotly_click", ev => {
         const id = ev.points?.[0]?.customdata;
-        if (id) selectItem(id, { source: "scatter" });
+        if (id) selectItem(id, "scatter");
       });
     }
 
-    function renderBoxplots(rows) {
-      renderSingleBoxplot({
-        divId: "boxplotEmisiones",
-        rows,
-        valueAccessor: d => d.gwp,
-        yTitle: "GWP-total",
-        selectedValueLabel: "GWP-total"
-      });
-
-      renderSingleBoxplot({
-        divId: "boxplotReciclado",
-        rows,
-        valueAccessor: d => d.reciclado,
-        yTitle: "Contenido reciclado (%)",
-        selectedValueLabel: "Contenido reciclado"
-      });
-    }
-
-    function renderSingleBoxplot({ divId, rows, valueAccessor, yTitle }) {
-      const groups = [...new Set(rows.map(d => d.steelGroup || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
+    function renderSingleBoxplot(divId, data, accessor, yTitle) {
+      const groups = [...new Set(data.map(d => d.steelGroup || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
       const traces = [];
 
       groups.forEach(group => {
-        const groupRows = rows.filter(d => (d.steelGroup || "Sin clasificar") === group);
-        const values = groupRows.map(valueAccessor).filter(v => Number.isFinite(v));
+        const vals = data
+          .filter(d => (d.steelGroup || "Sin clasificar") === group)
+          .map(accessor)
+          .filter(v => Number.isFinite(v));
 
         traces.push({
           type: "box",
           name: group,
-          y: values,
+          y: vals,
           boxpoints: false,
-          marker: { color: "#aab7c4" },
-          line: { color: "#6b7b8c", width: 1.5 },
-          fillcolor: "rgba(160,175,190,0.35)",
+          line: { color: "#6b7280", width: 1.4 },
+          fillcolor: "rgba(148,163,184,0.28)",
+          marker: { color: "#94a3b8" },
           hovertemplate: `${group}<br>${yTitle}: %{y}<extra></extra>`
         });
       });
 
-      const selected = rows.find(d => d.id === selectedId);
+      const selected = data.find(d => d.id === selectedId);
       if (selected) {
-        const selectedValue = valueAccessor(selected);
-        if (Number.isFinite(selectedValue)) {
+        const val = accessor(selected);
+        if (Number.isFinite(val)) {
           traces.push({
             type: "scatter",
             mode: "markers",
             x: [selected.steelGroup || "Sin clasificar"],
-            y: [selectedValue],
+            y: [val],
             marker: {
-              size: 13,
+              size: 10,
               color: "#111111",
-              line: { color: "#ffffff", width: 1.6 },
-              symbol: "circle"
+              line: { color: "#ffffff", width: 1.5 }
             },
             hovertemplate:
-              `<b>${escapeHtml(selected.codigo || "EPD seleccionada")}</b><br>` +
-              `Grupo: ${escapeHtml(selected.steelGroup || "Sin clasificar")}<br>` +
-              `${yTitle}: ${formatNumber(selectedValue, 2)}<extra></extra>`,
-            showlegend: false
+              `<b>${esc(selected.codigo || "EPD seleccionada")}</b><br>` +
+              `Grupo: ${esc(selected.steelGroup || "Sin clasificar")}<br>` +
+              `${yTitle}: ${formatNum(val)}<extra></extra>`
           });
         }
       }
 
       const layout = {
-        ...commonPlotLayout(yTitle),
+        ...basePlotLayout(yTitle),
         xaxis: {
-          title: "",
           categoryorder: "array",
           categoryarray: groups,
-          tickangle: -25,
+          tickangle: -30,
           automargin: true
         },
         yaxis: {
           title: yTitle,
-          zeroline: false,
-          automargin: true
+          automargin: true,
+          zeroline: false
         }
       };
 
-      Plotly.react(divId, traces, layout, { responsive: true, displayModeBar: false });
-
-      const div = document.getElementById(divId);
-      div.on("plotly_click", ev => {
-        const point = ev.points?.[0];
-        if (!point) return;
-
-        if (point.data?.type === "scatter") return;
-
-        const clickedGroup = point.x;
-        const selected = filteredData.find(d => d.id === selectedId);
-        if (selected && selected.steelGroup === clickedGroup) return;
-
-        const candidate = filteredData.find(d => d.steelGroup === clickedGroup);
-        if (candidate) selectItem(candidate.id, { source: "boxplot" });
+      Plotly.react(divId, traces, layout, {
+        responsive: true,
+        displayModeBar: false
       });
     }
 
-    /******************************************************************
-     * SELECCIÓN CRUZADA
-     ******************************************************************/
-    function selectItem(id, options = {}) {
+    function renderBoxplots(data) {
+      renderSingleBoxplot("boxplotEmisiones", data, d => d.gwp, "GWP-total");
+      renderSingleBoxplot("boxplotReciclado", data, d => d.reciclado, "Contenido reciclado (%)");
+    }
+
+    function selectItem(id, source = "") {
       selectedId = id;
 
       refreshMapSelection();
@@ -948,48 +774,38 @@
       renderScatter(filteredData);
       renderBoxplots(filteredData);
 
-      const selected = filteredData.find(d => d.id === id);
-      if (!selected) return;
+      const item = filteredData.find(d => d.id === id);
+      if (!item) return;
 
-      const marker = markerById.get(id);
-      if (marker && options.source !== "map") {
-        marker.openPopup();
-      }
+      const marker = markerMap.get(id);
+      if (marker && source !== "map") marker.openPopup();
 
-      if (Number.isFinite(selected.lat) && Number.isFinite(selected.lon) && options.source !== "map") {
-        map.flyTo([selected.lat, selected.lon], Math.max(map.getZoom(), 5), { duration: 0.7 });
-      }
-
-      const itemEl = document.querySelector(`.epd-item[data-id="${CSS.escape(id)}"]`);
-      if (itemEl && options.source !== "list") {
-        itemEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      const listEl = document.querySelector(`.epd-item[data-id="${CSS.escape(id)}"]`);
+      if (listEl && source !== "list") {
+        listEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     }
 
-    /******************************************************************
-     * FILTRADO Y RENDER
-     ******************************************************************/
-    function populateFilter(rows) {
-      const values = [...new Set(rows.map(d => d.productoAsignado || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
-
-      productoFilterEl.innerHTML = `<option value="__ALL__">Todos</option>`;
+    function populateFilter(data) {
+      const values = [...new Set(data.map(d => d.productoAsignado || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
+      productoFilter.innerHTML = `<option value="__ALL__">Todos</option>`;
       values.forEach(v => {
         const opt = document.createElement("option");
         opt.value = v;
         opt.textContent = v;
-        productoFilterEl.appendChild(opt);
+        productoFilter.appendChild(opt);
       });
     }
 
-    function applyFilterAndRender() {
-      const selectedProducto = productoFilterEl.value;
+    function applyFilter() {
+      const sel = productoFilter.value;
 
-      filteredData = rawData.filter(d => {
-        if (selectedProducto !== "__ALL__" && d.productoAsignado !== selectedProducto) return false;
+      filteredData = allData.filter(d => {
+        if (sel !== "__ALL__" && d.productoAsignado !== sel) return false;
         return true;
       });
 
-      if (!filteredData.find(d => d.id === selectedId)) {
+      if (!filteredData.some(d => d.id === selectedId)) {
         selectedId = filteredData[0]?.id || null;
       }
 
@@ -999,54 +815,40 @@
       renderBoxplots(filteredData);
     }
 
-    /******************************************************************
-     * CARGA DE DATOS
-     ******************************************************************/
-    function loadData() {
-      Papa.parse(CSV_URL, {
+    function loadCSV() {
+      Papa.parse(CSV_FILE, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: results => {
-          const parsed = (results.data || [])
+          allData = (results.data || [])
             .map((row, i) => normalizeRow(row, i))
             .filter(d =>
+              Number.isFinite(d.lat) ||
+              Number.isFinite(d.lon) ||
               Number.isFinite(d.gwp) ||
-              Number.isFinite(d.reciclado) ||
-              (Number.isFinite(d.lat) && Number.isFinite(d.lon))
+              Number.isFinite(d.reciclado)
             );
 
-          rawData = parsed;
-          colorMap = buildColorMap(rawData);
-
-          populateFilter(rawData);
-          applyFilterAndRender();
+          colorMap = buildColorMap(allData);
+          populateFilter(allData);
+          applyFilter();
         },
         error: err => {
           console.error(err);
-          listStatusEl.textContent = "Error al cargar datos.csv";
-          epdListEl.innerHTML = "";
-          Plotly.purge("scatterPlot");
-          Plotly.purge("boxplotEmisiones");
-          Plotly.purge("boxplotReciclado");
+          listCount.textContent = "Error al cargar datos.csv";
+          epdList.innerHTML = `<div class="empty-note">No se ha podido leer el archivo.</div>`;
         }
       });
     }
 
-    /******************************************************************
-     * INICIALIZACIÓN
-     ******************************************************************/
-    productoFilterEl.addEventListener("change", () => {
-      applyFilterAndRender();
-    });
+    productoFilter.addEventListener("change", applyFilter);
 
     initMap();
-    loadData();
+    loadCSV();
 
     window.addEventListener("resize", () => {
-      if (map) {
-        setTimeout(() => map.invalidateSize(), 100);
-      }
+      if (map) setTimeout(() => map.invalidateSize(), 100);
     });
   </script>
 </body>
