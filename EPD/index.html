@@ -1,1197 +1,1053 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EPD geolocalizadas</title>
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
 
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
   <style>
     :root {
-      --bg: #08101d;
-      --panel: #12203a;
-      --panel-2: #172844;
-      --border: #2a3c5f;
-      --text: #eaf1ff;
-      --muted: #9db0d1;
-      --accent: #66b3ff;
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --border: #d9e1ea;
+      --text: #1f2a37;
+      --muted: #5b6875;
+      --accent: #1d4ed8;
+      --shadow: 0 2px 10px rgba(0,0,0,0.06);
+      --radius: 14px;
+      --map-height: 560px; /* mantenemos altura generosa */
     }
 
     * { box-sizing: border-box; }
 
-    html, body {
-      margin: 0;
-      min-height: 100%;
-    }
-
     body {
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #08101d 0%, #0d1830 100%);
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
       color: var(--text);
     }
 
-    .wrap {
-      width: min(98vw, 1900px);
-      margin: 0 auto;
-      padding: 10px 14px 18px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .back {
-      display: inline-block;
+    a {
+      color: var(--accent);
       text-decoration: none;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.03);
-      font-size: 0.95rem;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1700px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 10px;
+      font-size: 14px;
     }
 
     h1 {
-      margin: 0 0 10px;
-      font-size: clamp(2.1rem, 3vw, 3.4rem);
-      line-height: 1.05;
+      margin: 4px 0 8px 0;
+      font-size: 30px;
+      line-height: 1.1;
     }
 
-    .subtitle {
-      margin: 0 0 14px;
+    .intro {
+      margin: 0 0 16px 0;
       color: var(--muted);
-      font-size: 0.98rem;
-      line-height: 1.55;
-      max-width: 1000px;
+      max-width: 1200px;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-
-    .left-panel {
-      display: grid;
-      gap: 14px;
-      align-content: start;
-    }
-
-    .panel {
-      background: rgba(18, 32, 58, 0.94);
+    .controls-card,
+    .panel-card {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
-      min-width: 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .panel h2 {
-      margin: 0 0 12px;
-      font-size: 1rem;
-      color: var(--muted);
+    .controls-card {
+      padding: 14px 16px;
+      margin-bottom: 16px;
     }
 
-    .status {
-      margin-bottom: 12px;
-      font-size: 0.92rem;
-      color: var(--muted);
-      line-height: 1.45;
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: end;
     }
 
-    .search,
-    .filter-select {
-      width: 100%;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 240px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    select {
       padding: 10px 12px;
-      border-radius: 12px;
-      outline: none;
-    }
-
-    .filter-label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-size: 0.82rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
     }
 
     .legend-note {
-      margin: 0 0 12px;
+      margin-top: 10px;
+      font-size: 13px;
       color: var(--muted);
-      font-size: 0.84rem;
-      line-height: 1.45;
     }
 
-    .site-list {
+    .top-layout {
       display: grid;
-      gap: 8px;
-      max-height: calc(100vh - 370px);
-      overflow: auto;
-      padding-right: 4px;
+      grid-template-columns: 560px 1fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
     }
 
-    .site-btn {
-      width: 100%;
-      text-align: left;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
+    .map-card,
+    .boxplots-card {
       padding: 12px;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: border-color 0.2s ease, transform 0.15s ease;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .site-btn:hover,
-    .site-btn.active {
-      border-color: var(--accent);
-      transform: translateY(-1px);
+    .section-title {
+      margin: 0 0 8px 0;
+      font-size: 18px;
     }
 
-    .site-btn strong {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-      font-size: 1rem;
-    }
-
-    .site-btn span {
-      display: block;
+    .section-subtitle {
+      margin: 0 0 10px 0;
+      font-size: 13px;
       color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.4;
     }
 
-    .dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 999px;
-      display: inline-block;
-      flex: 0 0 auto;
-      border: 1px solid rgba(255,255,255,0.5);
-    }
-
-    .empty {
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .main-panel {
-      display: grid;
-      gap: 14px;
-      min-width: 0;
-    }
-
+    /* mapa cuadrado manteniendo la altura */
     #map {
       width: 100%;
-      height: min(60vh, 760px);
-      min-height: 520px;
-      border-radius: 18px;
+      height: var(--map-height);
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border);
-      background: #0b1220;
     }
 
-    .chart-wrap {
-      position: relative;
-      width: 100%;
-      height: 430px;
-      min-height: 320px;
-    }
-
-    #scatterChart {
-      width: 100%;
-      height: 100%;
-    }
-
-    .detail-grid {
+    .boxplots-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-      margin-top: 14px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      height: calc(var(--map-height) + 2px);
     }
 
-    .metric {
-      background: var(--panel-2);
+    .plot-panel {
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 8px;
+      background: #fff;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
 
-    .metric .k {
-      display: block;
+    .plot-title {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .plot-subtitle {
+      margin: 0 0 8px 0;
+      font-size: 12px;
       color: var(--muted);
-      font-size: 0.8rem;
+    }
+
+    .plot-box {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .bottom-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .list-card,
+    .scatter-card {
+      padding: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .epd-list {
+      max-height: 720px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .epd-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .epd-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .epd-item.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(29,78,216,0.12);
+      background: #f8fbff;
+    }
+
+    .epd-item-title {
+      font-size: 14px;
+      font-weight: 700;
       margin-bottom: 6px;
     }
 
-    .metric .v {
-      display: block;
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1.35;
-      word-break: break-word;
-    }
-
-    .leaflet-container {
-      background: #0b1220;
-    }
-
-    .leaflet-control-layers {
-      border-radius: 12px;
-    }
-
-    .leaflet-popup-content {
-      margin: 14px 16px;
-    }
-
-    .leaflet-popup-content-wrapper {
-      border-radius: 16px;
-    }
-
-    .popup-shell {
-      width: min(72vw, 520px);
-    }
-
-    .popup-head {
-      margin-bottom: 12px;
-    }
-
-    .popup-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 2px;
-      line-height: 1.35;
-    }
-
-    .popup-subtitle {
-      font-size: 0.86rem;
-      color: #667085;
+    .epd-item-meta {
+      font-size: 12px;
+      color: var(--muted);
       line-height: 1.45;
     }
 
-    .popup-grid {
-      display: grid;
-      gap: 8px;
-    }
-
-    .popup-item {
-      background: #f7f9fc;
-      border: 1px solid #dbe4f0;
-      border-radius: 10px;
-      padding: 8px 10px;
-    }
-
-    .popup-item .k {
-      display: block;
-      color: #667085;
-      font-size: 0.75rem;
-      margin-bottom: 4px;
-    }
-
-    .popup-item .v {
-      display: block;
-      color: #111827;
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.35;
-      word-break: break-word;
-    }
-
-    .popup-links {
-      margin-top: 12px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .popup-link,
-    .detail-link {
+    .epd-color-chip {
       display: inline-block;
-      padding: 8px 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
-      border: 1px solid #66b3ff;
-      background: #dcedff;
-      color: #0d3f74;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 700;
+      margin-right: 6px;
+      vertical-align: middle;
     }
 
-    .popup-link:hover,
-    .detail-link:hover {
-      background: #cfe8ff;
+    #scatterPlot {
+      width: 100%;
+      height: 720px;
     }
 
-    .detail-actions {
-      margin-top: 14px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .status {
+      font-size: 14px;
+      color: var(--muted);
     }
 
-    @media (min-width: 1700px) {
-      .layout {
-        grid-template-columns: 340px minmax(0, 1fr);
-      }
-
-      .popup-shell {
-        width: min(68vw, 560px);
+    @media (max-width: 1350px) {
+      .top-layout {
+        grid-template-columns: 480px 1fr;
       }
     }
 
-    @media (max-width: 1100px) {
-      .wrap {
-        width: min(99vw, 1400px);
-        padding: 10px 10px 16px;
-      }
-
-      .layout {
+    @media (max-width: 1150px) {
+      .top-layout {
         grid-template-columns: 1fr;
       }
 
-      .site-list {
-        max-height: none;
+      .boxplots-grid {
+        height: auto;
+        grid-template-columns: 1fr 1fr;
       }
 
-      #map {
-        height: 64vh;
-        min-height: 500px;
-      }
-
-      .chart-wrap {
-        height: 360px;
-      }
-
-      .popup-shell {
-        width: min(84vw, 520px);
+      .plot-panel {
+        min-height: 420px;
       }
     }
 
-    @media (max-width: 720px) {
-      .wrap {
-        width: 100vw;
-        padding: 8px;
+    @media (max-width: 980px) {
+      .bottom-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .boxplots-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #scatterPlot {
+        height: 560px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 12px;
       }
 
       h1 {
-        font-size: clamp(1.8rem, 8vw, 2.6rem);
+        font-size: 25px;
       }
 
       #map {
-        height: 58vh;
-        min-height: 400px;
-      }
-
-      .chart-wrap {
-        height: 320px;
-      }
-
-      .popup-shell {
-        width: min(88vw, 520px);
+        height: 420px;
       }
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="topbar">
-      <a class="back" href="../">← Volver al índice</a>
+  <div class="page">
+    <a class="back-link" href="../">← Volver al índice</a>
+
+    <h1>EPD geolocalizadas</h1>
+    <p class="intro">
+      Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo
+      <strong>datos.csv</strong>, con filtro por producto asignado, gráfico de reciclaje vs emisiones
+      y boxplots comparativos por tipo de acero.
+    </p>
+
+    <div class="controls-card">
+      <div class="controls-row">
+        <div class="control-group">
+          <label for="productoFilter">Producto asignado</label>
+          <select id="productoFilter">
+            <option value="__ALL__">Todos</option>
+          </select>
+        </div>
+      </div>
+      <div class="legend-note">
+        El color representa el producto asignado y se mantiene igual en mapa, lista y gráficos.
+      </div>
     </div>
 
-    <header>
-      <h1>EPD geolocalizadas</h1>
-      <div class="subtitle">
-        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.
-      </div>
-    </header>
-
-    <section class="layout">
-      <aside class="left-panel">
-        <section class="panel">
-          <h2>EPD disponibles</h2>
-          <div id="status" class="status">Cargando datos...</div>
-
-          <label class="filter-label" for="productFilter">Producto asignado</label>
-          <select id="productFilter" class="filter-select">
-            <option value="">Todos</option>
-          </select>
-
-          <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
-
-          <div class="legend-note">
-            El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.
-          </div>
-
-          <div id="siteList" class="site-list"></div>
-        </section>
-      </aside>
-
-      <section class="main-panel">
+    <div class="top-layout">
+      <div class="map-card">
+        <h2 class="section-title">Mapa</h2>
+        <p class="section-subtitle">
+          Selecciona una EPD en el mapa para ver su posición dentro del rango de su tipo de acero.
+        </p>
         <div id="map"></div>
+      </div>
 
-        <section class="panel">
-          <h2>Reciclaje vs emisiones</h2>
-          <div id="chartStatus" class="status">Preparando gráfico...</div>
-          <div class="chart-wrap">
-            <canvas id="scatterChart"></canvas>
+      <div class="boxplots-card">
+        <h2 class="section-title">Distribución por tipo de acero</h2>
+        <p class="section-subtitle">
+          El punto negro resalta la EPD seleccionada dentro de su categoría.
+        </p>
+
+        <div class="boxplots-grid">
+          <div class="plot-panel">
+            <div class="plot-title">Emisiones</div>
+            <div class="plot-subtitle">GWP-total por tipo de acero</div>
+            <div id="boxplotEmisiones" class="plot-box"></div>
           </div>
-        </section>
 
-        <section class="panel">
-          <div id="detail" class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>
-        </section>
-      </section>
-    </section>
-  </main>
+          <div class="plot-panel">
+            <div class="plot-title">Contenido reciclado</div>
+            <div class="plot-subtitle">Porcentaje por tipo de acero</div>
+            <div id="boxplotReciclado" class="plot-box"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="bottom-layout">
+      <div class="list-card">
+        <h2 class="section-title">EPD disponibles</h2>
+        <div id="listStatus" class="status">Cargando datos...</div>
+        <div id="epdList" class="epd-list"></div>
+      </div>
+
+      <div class="scatter-card">
+        <h2 class="section-title">Reciclaje vs emisiones</h2>
+        <p class="section-subtitle">
+          Selecciona una EPD de la lista, del mapa o del gráfico.
+        </p>
+        <div id="scatterPlot"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const REQUIRED_KEYS = ["name", "lat", "lon"];
-    const RESERVED_KEYS = ["id", "name", "lat", "lon"];
+    /******************************************************************
+     * CONFIGURACIÓN Y ESTADO
+     ******************************************************************/
+    const CSV_URL = "datos.csv";
+    const DEFAULT_MAP_CENTER = [20, 0];
+    const DEFAULT_MAP_ZOOM = 2;
 
-    const INITIAL_CENTER = [20, 0];
-    const INITIAL_ZOOM = 2;
-    const PDF_BASE_PATH = "./pdffiles/";
-
-    const CATEGORY_COLORS = [
-      "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
-      "#00a950", "#58595b", "#8549ba", "#ffb000", "#00bcd4", "#ff7043",
-      "#7e57c2", "#66bb6a", "#ef5350", "#26a69a", "#ab47bc", "#ffa726",
-      "#8d6e63", "#42a5f5"
-    ];
-
-    let allSites = [];
-    let filteredSites = [];
+    let rawData = [];
+    let filteredData = [];
     let selectedId = null;
 
     let map;
-    let cartoLayer;
-    let orthoLayer;
-    let markers = [];
+    let mapLayerGroup;
     let markerById = new Map();
+    let plotlyReady = false;
 
-    let scatterChart = null;
-    const categoryColorMap = new Map();
+    const productoFilterEl = document.getElementById("productoFilter");
+    const epdListEl = document.getElementById("epdList");
+    const listStatusEl = document.getElementById("listStatus");
 
-    const statusEl = document.getElementById("status");
-    const chartStatusEl = document.getElementById("chartStatus");
-    const siteListEl = document.getElementById("siteList");
-    const detailEl = document.getElementById("detail");
-    const searchInput = document.getElementById("searchInput");
-    const productFilterEl = document.getElementById("productFilter");
-
-    function detectDelimiter(headerLine) {
-      const semicolons = (headerLine.match(/;/g) || []).length;
-      const commas = (headerLine.match(/,/g) || []).length;
-      return semicolons > commas ? ";" : ",";
-    }
-
-    function splitCSVLine(line, delimiter) {
-      const result = [];
-      let current = "";
-      let inQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const next = line[i + 1];
-
-        if (char === '"') {
-          if (inQuotes && next === '"') {
-            current += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === delimiter && !inQuotes) {
-          result.push(current);
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-
-      result.push(current);
-      return result;
-    }
-
-    function slugify(text) {
-      return String(text || "")
-        .toLowerCase()
+    /******************************************************************
+     * UTILIDADES GENERALES
+     ******************************************************************/
+    function normKey(str) {
+      return String(str || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
     }
 
-    function labelFromKey(key) {
-      const labels = {
-        name: "Nombre",
-        lat: "Latitud",
-        lon: "Longitud",
-        codigo_epd: "Código EPD",
-        producto: "Producto",
-        producto_asignado: "Producto asignado",
-        pais_produccion: "País producción",
-        ciudad_produccion: "Ciudad producción",
-        centro_produccion: "Centro de producción",
-        titular: "Titular",
-        compania_verificadora: "Compañía verificadora",
-        referencia: "Referencia",
-        ruta_de_produccion: "Ruta de producción",
-        contenido_reciclado_pct: "Contenido reciclado %",
-        gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-        archivo: "Archivo PDF",
-        pdf_url: "PDF",
-        caracteristicas_funcionales: "Características funcionales"
-      };
+    function firstExisting(obj, aliases) {
+      const entries = Object.entries(obj || {});
+      const aliasNorm = aliases.map(normKey);
 
-      if (labels[key]) return labels[key];
-
-      return key
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, c => c.toUpperCase());
+      for (const [key, value] of entries) {
+        if (aliasNorm.includes(normKey(key))) {
+          return value;
+        }
+      }
+      return "";
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
+    function parseNumber(value) {
+      if (value === null || value === undefined) return null;
+      let s = String(value).trim();
+      if (!s) return null;
+
+      s = s.replace(/\u00A0/g, " ");
+      s = s.replace(/[%]/g, "");
+      s = s.replace(/[^\d,.\-]/g, "");
+
+      const commaCount = (s.match(/,/g) || []).length;
+      const dotCount = (s.match(/\./g) || []).length;
+
+      if (commaCount > 0 && dotCount > 0) {
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+          s = s.replace(/\./g, "").replace(",", ".");
+        } else {
+          s = s.replace(/,/g, "");
+        }
+      } else if (commaCount > 0 && dotCount === 0) {
+        s = s.replace(",", ".");
+      }
+
+      const num = Number(s);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replace(/"/g, "&quot;");
     }
 
-    function parseCoordinate(value) {
-      const raw = String(value ?? "").trim();
-      if (!raw) return NaN;
-
-      if (/[.,]/.test(raw)) {
-        return parseFloat(raw.replace(",", "."));
-      }
-
-      const sign = raw.startsWith("-") ? -1 : 1;
-      const digits = raw.replace(/^[+-]/, "");
-
-      if (!/^\d+$/.test(digits)) return NaN;
-
-      if (digits.length >= 3) {
-        const whole = digits.slice(0, digits.length - 2);
-        const decimal = digits.slice(-2);
-        return sign * parseFloat(`${whole}.${decimal}`);
-      }
-
-      return sign * parseFloat(digits);
+    function truncate(str, max = 70) {
+      const s = String(str || "");
+      return s.length <= max ? s : s.slice(0, max - 1) + "…";
     }
 
-    function parseLocaleNumber(value) {
-      let raw = String(value ?? "").trim();
-      if (!raw) return NaN;
-
-      raw = raw
-        .replace(/\s+/g, "")
-        .replace(/[%‰]/g, "")
-        .replace(/[^\d,.\-]/g, "");
-
-      if (!raw) return NaN;
-
-      const hasComma = raw.includes(",");
-      const hasDot = raw.includes(".");
-
-      if (hasComma && hasDot) {
-        if (raw.lastIndexOf(",") > raw.lastIndexOf(".")) {
-          raw = raw.replace(/\./g, "").replace(",", ".");
-        } else {
-          raw = raw.replace(/,/g, "");
-        }
-      } else if (hasComma) {
-        raw = raw.replace(",", ".");
-      }
-
-      const n = parseFloat(raw);
-      return Number.isFinite(n) ? n : NaN;
+    function formatNumber(value, decimals = 2) {
+      if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+      return new Intl.NumberFormat("es-ES", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals
+      }).format(value);
     }
 
-    function getAssignedProduct(site) {
-      const value = site?.raw?.producto_asignado;
-      return value && String(value).trim() !== "" ? String(value).trim() : "Sin asignar";
-    }
-
-    function getColorForCategory(category) {
-      const key = category || "Sin asignar";
-      if (!categoryColorMap.has(key)) {
-        categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
-      }
-      return categoryColorMap.get(key);
-    }
-
-    function getPdfSubdir(site) {
-      const explicitFolder =
-        String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
-
-      if (explicitFolder) {
-        return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-      }
-
-      const productAssigned = String(site?.productAssigned || "").trim();
-      const normalized = productAssigned
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-
-      if (normalized.includes("b500sd")) return "B500SD";
-      if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
-      if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
-
-      return slugify(productAssigned).replace(/-/g, "_");
-    }
-
-    function buildPdfHref(site) {
-      const archivoRaw = String(site?.raw?.archivo || "").trim();
-      if (!archivoRaw) {
-        const pdfUrl = String(site?.raw?.pdf_url || "").trim();
-        return pdfUrl || "";
-      }
-
-      const fileName = archivoRaw.split(/[\\/]/).pop().trim();
-      const subdir = getPdfSubdir(site);
-
-      const safeFileName = fileName
-        .split("/")
-        .filter(Boolean)
-        .map(part => encodeURIComponent(part))
-        .join("/");
-
-      const safeSubdir = String(subdir || "")
-        .split("/")
-        .filter(Boolean)
-        .map(part => encodeURIComponent(part))
-        .join("/");
-
-      if (safeSubdir) {
-        return `${PDF_BASE_PATH}${safeSubdir}/${safeFileName}`;
-      }
-
-      return `${PDF_BASE_PATH}${safeFileName}`;
-    }
-
-    function getListSubtitle(site) {
+    function pickSteelGroup(row) {
       const candidates = [
-        "pais_produccion",
-        "ciudad_produccion",
-        "producto_asignado",
-        "producto"
-      ];
+        firstExisting(row, ["Producto asignado"]),
+        firstExisting(row, ["Producto"]),
+        firstExisting(row, ["Ruta de producción"]),
+        firstExisting(row, ["Tipo de acero"]),
+        firstExisting(row, ["Steel type"])
+      ].filter(Boolean);
 
-      const parts = candidates
-        .map(k => site.raw[k])
-        .filter(v => v && String(v).trim() !== "");
+      for (const c of candidates) {
+        const v = normKey(c);
 
-      return parts.join(" · ") || "Sin datos complementarios";
-    }
-
-    function getPopupSubtitle(site) {
-      const producto = String(site.raw.producto || "").trim();
-      return producto || "EPD geolocalizada";
-    }
-
-    function getDisplayKeys(site) {
-      return Object.keys(site.raw).filter(key => {
-        if (RESERVED_KEYS.includes(key)) return false;
-        const value = site.raw[key];
-        return value !== undefined && value !== null && String(value).trim() !== "";
-      });
-    }
-
-    function parseCSV(text) {
-      const cleanedText = text.replace(/^\uFEFF/, "").trim();
-      const lines = cleanedText.split(/\r?\n/).filter(Boolean);
-      if (lines.length < 2) throw new Error("CSV vacío o sin filas de datos");
-
-      const delimiter = detectDelimiter(lines[0]);
-      const headers = splitCSVLine(lines[0], delimiter).map(h => h.trim());
-      const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
-
-      if (missing.length) {
-        throw new Error("Faltan columnas obligatorias: " + missing.join(", "));
+        if (v.includes("stainless") || v.includes("inox")) return "Acero inoxidable";
+        if (v.includes("weathering") || v.includes("corten")) return "Acero patinable";
+        if (v.includes("offshore")) return "Acero offshore";
+        if (v.includes("plate")) return "Chapa de acero";
+        if (v.includes("section")) return "Perfiles de acero";
+        if (v.includes("rebar") || v.includes("corrug")) return "Acero corrugado";
+        if (v.includes("hot rolled") || v.includes("laminado")) return "Acero laminado";
+        if (v.includes("structural")) return "Acero estructural";
+        if (v.includes("coil")) return "Bobina de acero";
       }
 
-      return lines.slice(1).map((line, idx) => {
-        const values = splitCSVLine(line, delimiter);
-        const raw = {};
-
-        headers.forEach((header, i) => {
-          raw[header] = (values[i] || "").trim();
-        });
-
-        const site = {
-          id: raw.id || slugify(raw.name) || `epd-${idx + 1}`,
-          name: raw.name || `EPD ${idx + 1}`,
-          lat: parseCoordinate(raw.lat),
-          lon: parseCoordinate(raw.lon),
-          raw
-        };
-
-        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
-
-        site.productAssigned = getAssignedProduct(site);
-        site.recycledPct = parseLocaleNumber(site.raw.contenido_reciclado_pct);
-        site.gwp = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
-
-        return site;
-      }).filter(Boolean);
+      return firstExisting(row, ["Producto asignado"]) || "Sin clasificar";
     }
 
-    function populateProductFilter() {
-      const products = Array.from(new Set(allSites.map(site => site.productAssigned)))
-        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+    function inferPdfUrl(row) {
+      const direct = firstExisting(row, [
+        "PDF",
+        "Link PDF",
+        "URL",
+        "url",
+        "Enlace",
+        "Archivo",
+        "Documento"
+      ]);
 
-      productFilterEl.innerHTML = `<option value="">Todos</option>` +
-        products.map(product => `
-          <option value="${escapeHtml(product)}">${escapeHtml(product)}</option>
-        `).join("");
-    }
-
-    function renderList() {
-      siteListEl.innerHTML = "";
-
-      if (!filteredSites.length) {
-        siteListEl.innerHTML = '<div class="empty">No hay EPD que coincidan con el filtro actual.</div>';
-        return;
+      if (direct && /^https?:\/\//i.test(String(direct).trim())) {
+        return String(direct).trim();
       }
-
-      filteredSites.forEach(site => {
-        const btn = document.createElement("button");
-        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
-        btn.innerHTML = `
-          <strong>
-            <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))};"></span>
-            ${escapeHtml(site.name)}
-          </strong>
-          <span>${escapeHtml(getListSubtitle(site))}</span>
-        `;
-        btn.addEventListener("click", () => selectSite(site.id, true, true));
-        siteListEl.appendChild(btn);
-      });
+      return "";
     }
 
-    function renderDetail() {
-      const site = allSites.find(s => s.id === selectedId);
-
-      if (!site) {
-        detailEl.innerHTML = '<div class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>';
-        return;
-      }
-
-      const displayKeys = getDisplayKeys(site);
-      const pdfHref = buildPdfHref(site);
-
-      const metricsHtml = displayKeys.length
-        ? `<div class="detail-grid">${
-            displayKeys.map(key => {
-              const value = site.raw[key];
-
-              if (key === "archivo" && pdfHref) {
-                return `
-                  <div class="metric">
-                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                    <span class="v"><a href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
-                  </div>
-                `;
-              }
-
-              if (key === "pdf_url" && String(value).trim() !== "") {
-                return `
-                  <div class="metric">
-                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                    <span class="v"><a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
-                  </div>
-                `;
-              }
-
-              return `
-                <div class="metric">
-                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                  <span class="v">${escapeHtml(value)}</span>
-                </div>
-              `;
-            }).join("")
-          }</div>`
-        : "";
-
-      detailEl.innerHTML = `
-        <h3 style="margin:0 0 6px; font-size:1.3rem; display:flex; align-items:center; gap:10px;">
-          <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))}; width:14px; height:14px;"></span>
-          ${escapeHtml(site.name)}
-        </h3>
-        <div style="color:#9db0d1; line-height:1.5;">
-          Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)} · ${escapeHtml(site.productAssigned)}
-        </div>
-        ${metricsHtml}
-        <div class="detail-actions">
-          ${pdfHref ? `<a class="detail-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
-          <a class="detail-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
-        </div>
-      `;
+    function createStableId(row, index) {
+      const code = firstExisting(row, ["Código EPD", "Codigo EPD", "EPD code"]);
+      const company = firstExisting(row, ["Titular", "Empresa", "Company"]);
+      const product = firstExisting(row, ["Producto asignado", "Producto"]);
+      const city = firstExisting(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]);
+      return [code, company, product, city, index].map(v => String(v || "")).join(" | ");
     }
 
-    function buildPopupHtml(site) {
-      const popupKeys = [
-        "contenido_reciclado_pct",
-        "gwp_total_kg_co2e_t"
-      ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
+    /******************************************************************
+     * COLOR POR CATEGORÍA
+     ******************************************************************/
+    const palette = [
+      "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+      "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+      "#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2"
+    ];
 
-      const popupItems = popupKeys.length
-        ? popupKeys.map(key => `
-            <div class="popup-item">
-              <span class="k">${escapeHtml(labelFromKey(key))}</span>
-              <span class="v">${escapeHtml(site.raw[key])}</span>
-            </div>
-          `).join("")
-        : `
-            <div class="popup-item">
-              <span class="k">Ubicación</span>
-              <span class="v">Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)}</span>
-            </div>
-          `;
-
-      const pdfHref = buildPdfHref(site);
-
-      return `
-        <div class="popup-shell">
-          <div class="popup-head">
-            <div class="popup-title">${escapeHtml(site.name)}</div>
-            <div class="popup-subtitle">${escapeHtml(getPopupSubtitle(site))}</div>
-          </div>
-
-          <div class="popup-grid">
-            ${popupItems}
-          </div>
-
-          <div class="popup-links">
-            ${pdfHref ? `<a class="popup-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
-            <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
-          </div>
-        </div>
-      `;
+    function buildColorMap(rows) {
+      const categories = [...new Set(rows.map(r => r.productoAsignado || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
+      const map = new Map();
+      categories.forEach((cat, i) => map.set(cat, palette[i % palette.length]));
+      return map;
     }
 
-    function initMap() {
-      cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-      });
+    let colorMap = new Map();
 
-      orthoLayer = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          maxZoom: 19,
-          attribution: "Tiles &copy; Esri"
-        }
-      );
+    /******************************************************************
+     * NORMALIZACIÓN DEL CSV
+     ******************************************************************/
+    function normalizeRow(row, index) {
+      const lat = parseNumber(firstExisting(row, ["Latitud", "Latitude", "lat"]));
+      const lon = parseNumber(firstExisting(row, ["Longitud", "Longitude", "lon", "lng"]));
+      const productoAsignado = String(firstExisting(row, ["Producto asignado"]) || "").trim() || "Sin clasificar";
 
-      map = L.map("map", {
-        center: INITIAL_CENTER,
-        zoom: INITIAL_ZOOM,
-        layers: [cartoLayer]
-      });
+      const gwp = parseNumber(firstExisting(row, [
+        "GWP-total (kg CO2e/t steel)",
+        "GWP-total (kg CO₂e/t steel)",
+        "GWP-total",
+        "GWP total",
+        "GWP",
+        "Emisiones",
+        "kg CO2e/t steel",
+        "kg CO₂e/t steel"
+      ]));
 
-      L.control.layers(
-        {
-          "Cartografía": cartoLayer,
-          "Ortofoto": orthoLayer
-        },
-        {},
-        { collapsed: false }
-      ).addTo(map);
-    }
+      const reciclado = parseNumber(firstExisting(row, [
+        "Contenido reciclado %",
+        "Contenido reciclado",
+        "% reciclado",
+        "Recycled content %",
+        "Recycled content"
+      ]));
 
-    function getMarkerStyle(site, isSelected = false) {
+      const codigo = String(firstExisting(row, ["Código EPD", "Codigo EPD", "EPD code"]) || "").trim();
+      const producto = String(firstExisting(row, ["Producto"]) || "").trim();
+      const titular = String(firstExisting(row, ["Titular", "Empresa", "Company"]) || "").trim();
+      const pais = String(firstExisting(row, ["País Producción", "Pais Produccion", "País", "Pais"]) || "").trim();
+      const ciudad = String(firstExisting(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]) || "").trim();
+      const ruta = String(firstExisting(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim();
+      const pdfUrl = inferPdfUrl(row);
+
+      const steelGroup = pickSteelGroup(row);
+      const id = createStableId(row, index);
+
       return {
-        radius: isSelected ? 10 : 7,
-        fillColor: getColorForCategory(site.productAssigned),
-        color: isSelected ? "#ffffff" : "rgba(255,255,255,0.72)",
-        weight: isSelected ? 3 : 1.5,
-        opacity: 1,
-        fillOpacity: isSelected ? 1 : 0.88
+        id,
+        raw: row,
+        lat,
+        lon,
+        productoAsignado,
+        steelGroup,
+        gwp,
+        reciclado,
+        codigo,
+        producto,
+        titular,
+        pais,
+        ciudad,
+        ruta,
+        pdfUrl
       };
     }
 
-    function updateMarkerStyles() {
-      markerById.forEach((marker, id) => {
-        const site = allSites.find(s => s.id === id);
-        if (!site) return;
-        marker.setStyle(getMarkerStyle(site, id === selectedId));
-      });
+    /******************************************************************
+     * MAPA
+     ******************************************************************/
+    function initMap() {
+      map = L.map("map", {
+        worldCopyJump: true
+      }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      mapLayerGroup = L.layerGroup().addTo(map);
     }
 
-    function renderMarkers() {
-      markers.forEach(marker => map.removeLayer(marker));
-      markers = [];
-      markerById = new Map();
+    function markerHtml(color, isSelected = false) {
+      const size = isSelected ? 18 : 14;
+      const border = isSelected ? 4 : 2;
+      return `
+        <div style="
+          width:${size}px;
+          height:${size}px;
+          border-radius:50%;
+          background:${color};
+          border:${border}px solid white;
+          box-shadow:0 0 0 ${isSelected ? 2 : 1}px rgba(0,0,0,0.25);
+        "></div>
+      `;
+    }
 
-      if (!filteredSites.length) {
-        map.setView(INITIAL_CENTER, INITIAL_ZOOM);
-        return;
-      }
+    function buildPopupHtml(d) {
+      return `
+        <div style="min-width:220px; line-height:1.45;">
+          <div style="font-weight:700; margin-bottom:6px;">
+            ${escapeHtml(d.codigo || d.productoAsignado || "EPD")}
+          </div>
+          <div><strong>Producto asignado:</strong> ${escapeHtml(d.productoAsignado || "—")}</div>
+          <div><strong>Producto:</strong> ${escapeHtml(d.producto || "—")}</div>
+          <div><strong>Empresa:</strong> ${escapeHtml(d.titular || "—")}</div>
+          <div><strong>Ubicación:</strong> ${escapeHtml([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
+          <div><strong>Ruta:</strong> ${escapeHtml(d.ruta || "—")}</div>
+          <div><strong>GWP-total:</strong> ${formatNumber(d.gwp, 2)}</div>
+          <div><strong>Contenido reciclado:</strong> ${formatNumber(d.reciclado, 2)}%</div>
+          ${d.pdfUrl ? `<div style="margin-top:6px;"><a href="${escapeHtml(d.pdfUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a></div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderMap(rows) {
+      markerById.clear();
+      mapLayerGroup.clearLayers();
 
       const bounds = [];
 
-      filteredSites.forEach(site => {
-        const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId))
-          .addTo(map);
+      rows.forEach(d => {
+        if (!Number.isFinite(d.lat) || !Number.isFinite(d.lon)) return;
 
-        marker.bindPopup(buildPopupHtml(site), {
-          maxWidth: 580,
-          minWidth: 320,
-          autoPan: true
+        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
+
+        const icon = L.divIcon({
+          html: markerHtml(color, d.id === selectedId),
+          className: "",
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -10]
         });
+
+        const marker = L.marker([d.lat, d.lon], { icon });
+        marker.bindPopup(buildPopupHtml(d));
 
         marker.on("click", () => {
-          selectedId = site.id;
-          renderList();
-          renderDetail();
-          updateMarkerStyles();
-          renderScatterPlot();
+          selectItem(d.id, { source: "map" });
         });
 
-        markers.push(marker);
-        markerById.set(site.id, marker);
-        bounds.push([site.lat, site.lon]);
+        marker.addTo(mapLayerGroup);
+        markerById.set(d.id, marker);
+        bounds.push([d.lat, d.lon]);
       });
 
-      if (bounds.length === 1) {
-        map.setView(bounds[0], 6);
-      } else {
+      if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        map.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
       }
     }
 
-    function renderScatterPlot() {
-      const chartCanvas = document.getElementById("scatterChart");
-      const validSites = filteredSites.filter(site =>
-        Number.isFinite(site.recycledPct) && Number.isFinite(site.gwp)
-      );
+    function refreshMapSelection() {
+      markerById.forEach((marker, id) => {
+        const d = filteredData.find(x => x.id === id);
+        if (!d) return;
 
-      if (scatterChart) {
-        scatterChart.destroy();
-        scatterChart = null;
-      }
+        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
+        const icon = L.divIcon({
+          html: markerHtml(color, id === selectedId),
+          className: "",
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -10]
+        });
+        marker.setIcon(icon);
+      });
+    }
 
-      if (!validSites.length) {
-        chartStatusEl.textContent = "No hay registros con valores numéricos válidos en contenido reciclado y GWP-total.";
+    /******************************************************************
+     * LISTA
+     ******************************************************************/
+    function renderList(rows) {
+      epdListEl.innerHTML = "";
+
+      if (!rows.length) {
+        listStatusEl.textContent = "No hay EPD que cumplan el filtro.";
         return;
       }
 
-      const grouped = new Map();
+      listStatusEl.textContent = `${rows.length} EPD mostradas.`;
 
-      validSites.forEach(site => {
-        const category = site.productAssigned;
-        if (!grouped.has(category)) grouped.set(category, []);
+      rows.forEach(d => {
+        const item = document.createElement("div");
+        item.className = "epd-item" + (d.id === selectedId ? " selected" : "");
+        item.dataset.id = d.id;
 
-        grouped.get(category).push({
-          x: site.recycledPct,
-          y: site.gwp,
-          siteId: site.id,
-          label: site.name,
-          productAssigned: site.productAssigned,
-          codigo: site.raw.codigo_epd || "",
-          archivo: site.raw.archivo || ""
+        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
+
+        item.innerHTML = `
+          <div class="epd-item-title">
+            <span class="epd-color-chip" style="background:${color};"></span>
+            ${escapeHtml(d.codigo || d.productoAsignado || "EPD")}
+          </div>
+          <div class="epd-item-meta">
+            <div><strong>Tipo:</strong> ${escapeHtml(d.productoAsignado || "—")}</div>
+            <div><strong>Grupo boxplot:</strong> ${escapeHtml(d.steelGroup || "—")}</div>
+            <div><strong>Ubicación:</strong> ${escapeHtml([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
+            <div><strong>GWP-total:</strong> ${formatNumber(d.gwp, 2)}</div>
+            <div><strong>Contenido reciclado:</strong> ${formatNumber(d.reciclado, 2)}%</div>
+            ${d.ruta ? `<div><strong>Ruta:</strong> ${escapeHtml(truncate(d.ruta, 70))}</div>` : ""}
+          </div>
+        `;
+
+        item.addEventListener("click", () => {
+          selectItem(d.id, { source: "list" });
         });
+
+        epdListEl.appendChild(item);
       });
+    }
 
-      const datasets = Array.from(grouped.entries())
-        .sort((a, b) => a[0].localeCompare(b[0], "es", { sensitivity: "base" }))
-        .map(([category, data]) => {
-          const color = getColorForCategory(category);
-          return {
-            label: category,
-            data,
-            showLine: false,
-            borderColor: color,
-            backgroundColor: color,
-            pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
-            pointHoverRadius: 9,
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2
-          };
-        });
+    function refreshListSelection() {
+      document.querySelectorAll(".epd-item").forEach(el => {
+        el.classList.toggle("selected", el.dataset.id === selectedId);
+      });
+    }
 
-      scatterChart = new Chart(chartCanvas, {
+    /******************************************************************
+     * PLOTLY
+     ******************************************************************/
+    function commonPlotLayout(titleY) {
+      return {
+        margin: { l: 60, r: 18, t: 20, b: 90 },
+        paper_bgcolor: "#ffffff",
+        plot_bgcolor: "#ffffff",
+        showlegend: false,
+        xaxis: {
+          title: "",
+          tickangle: -25,
+          automargin: true
+        },
+        yaxis: {
+          title: titleY,
+          zeroline: false,
+          automargin: true
+        },
+        hovermode: "closest"
+      };
+    }
+
+    function renderScatter(rows) {
+      const x = rows.map(d => d.reciclado);
+      const y = rows.map(d => d.gwp);
+      const text = rows.map(d =>
+        [
+          d.codigo || "EPD",
+          `Tipo: ${d.productoAsignado || "—"}`,
+          `Grupo: ${d.steelGroup || "—"}`,
+          `Ubicación: ${[d.ciudad, d.pais].filter(Boolean).join(", ") || "—"}`,
+          `Reciclado: ${formatNumber(d.reciclado, 2)}%`,
+          `GWP-total: ${formatNumber(d.gwp, 2)}`
+        ].join("<br>")
+      );
+
+      const colors = rows.map(d => colorMap.get(d.productoAsignado) || "#1f77b4");
+      const sizes = rows.map(d => (d.id === selectedId ? 15 : 10));
+      const lineWidths = rows.map(d => (d.id === selectedId ? 2.5 : 0.8));
+
+      const trace = {
         type: "scatter",
-        data: { datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
-          parsing: false,
-          plugins: {
-            legend: {
-              labels: {
-                color: "#eaf1ff"
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label(context) {
-                  const raw = context.raw;
-                  return [
-                    raw.label,
-                    `Producto asignado: ${raw.productAssigned}`,
-                    `Reciclaje: ${raw.x} %`,
-                    `CO₂: ${raw.y} kg CO₂e/t`,
-                    raw.codigo ? `Código EPD: ${raw.codigo}` : null
-                  ].filter(Boolean);
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              min: 0,
-              max: 100,
-              title: {
-                display: true,
-                text: "Contenido reciclado (%)",
-                color: "#eaf1ff"
-              },
-              ticks: {
-                color: "#9db0d1"
-              },
-              grid: {
-                color: "rgba(157,176,209,0.15)"
-              }
-            },
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: "GWP-total (kg CO₂e/t)",
-                color: "#eaf1ff"
-              },
-              ticks: {
-                color: "#9db0d1"
-              },
-              grid: {
-                color: "rgba(157,176,209,0.15)"
-              }
-            }
-          },
-          onClick(event, elements, chart) {
-            if (!elements.length) return;
-            const first = elements[0];
-            const raw = chart.data.datasets[first.datasetIndex].data[first.index];
-            if (raw?.siteId) {
-              selectSite(raw.siteId, true, true);
-            }
+        mode: "markers",
+        x,
+        y,
+        text,
+        hovertemplate: "%{text}<extra></extra>",
+        customdata: rows.map(d => d.id),
+        marker: {
+          size: sizes,
+          color: colors,
+          opacity: 0.85,
+          line: {
+            color: rows.map(d => (d.id === selectedId ? "#111111" : "#ffffff")),
+            width: lineWidths
           }
         }
-      });
+      };
 
-      chartStatusEl.textContent = `Puntos representados: ${validSites.length} de ${filteredSites.length} EPD filtradas.`;
+      const layout = {
+        ...commonPlotLayout("GWP-total"),
+        xaxis: {
+          title: "Contenido reciclado (%)",
+          zeroline: false
+        },
+        yaxis: {
+          title: "GWP-total"
+        }
+      };
+
+      Plotly.react("scatterPlot", [trace], layout, { responsive: true, displayModeBar: true });
+
+      const scatterDiv = document.getElementById("scatterPlot");
+      scatterDiv.on("plotly_click", ev => {
+        const id = ev.points?.[0]?.customdata;
+        if (id) selectItem(id, { source: "scatter" });
+      });
     }
 
-    function applyFilter() {
-      const q = searchInput.value.trim().toLowerCase();
-      const selectedProduct = productFilterEl.value.trim();
-
-      filteredSites = allSites.filter(site => {
-        const matchesProduct = !selectedProduct || site.productAssigned === selectedProduct;
-        const haystack = Object.values(site.raw).join(" ").toLowerCase();
-        const matchesSearch = !q || haystack.includes(q);
-        return matchesProduct && matchesSearch;
+    function renderBoxplots(rows) {
+      renderSingleBoxplot({
+        divId: "boxplotEmisiones",
+        rows,
+        valueAccessor: d => d.gwp,
+        yTitle: "GWP-total",
+        selectedValueLabel: "GWP-total"
       });
 
-      if (!filteredSites.some(site => site.id === selectedId)) {
-        selectedId = filteredSites.length ? filteredSites[0].id : null;
+      renderSingleBoxplot({
+        divId: "boxplotReciclado",
+        rows,
+        valueAccessor: d => d.reciclado,
+        yTitle: "Contenido reciclado (%)",
+        selectedValueLabel: "Contenido reciclado"
+      });
+    }
+
+    function renderSingleBoxplot({ divId, rows, valueAccessor, yTitle }) {
+      const groups = [...new Set(rows.map(d => d.steelGroup || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
+      const traces = [];
+
+      groups.forEach(group => {
+        const groupRows = rows.filter(d => (d.steelGroup || "Sin clasificar") === group);
+        const values = groupRows.map(valueAccessor).filter(v => Number.isFinite(v));
+
+        traces.push({
+          type: "box",
+          name: group,
+          y: values,
+          boxpoints: false,
+          marker: { color: "#aab7c4" },
+          line: { color: "#6b7b8c", width: 1.5 },
+          fillcolor: "rgba(160,175,190,0.35)",
+          hovertemplate: `${group}<br>${yTitle}: %{y}<extra></extra>`
+        });
+      });
+
+      const selected = rows.find(d => d.id === selectedId);
+      if (selected) {
+        const selectedValue = valueAccessor(selected);
+        if (Number.isFinite(selectedValue)) {
+          traces.push({
+            type: "scatter",
+            mode: "markers",
+            x: [selected.steelGroup || "Sin clasificar"],
+            y: [selectedValue],
+            marker: {
+              size: 13,
+              color: "#111111",
+              line: { color: "#ffffff", width: 1.6 },
+              symbol: "circle"
+            },
+            hovertemplate:
+              `<b>${escapeHtml(selected.codigo || "EPD seleccionada")}</b><br>` +
+              `Grupo: ${escapeHtml(selected.steelGroup || "Sin clasificar")}<br>` +
+              `${yTitle}: ${formatNumber(selectedValue, 2)}<extra></extra>`,
+            showlegend: false
+          });
+        }
       }
 
-      statusEl.textContent = `Datos cargados desde datos.csv · ${filteredSites.length} / ${allSites.length} EPD visibles`;
+      const layout = {
+        ...commonPlotLayout(yTitle),
+        xaxis: {
+          title: "",
+          categoryorder: "array",
+          categoryarray: groups,
+          tickangle: -25,
+          automargin: true
+        },
+        yaxis: {
+          title: yTitle,
+          zeroline: false,
+          automargin: true
+        }
+      };
 
-      renderList();
-      renderDetail();
-      renderMarkers();
-      renderScatterPlot();
+      Plotly.react(divId, traces, layout, { responsive: true, displayModeBar: false });
+
+      const div = document.getElementById(divId);
+      div.on("plotly_click", ev => {
+        const point = ev.points?.[0];
+        if (!point) return;
+
+        if (point.data?.type === "scatter") return;
+
+        const clickedGroup = point.x;
+        const selected = filteredData.find(d => d.id === selectedId);
+        if (selected && selected.steelGroup === clickedGroup) return;
+
+        const candidate = filteredData.find(d => d.steelGroup === clickedGroup);
+        if (candidate) selectItem(candidate.id, { source: "boxplot" });
+      });
     }
 
-    function selectSite(id, centerMap, openPopup) {
+    /******************************************************************
+     * SELECCIÓN CRUZADA
+     ******************************************************************/
+    function selectItem(id, options = {}) {
       selectedId = id;
-      renderList();
-      renderDetail();
-      updateMarkerStyles();
-      renderScatterPlot();
 
-      if (!map) return;
+      refreshMapSelection();
+      refreshListSelection();
+      renderScatter(filteredData);
+      renderBoxplots(filteredData);
 
-      const site = allSites.find(s => s.id === id);
+      const selected = filteredData.find(d => d.id === id);
+      if (!selected) return;
+
       const marker = markerById.get(id);
-
-      if (site && centerMap) {
-        map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
-      }
-
-      if (marker && openPopup) {
+      if (marker && options.source !== "map") {
         marker.openPopup();
       }
-    }
 
-    async function loadData() {
-      try {
-        const response = await fetch("./datos.csv", { cache: "no-store" });
-        if (!response.ok) throw new Error("No se encontró datos.csv");
+      if (Number.isFinite(selected.lat) && Number.isFinite(selected.lon) && options.source !== "map") {
+        map.flyTo([selected.lat, selected.lon], Math.max(map.getZoom(), 5), { duration: 0.7 });
+      }
 
-        const text = await response.text();
-        allSites = parseCSV(text);
-
-        if (!allSites.length) {
-          throw new Error("No hay registros válidos");
-        }
-
-        populateProductFilter();
-
-        filteredSites = [...allSites];
-        selectedId = filteredSites.length ? filteredSites[0].id : null;
-
-        statusEl.textContent = `Datos cargados desde datos.csv · ${allSites.length} EPD`;
-        renderList();
-        renderDetail();
-        renderMarkers();
-        renderScatterPlot();
-
-        setTimeout(() => map.invalidateSize(), 50);
-      } catch (error) {
-        statusEl.textContent = "Error al leer datos.csv: " + error.message;
-        chartStatusEl.textContent = "No se pudo construir el gráfico.";
-        allSites = [];
-        filteredSites = [];
-        selectedId = null;
-        renderList();
-        renderDetail();
+      const itemEl = document.querySelector(`.epd-item[data-id="${CSS.escape(id)}"]`);
+      if (itemEl && options.source !== "list") {
+        itemEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     }
 
-    searchInput.addEventListener("input", applyFilter);
-    productFilterEl.addEventListener("change", applyFilter);
+    /******************************************************************
+     * FILTRADO Y RENDER
+     ******************************************************************/
+    function populateFilter(rows) {
+      const values = [...new Set(rows.map(d => d.productoAsignado || "Sin clasificar"))].sort((a, b) => a.localeCompare(b, "es"));
+
+      productoFilterEl.innerHTML = `<option value="__ALL__">Todos</option>`;
+      values.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        productoFilterEl.appendChild(opt);
+      });
+    }
+
+    function applyFilterAndRender() {
+      const selectedProducto = productoFilterEl.value;
+
+      filteredData = rawData.filter(d => {
+        if (selectedProducto !== "__ALL__" && d.productoAsignado !== selectedProducto) return false;
+        return true;
+      });
+
+      if (!filteredData.find(d => d.id === selectedId)) {
+        selectedId = filteredData[0]?.id || null;
+      }
+
+      renderMap(filteredData);
+      renderList(filteredData);
+      renderScatter(filteredData);
+      renderBoxplots(filteredData);
+    }
+
+    /******************************************************************
+     * CARGA DE DATOS
+     ******************************************************************/
+    function loadData() {
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: results => {
+          const parsed = (results.data || [])
+            .map((row, i) => normalizeRow(row, i))
+            .filter(d =>
+              Number.isFinite(d.gwp) ||
+              Number.isFinite(d.reciclado) ||
+              (Number.isFinite(d.lat) && Number.isFinite(d.lon))
+            );
+
+          rawData = parsed;
+          colorMap = buildColorMap(rawData);
+
+          populateFilter(rawData);
+          applyFilterAndRender();
+        },
+        error: err => {
+          console.error(err);
+          listStatusEl.textContent = "Error al cargar datos.csv";
+          epdListEl.innerHTML = "";
+          Plotly.purge("scatterPlot");
+          Plotly.purge("boxplotEmisiones");
+          Plotly.purge("boxplotReciclado");
+        }
+      });
+    }
+
+    /******************************************************************
+     * INICIALIZACIÓN
+     ******************************************************************/
+    productoFilterEl.addEventListener("change", () => {
+      applyFilterAndRender();
+    });
 
     initMap();
     loadData();
+
+    window.addEventListener("resize", () => {
+      if (map) {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    });
   </script>
 </body>
 </html>
