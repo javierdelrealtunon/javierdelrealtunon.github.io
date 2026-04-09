@@ -8,848 +8,1190 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
   />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
   <style>
     :root {
-      --bg: #f2f5fa;
-      --panel: #ffffff;
-      --border: #cfd8e3;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --blue: #2563eb;
-      --shadow: 0 1px 4px rgba(0,0,0,0.05);
-      --radius: 8px;
-      --map-height: 430px;
+      --bg: #08101d;
+      --panel: #12203a;
+      --panel-2: #172844;
+      --border: #2a3c5f;
+      --text: #eaf1ff;
+      --muted: #9db0d1;
+      --accent: #66b3ff;
     }
 
-    * {
-      box-sizing: border-box;
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
     }
 
     body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #08101d 0%, #0d1830 100%);
       color: var(--text);
     }
 
-    .page {
-      max-width: 1660px;
+    .wrap {
+      width: min(98vw, 1900px);
       margin: 0 auto;
-      padding: 14px 18px 20px;
+      padding: 10px 14px 18px;
     }
 
-    .back-link {
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .back {
       display: inline-block;
-      font-size: 12px;
-      color: #3468c9;
       text-decoration: none;
-      margin-bottom: 6px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      font-size: 0.95rem;
     }
 
     h1 {
-      margin: 0 0 6px;
-      font-size: 20px;
-      font-weight: 700;
+      margin: 0 0 10px;
+      font-size: clamp(2.1rem, 3vw, 3.4rem);
+      line-height: 1.05;
     }
 
-    .intro {
-      margin: 0 0 10px;
-      font-size: 11px;
+    .subtitle {
+      margin: 0 0 14px;
       color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.55;
+      max-width: 1000px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .left-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
     }
 
     .panel {
-      background: var(--panel);
+      background: rgba(18, 32, 58, 0.94);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 14px;
+      min-width: 0;
     }
 
-    .controls {
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-bottom: 12px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .search,
+    .filter-select {
+      width: 100%;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
       padding: 10px 12px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      outline: none;
     }
 
-    .control-group {
-      display: inline-flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 240px;
-    }
-
-    .control-group label {
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .control-group select {
-      height: 28px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 11px;
-      padding: 0 8px;
-      background: #fff;
+    .filter-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
     }
 
     .legend-note {
-      margin-top: 6px;
-      font-size: 10px;
+      margin: 0 0 12px;
       color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
     }
 
-    .top-grid {
+    .site-list {
       display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-      align-items: stretch;
+      gap: 8px;
+      max-height: calc(100vh - 370px);
+      overflow: auto;
+      padding-right: 4px;
     }
 
-    .bottom-grid {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 10px;
-      align-items: stretch;
+    .site-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.15s ease;
     }
 
-    .section {
-      padding: 8px;
+    .site-btn:hover,
+    .site-btn.active {
+      border-color: var(--accent);
+      transform: translateY(-1px);
     }
 
-    .section-title {
-      margin: 0 0 3px;
-      font-size: 12px;
-      font-weight: 700;
+    .site-btn strong {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 1rem;
     }
 
-    .section-subtitle {
-      margin: 0 0 8px;
-      font-size: 9px;
+    .site-btn span {
+      display: block;
       color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      display: inline-block;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .empty {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .main-panel {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
     }
 
     #map {
       width: 100%;
-      height: var(--map-height);
-      aspect-ratio: 1 / 1;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      height: min(60vh, 760px);
+      min-height: 520px;
+      border-radius: 18px;
       overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0b1220;
     }
 
-    .boxplots-wrap {
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 430px;
+      min-height: 320px;
+    }
+
+    #scatterChart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .detail-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      height: var(--map-height);
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
     }
 
-    .plot-card {
+    .metric {
+      background: var(--panel-2);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px;
-      min-width: 0;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
+      border-radius: 14px;
+      padding: 12px;
     }
 
-    .plot-title {
-      margin: 0 0 2px;
-      font-size: 10px;
-      font-weight: 700;
-    }
-
-    .plot-subtitle {
-      margin: 0 0 4px;
-      font-size: 8px;
+    .metric .k {
+      display: block;
       color: var(--muted);
-    }
-
-    .plot-box {
-      flex: 1;
-      min-height: 0;
-    }
-
-    .list-scroll {
-      height: 330px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    .list-meta {
-      font-size: 10px;
+      font-size: 0.8rem;
       margin-bottom: 6px;
-      color: var(--muted);
     }
 
-    .epd-item {
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px;
-      margin-bottom: 8px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .epd-item.selected {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.15);
-      background: #f8fbff;
-    }
-
-    .epd-item-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
+    .metric .v {
+      display: block;
+      font-size: 1rem;
       font-weight: 700;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .leaflet-container {
+      background: #0b1220;
+    }
+
+    .leaflet-control-layers {
+      border-radius: 12px;
+    }
+
+    .leaflet-popup-content {
+      margin: 14px 16px;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px;
+    }
+
+    .popup-shell {
+      width: min(72vw, 520px);
+    }
+
+    .popup-head {
+      margin-bottom: 12px;
+    }
+
+    .popup-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 2px;
+      line-height: 1.35;
+    }
+
+    .popup-subtitle {
+      font-size: 0.86rem;
+      color: #667085;
+      line-height: 1.45;
+    }
+
+    .popup-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .popup-item {
+      background: #f7f9fc;
+      border: 1px solid #dbe4f0;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .popup-item .k {
+      display: block;
+      color: #667085;
+      font-size: 0.75rem;
       margin-bottom: 4px;
     }
 
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      flex: 0 0 auto;
+    .popup-item .v {
+      display: block;
+      color: #111827;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: break-word;
     }
 
-    .epd-item-body {
-      font-size: 9px;
-      color: #334155;
-      line-height: 1.3;
+    .popup-links {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    #scatterPlot {
-      width: 100%;
-      height: 330px;
+    .popup-link,
+    .detail-link {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #66b3ff;
+      background: #dcedff;
+      color: #0d3f74;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
     }
 
-    .empty-note {
-      font-size: 10px;
-      color: var(--muted);
-      padding: 8px 0;
+    .popup-link:hover,
+    .detail-link:hover {
+      background: #cfe8ff;
+    }
+
+    .detail-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (min-width: 1700px) {
+      .layout {
+        grid-template-columns: 340px minmax(0, 1fr);
+      }
+
+      .popup-shell {
+        width: min(68vw, 560px);
+      }
     }
 
     @media (max-width: 1100px) {
-      .top-grid,
-      .bottom-grid {
+      .wrap {
+        width: min(99vw, 1400px);
+        padding: 10px 10px 16px;
+      }
+
+      .layout {
         grid-template-columns: 1fr;
       }
 
-      .boxplots-wrap {
-        height: auto;
-        grid-template-columns: 1fr 1fr;
+      .site-list {
+        max-height: none;
       }
 
-      .plot-card {
-        min-height: 300px;
+      #map {
+        height: 64vh;
+        min-height: 500px;
+      }
+
+      .chart-wrap {
+        height: 360px;
+      }
+
+      .popup-shell {
+        width: min(84vw, 520px);
       }
     }
 
-    @media (max-width: 760px) {
-      .boxplots-wrap {
-        grid-template-columns: 1fr;
+    @media (max-width: 720px) {
+      .wrap {
+        width: 100vw;
+        padding: 8px;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 8vw, 2.6rem);
+      }
+
+      #map {
+        height: 58vh;
+        min-height: 400px;
+      }
+
+      .chart-wrap {
+        height: 320px;
+      }
+
+      .popup-shell {
+        width: min(88vw, 520px);
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <a class="back-link" href="../">← Volver al índice</a>
-    <h1>EPD geolocalizadas</h1>
-    <p class="intro">
-      Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>,
-      con filtro por producto asignado, gráfico de reciclaje vs emisiones y boxplots comparativos por tipo de acero.
-    </p>
-
-    <div class="panel controls">
-      <div class="control-group">
-        <label for="productoFilter">Producto asignado</label>
-        <select id="productoFilter">
-          <option value="__ALL__">Todos</option>
-        </select>
-      </div>
-      <div class="legend-note">
-        El color representa el producto asignado y se mantiene igual en mapa, lista y gráficos.
-      </div>
+  <main class="wrap">
+    <div class="topbar">
+      <a class="back" href="../">← Volver al índice</a>
     </div>
 
-    <div class="top-grid">
-      <div class="panel section">
-        <h2 class="section-title">Mapa</h2>
-        <p class="section-subtitle">
-          Selecciona una EPD en el mapa para ver su posición dentro del rango de su tipo de acero.
-        </p>
+    <header>
+      <h1>EPD geolocalizadas</h1>
+      <div class="subtitle">
+        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="left-panel">
+        <section class="panel">
+          <h2>EPD disponibles</h2>
+          <div id="status" class="status">Cargando datos...</div>
+
+          <label class="filter-label" for="productFilter">Producto asignado</label>
+          <select id="productFilter" class="filter-select">
+            <option value="">Todos</option>
+          </select>
+
+          <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
+
+          <div class="legend-note">
+            El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.
+          </div>
+
+          <div id="siteList" class="site-list"></div>
+        </section>
+      </aside>
+
+      <section class="main-panel">
         <div id="map"></div>
-      </div>
 
-      <div class="panel section">
-        <h2 class="section-title">Distribución por tipo de acero</h2>
-        <p class="section-subtitle">
-          El punto negro resalta la EPD seleccionada dentro de su categoría.
-        </p>
-
-        <div class="boxplots-wrap">
-          <div class="plot-card">
-            <div class="plot-title">Emisiones</div>
-            <div class="plot-subtitle">GWP-total por tipo de acero</div>
-            <div id="boxplotEmisiones" class="plot-box"></div>
+        <section class="panel">
+          <h2>Reciclaje vs emisiones</h2>
+          <div id="chartStatus" class="status">Preparando gráfico...</div>
+          <div class="chart-wrap">
+            <canvas id="scatterChart"></canvas>
           </div>
+        </section>
 
-          <div class="plot-card">
-            <div class="plot-title">Contenido reciclado</div>
-            <div class="plot-subtitle">Porcentaje por tipo de acero</div>
-            <div id="boxplotReciclado" class="plot-box"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <section class="panel">
+          <div id="detail" class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>
+        </section>
+      </section>
+    </section>
+  </main>
 
-    <div class="bottom-grid">
-      <div class="panel section">
-        <h2 class="section-title">EPD disponibles</h2>
-        <div id="listCount" class="list-meta">Cargando datos...</div>
-        <div id="epdList" class="list-scroll"></div>
-      </div>
-
-      <div class="panel section">
-        <h2 class="section-title">Reciclaje vs emisiones</h2>
-        <p class="section-subtitle">
-          Selecciona una EPD de la lista, del mapa o del gráfico.
-        </p>
-        <div id="scatterPlot"></div>
-      </div>
-    </div>
-  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    const CSV_FILE = "datos.csv";
-    const DEFAULT_CENTER = [20, 0];
-    const DEFAULT_ZOOM = 2;
+    const REQUIRED_KEYS = ["name", "lat", "lon"];
+    const RESERVED_KEYS = ["id", "name", "lat", "lon"];
 
-    let allData = [];
-    let filteredData = [];
+    const INITIAL_CENTER = [20, 0];
+    const INITIAL_ZOOM = 2;
+    const PDF_BASE_PATH = "./pdffiles/";
+
+    const CATEGORY_COLORS = [
+      "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
+      "#00a950", "#58595b", "#8549ba", "#ffb000", "#00bcd4", "#ff7043",
+      "#7e57c2", "#66bb6a", "#ef5350", "#26a69a", "#ab47bc", "#ffa726",
+      "#8d6e63", "#42a5f5"
+    ];
+
+    let allSites = [];
+    let filteredSites = [];
     let selectedId = null;
 
     let map;
-    let markersLayer;
-    let markerMap = new Map();
-    let colorMap = new Map();
+    let cartoLayer;
+    let orthoLayer;
+    let markers = [];
+    let markerById = new Map();
 
-    const productoFilter = document.getElementById("productoFilter");
-    const epdList = document.getElementById("epdList");
-    const listCount = document.getElementById("listCount");
+    let scatterChart = null;
+    const categoryColorMap = new Map();
 
-    function normalizeText(str) {
-      return String(str || "")
+    const statusEl = document.getElementById("status");
+    const chartStatusEl = document.getElementById("chartStatus");
+    const siteListEl = document.getElementById("siteList");
+    const detailEl = document.getElementById("detail");
+    const searchInput = document.getElementById("searchInput");
+    const productFilterEl = document.getElementById("productFilter");
+
+    function detectDelimiter(headerLine) {
+      const semicolons = (headerLine.match(/;/g) || []).length;
+      const commas = (headerLine.match(/,/g) || []).length;
+      return semicolons > commas ? ";" : ",";
+    }
+
+    function splitCSVLine(line, delimiter) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const next = line[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    function slugify(text) {
+      return String(text || "")
+        .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .trim()
-        .toLowerCase();
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
     }
 
-    function getValueByAliases(obj, aliases) {
-      const entries = Object.entries(obj || {});
-      for (const alias of aliases) {
-        const aliasNorm = normalizeText(alias);
-        for (const [key, value] of entries) {
-          if (normalizeText(key) === aliasNorm) return value;
-        }
-      }
-      return "";
+    function labelFromKey(key) {
+      const labels = {
+        name: "Nombre",
+        lat: "Latitud",
+        lon: "Longitud",
+        codigo_epd: "Código EPD",
+        producto: "Producto",
+        producto_asignado: "Producto asignado",
+        pais_produccion: "País producción",
+        ciudad_produccion: "Ciudad producción",
+        centro_produccion: "Centro de producción",
+        titular: "Titular",
+        compania_verificadora: "Compañía verificadora",
+        referencia: "Referencia",
+        ruta_de_produccion: "Ruta de producción",
+        contenido_reciclado_pct: "Contenido reciclado %",
+        gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
+        archivo: "Archivo PDF",
+        pdf_url: "PDF",
+        caracteristicas_funcionales: "Características funcionales"
+      };
+
+      if (labels[key]) return labels[key];
+
+      return key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
     }
 
-    function getFirstValue(obj, aliases) {
-      const exact = getValueByAliases(obj, aliases);
-      if (exact !== "") return exact;
-
-      const entries = Object.entries(obj || {});
-      for (const alias of aliases) {
-        const a = normalizeText(alias);
-        for (const [key, value] of entries) {
-          const k = normalizeText(key);
-          if (k.includes(a) || a.includes(k)) return value;
-        }
-      }
-      return "";
-    }
-
-    function parseNumber(value) {
-      if (value === null || value === undefined) return null;
-      let s = String(value).trim();
-      if (!s) return null;
-
-      s = s.replace(/\u00A0/g, "");
-      s = s.replace(/%/g, "");
-      s = s.replace(/CO₂/g, "CO2");
-      s = s.replace(/[^\d,.\-]/g, "");
-
-      const hasComma = s.includes(",");
-      const hasDot = s.includes(".");
-
-      if (hasComma && hasDot) {
-        if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
-          s = s.replace(/\./g, "").replace(",", ".");
-        } else {
-          s = s.replace(/,/g, "");
-        }
-      } else if (hasComma && !hasDot) {
-        s = s.replace(",", ".");
-      }
-
-      const n = Number(s);
-      return Number.isFinite(n) ? n : null;
-    }
-
-    function formatNum(v, dec = 2) {
-      if (v === null || v === undefined || !Number.isFinite(v)) return "—";
-      return new Intl.NumberFormat("es-ES", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: dec
-      }).format(v);
-    }
-
-    function esc(str) {
-      return String(str ?? "")
+    function escapeHtml(value) {
+      return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
-    function inferSteelGroup(row) {
-      const prodAsignado = String(getFirstValue(row, ["Producto asignado"]) || "").trim();
-      const producto = String(getFirstValue(row, ["Producto"]) || "").trim();
-      const ruta = String(getFirstValue(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim();
+    function parseCoordinate(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return NaN;
 
-      if (prodAsignado) return prodAsignado;
-      if (producto) return producto;
-      if (ruta) return ruta;
-      return "Sin clasificar";
+      if (/[.,]/.test(raw)) {
+        return parseFloat(raw.replace(",", "."));
+      }
+
+      const sign = raw.startsWith("-") ? -1 : 1;
+      const digits = raw.replace(/^[+-]/, "");
+
+      if (!/^\d+$/.test(digits)) return NaN;
+
+      if (digits.length >= 3) {
+        const whole = digits.slice(0, digits.length - 2);
+        const decimal = digits.slice(-2);
+        return sign * parseFloat(`${whole}.${decimal}`);
+      }
+
+      return sign * parseFloat(digits);
     }
 
-    function inferPdfUrl(row) {
-      const url = getFirstValue(row, ["PDF", "URL", "Enlace", "Archivo", "Link PDF"]);
-      if (url && /^https?:\/\//i.test(String(url).trim())) return String(url).trim();
-      return "";
+    function parseLocaleNumber(value) {
+      let raw = String(value ?? "").trim();
+      if (!raw) return NaN;
+
+      raw = raw
+        .replace(/\s+/g, "")
+        .replace(/[%‰]/g, "")
+        .replace(/[^\d,.\-]/g, "");
+
+      if (!raw) return NaN;
+
+      const hasComma = raw.includes(",");
+      const hasDot = raw.includes(".");
+
+      if (hasComma && hasDot) {
+        if (raw.lastIndexOf(",") > raw.lastIndexOf(".")) {
+          raw = raw.replace(/\./g, "").replace(",", ".");
+        } else {
+          raw = raw.replace(/,/g, "");
+        }
+      } else if (hasComma) {
+        raw = raw.replace(",", ".");
+      }
+
+      const n = parseFloat(raw);
+      return Number.isFinite(n) ? n : NaN;
     }
 
-    function buildId(row, i) {
-      return [
-        getFirstValue(row, ["Código EPD", "Codigo EPD", "EPD code"]),
-        getFirstValue(row, ["Producto asignado"]),
-        getFirstValue(row, ["Producto"]),
-        getFirstValue(row, ["Titular", "Empresa"]),
-        i
-      ].join(" | ");
+    function getAssignedProduct(site) {
+      const value = site?.raw?.producto_asignado;
+      return value && String(value).trim() !== "" ? String(value).trim() : "Sin asignar";
     }
 
-    function normalizeRow(row, i) {
-      const productoAsignado = String(getFirstValue(row, ["Producto asignado"]) || "").trim() || "Sin clasificar";
-
-      return {
-        id: buildId(row, i),
-        raw: row,
-        codigo: String(getFirstValue(row, ["Código EPD", "Codigo EPD", "EPD code"]) || "").trim(),
-        producto: String(getFirstValue(row, ["Producto"]) || "").trim(),
-        productoAsignado,
-        titular: String(getFirstValue(row, ["Titular", "Empresa", "Company"]) || "").trim(),
-        pais: String(getFirstValue(row, ["País Producción", "Pais Produccion", "País", "Pais"]) || "").trim(),
-        ciudad: String(getFirstValue(row, ["Ciudad producción", "Ciudad produccion", "Ciudad"]) || "").trim(),
-        ruta: String(getFirstValue(row, ["Ruta de producción", "Ruta de produccion", "Ruta"]) || "").trim(),
-        lat: parseNumber(getFirstValue(row, ["Latitud", "Latitude", "lat"])),
-        lon: parseNumber(getFirstValue(row, ["Longitud", "Longitude", "lon", "lng"])),
-        gwp: parseNumber(getFirstValue(row, [
-          "GWP-total (kg CO2e/t steel)",
-          "GWP-total (kg CO₂e/t steel)",
-          "GWP-total",
-          "GWP total",
-          "GWP"
-        ])),
-        reciclado: parseNumber(getFirstValue(row, [
-          "Contenido reciclado %",
-          "Contenido reciclado",
-          "% reciclado",
-          "Recycled content %",
-          "Recycled content"
-        ])),
-        steelGroup: inferSteelGroup(row),
-        pdfUrl: inferPdfUrl(row)
-      };
+    function getColorForCategory(category) {
+      const key = category || "Sin asignar";
+      if (!categoryColorMap.has(key)) {
+        categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
+      }
+      return categoryColorMap.get(key);
     }
 
-    const palette = [
-      "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-      "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
-      "#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2"
-    ];
+    function getPdfSubdir(site) {
+      const explicitFolder =
+        String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
 
-    function buildColorMap(data) {
-      const cats = [...new Set(data.map(d => d.productoAsignado || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
-      const m = new Map();
-      cats.forEach((c, i) => m.set(c, palette[i % palette.length]));
-      return m;
+      if (explicitFolder) {
+        return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+      }
+
+      const productAssigned = String(site?.productAssigned || "").trim();
+      const normalized = productAssigned
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      if (normalized.includes("b500sd")) return "B500SD";
+      if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
+      if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
+
+      return slugify(productAssigned).replace(/-/g, "_");
     }
 
-    function initMap() {
-      map = L.map("map", {
-        worldCopyJump: true
-      }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    function buildPdfHref(site) {
+      const archivoRaw = String(site?.raw?.archivo || "").trim();
+      if (!archivoRaw) {
+        const pdfUrl = String(site?.raw?.pdf_url || "").trim();
+        return pdfUrl || "";
+      }
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+      const fileName = archivoRaw.split(/[\\/]/).pop().trim();
+      const subdir = getPdfSubdir(site);
 
-      markersLayer = L.layerGroup().addTo(map);
+      const safeFileName = fileName
+        .split("/")
+        .filter(Boolean)
+        .map(part => encodeURIComponent(part))
+        .join("/");
+
+      const safeSubdir = String(subdir || "")
+        .split("/")
+        .filter(Boolean)
+        .map(part => encodeURIComponent(part))
+        .join("/");
+
+      if (safeSubdir) {
+        return `${PDF_BASE_PATH}${safeSubdir}/${safeFileName}`;
+      }
+
+      return `${PDF_BASE_PATH}${safeFileName}`;
     }
 
-    function markerHTML(color, selected = false) {
-      const size = selected ? 12 : 9;
-      const border = selected ? 2.5 : 1.5;
-      return `
-        <div style="
-          width:${size}px;
-          height:${size}px;
-          border-radius:50%;
-          background:${color};
-          border:${border}px solid white;
-          box-shadow:0 0 0 1px rgba(0,0,0,0.18);
-        "></div>
-      `;
+    function getListSubtitle(site) {
+      const candidates = [
+        "pais_produccion",
+        "ciudad_produccion",
+        "producto_asignado",
+        "producto"
+      ];
+
+      const parts = candidates
+        .map(k => site.raw[k])
+        .filter(v => v && String(v).trim() !== "");
+
+      return parts.join(" · ") || "Sin datos complementarios";
     }
 
-    function popupHTML(d) {
-      return `
-        <div style="font-size:12px; line-height:1.45; min-width:210px;">
-          <div style="font-weight:700; margin-bottom:5px;">${esc(d.codigo || d.productoAsignado || "EPD")}</div>
-          <div><strong>Tipo:</strong> ${esc(d.productoAsignado || "—")}</div>
-          <div><strong>Ubicación:</strong> ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
-          <div><strong>GWP-total:</strong> ${formatNum(d.gwp)}</div>
-          <div><strong>Contenido reciclado:</strong> ${formatNum(d.reciclado)}%</div>
-          ${d.pdfUrl ? `<div style="margin-top:5px;"><a href="${esc(d.pdfUrl)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a></div>` : ""}
+    function getPopupSubtitle(site) {
+      const producto = String(site.raw.producto || "").trim();
+      return producto || "EPD geolocalizada";
+    }
+
+    function getDisplayKeys(site) {
+      return Object.keys(site.raw).filter(key => {
+        if (RESERVED_KEYS.includes(key)) return false;
+        const value = site.raw[key];
+        return value !== undefined && value !== null && String(value).trim() !== "";
+      });
+    }
+
+    function parseCSV(text) {
+      const cleanedText = text.replace(/^\uFEFF/, "").trim();
+      const lines = cleanedText.split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) throw new Error("CSV vacío o sin filas de datos");
+
+      const delimiter = detectDelimiter(lines[0]);
+      const headers = splitCSVLine(lines[0], delimiter).map(h => h.trim());
+      const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
+
+      if (missing.length) {
+        throw new Error("Faltan columnas obligatorias: " + missing.join(", "));
+      }
+
+      return lines.slice(1).map((line, idx) => {
+        const values = splitCSVLine(line, delimiter);
+        const raw = {};
+
+        headers.forEach((header, i) => {
+          raw[header] = (values[i] || "").trim();
+        });
+
+        const site = {
+          id: raw.id || slugify(raw.name) || `epd-${idx + 1}`,
+          name: raw.name || `EPD ${idx + 1}`,
+          lat: parseCoordinate(raw.lat),
+          lon: parseCoordinate(raw.lon),
+          raw
+        };
+
+        if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
+
+        site.productAssigned = getAssignedProduct(site);
+        site.recycledPct = parseLocaleNumber(site.raw.contenido_reciclado_pct);
+        site.gwp = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
+
+        return site;
+      }).filter(Boolean);
+    }
+
+    function populateProductFilter() {
+      const products = Array.from(new Set(allSites.map(site => site.productAssigned)))
+        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+
+      productFilterEl.innerHTML = `<option value="">Todos</option>` +
+        products.map(product => `
+          <option value="${escapeHtml(product)}">${escapeHtml(product)}</option>
+        `).join("");
+    }
+
+    function renderList() {
+      siteListEl.innerHTML = "";
+
+      if (!filteredSites.length) {
+        siteListEl.innerHTML = '<div class="empty">No hay EPD que coincidan con el filtro actual.</div>';
+        return;
+      }
+
+      filteredSites.forEach(site => {
+        const btn = document.createElement("button");
+        btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
+        btn.innerHTML = `
+          <strong>
+            <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))};"></span>
+            ${escapeHtml(site.name)}
+          </strong>
+          <span>${escapeHtml(getListSubtitle(site))}</span>
+        `;
+        btn.addEventListener("click", () => selectSite(site.id, true, true));
+        siteListEl.appendChild(btn);
+      });
+    }
+
+    function renderDetail() {
+      const site = allSites.find(s => s.id === selectedId);
+
+      if (!site) {
+        detailEl.innerHTML = '<div class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>';
+        return;
+      }
+
+      const displayKeys = getDisplayKeys(site);
+      const pdfHref = buildPdfHref(site);
+
+      const metricsHtml = displayKeys.length
+        ? `<div class="detail-grid">${
+            displayKeys.map(key => {
+              const value = site.raw[key];
+
+              if (key === "archivo" && pdfHref) {
+                return `
+                  <div class="metric">
+                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                    <span class="v"><a href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
+                  </div>
+                `;
+              }
+
+              if (key === "pdf_url" && String(value).trim() !== "") {
+                return `
+                  <div class="metric">
+                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                    <span class="v"><a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">Abrir PDF</a></span>
+                  </div>
+                `;
+              }
+
+              return `
+                <div class="metric">
+                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
+                  <span class="v">${escapeHtml(value)}</span>
+                </div>
+              `;
+            }).join("")
+          }</div>`
+        : "";
+
+      detailEl.innerHTML = `
+        <h3 style="margin:0 0 6px; font-size:1.3rem; display:flex; align-items:center; gap:10px;">
+          <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))}; width:14px; height:14px;"></span>
+          ${escapeHtml(site.name)}
+        </h3>
+        <div style="color:#9db0d1; line-height:1.5;">
+          Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)} · ${escapeHtml(site.productAssigned)}
+        </div>
+        ${metricsHtml}
+        <div class="detail-actions">
+          ${pdfHref ? `<a class="detail-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
+          <a class="detail-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
         </div>
       `;
     }
 
-    function renderMap(data) {
-      markersLayer.clearLayers();
-      markerMap.clear();
+    function buildPopupHtml(site) {
+      const popupKeys = [
+        "contenido_reciclado_pct",
+        "gwp_total_kg_co2e_t"
+      ].filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
 
-      const bounds = [];
+      const popupItems = popupKeys.length
+        ? popupKeys.map(key => `
+            <div class="popup-item">
+              <span class="k">${escapeHtml(labelFromKey(key))}</span>
+              <span class="v">${escapeHtml(site.raw[key])}</span>
+            </div>
+          `).join("")
+        : `
+            <div class="popup-item">
+              <span class="k">Ubicación</span>
+              <span class="v">Lat ${site.lat.toFixed(4)}, Lon ${site.lon.toFixed(4)}</span>
+            </div>
+          `;
 
-      data.forEach(d => {
-        if (!Number.isFinite(d.lat) || !Number.isFinite(d.lon)) return;
+      const pdfHref = buildPdfHref(site);
 
-        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
-        const icon = L.divIcon({
-          html: markerHTML(color, d.id === selectedId),
-          className: "",
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
-          popupAnchor: [0, -6]
-        });
+      return `
+        <div class="popup-shell">
+          <div class="popup-head">
+            <div class="popup-title">${escapeHtml(site.name)}</div>
+            <div class="popup-subtitle">${escapeHtml(getPopupSubtitle(site))}</div>
+          </div>
 
-        const marker = L.marker([d.lat, d.lon], { icon })
-          .bindPopup(popupHTML(d))
-          .on("click", () => selectItem(d.id, "map"))
-          .addTo(markersLayer);
+          <div class="popup-grid">
+            ${popupItems}
+          </div>
 
-        markerMap.set(d.id, marker);
-        bounds.push([d.lat, d.lon]);
-      });
-
-      if (bounds.length) {
-        map.fitBounds(bounds, { padding: [20, 20] });
-      } else {
-        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-      }
+          <div class="popup-links">
+            ${pdfHref ? `<a class="popup-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : ""}
+            <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">Ver ubicación</a>
+          </div>
+        </div>
+      `;
     }
 
-    function refreshMapSelection() {
-      markerMap.forEach((marker, id) => {
-        const d = filteredData.find(x => x.id === id);
-        if (!d) return;
-        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
-        marker.setIcon(L.divIcon({
-          html: markerHTML(color, id === selectedId),
-          className: "",
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
-          popupAnchor: [0, -6]
-        }));
+    function initMap() {
+      cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      });
+
+      orthoLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          attribution: "Tiles &copy; Esri"
+        }
+      );
+
+      map = L.map("map", {
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+        layers: [cartoLayer]
+      });
+
+      L.control.layers(
+        {
+          "Cartografía": cartoLayer,
+          "Ortofoto": orthoLayer
+        },
+        {},
+        { collapsed: false }
+      ).addTo(map);
+    }
+
+    function getMarkerStyle(site, isSelected = false) {
+      return {
+        radius: isSelected ? 10 : 7,
+        fillColor: getColorForCategory(site.productAssigned),
+        color: isSelected ? "#ffffff" : "rgba(255,255,255,0.72)",
+        weight: isSelected ? 3 : 1.5,
+        opacity: 1,
+        fillOpacity: isSelected ? 1 : 0.88
+      };
+    }
+
+    function updateMarkerStyles() {
+      markerById.forEach((marker, id) => {
+        const site = allSites.find(s => s.id === id);
+        if (!site) return;
+        marker.setStyle(getMarkerStyle(site, id === selectedId));
       });
     }
 
-    function renderList(data) {
-      epdList.innerHTML = "";
-      listCount.textContent = `${data.length} EPD mostradas.`;
+    function renderMarkers() {
+      markers.forEach(marker => map.removeLayer(marker));
+      markers = [];
+      markerById = new Map();
 
-      if (!data.length) {
-        epdList.innerHTML = `<div class="empty-note">No hay datos para este filtro.</div>`;
+      if (!filteredSites.length) {
+        map.setView(INITIAL_CENTER, INITIAL_ZOOM);
         return;
       }
 
-      data.forEach(d => {
-        const el = document.createElement("div");
-        el.className = "epd-item" + (d.id === selectedId ? " selected" : "");
-        el.dataset.id = d.id;
+      const bounds = [];
 
-        const color = colorMap.get(d.productoAsignado) || "#1f77b4";
+      filteredSites.forEach(site => {
+        const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId))
+          .addTo(map);
 
-        el.innerHTML = `
-          <div class="epd-item-title">
-            <span class="dot" style="background:${color}"></span>
-            ${esc(d.codigo || d.productoAsignado || "EPD")}
-          </div>
-          <div class="epd-item-body">
-            <div><strong>Tipo:</strong> ${esc(d.productoAsignado || "—")}</div>
-            <div><strong>Grupo boxplot:</strong> ${esc(d.steelGroup || "—")}</div>
-            <div><strong>Ubicación:</strong> ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}</div>
-            <div><strong>GWP-total:</strong> ${formatNum(d.gwp)}</div>
-            <div><strong>Contenido reciclado:</strong> ${formatNum(d.reciclado)}%</div>
-          </div>
-        `;
+        marker.bindPopup(buildPopupHtml(site), {
+          maxWidth: 580,
+          minWidth: 320,
+          autoPan: true
+        });
 
-        el.addEventListener("click", () => selectItem(d.id, "list"));
-        epdList.appendChild(el);
-      });
-    }
+        marker.on("click", () => {
+          selectedId = site.id;
+          renderList();
+          renderDetail();
+          updateMarkerStyles();
+          renderScatterPlot();
+        });
 
-    function refreshListSelection() {
-      document.querySelectorAll(".epd-item").forEach(el => {
-        el.classList.toggle("selected", el.dataset.id === selectedId);
-      });
-    }
-
-    function basePlotLayout(yTitle) {
-      return {
-        margin: { l: 50, r: 10, t: 10, b: 55 },
-        paper_bgcolor: "#ffffff",
-        plot_bgcolor: "#ffffff",
-        showlegend: false,
-        xaxis: {
-          tickangle: -30,
-          automargin: true
-        },
-        yaxis: {
-          title: yTitle,
-          automargin: true,
-          zeroline: false
-        },
-        hovermode: "closest"
-      };
-    }
-
-    function renderScatter(data) {
-      const trace = {
-        type: "scatter",
-        mode: "markers",
-        x: data.map(d => d.reciclado),
-        y: data.map(d => d.gwp),
-        customdata: data.map(d => d.id),
-        text: data.map(d => (
-          `<b>${esc(d.codigo || "EPD")}</b><br>` +
-          `Tipo: ${esc(d.productoAsignado || "—")}<br>` +
-          `Grupo: ${esc(d.steelGroup || "—")}<br>` +
-          `Ubicación: ${esc([d.ciudad, d.pais].filter(Boolean).join(", ") || "—")}<br>` +
-          `Reciclado: ${formatNum(d.reciclado)}%<br>` +
-          `GWP-total: ${formatNum(d.gwp)}`
-        )),
-        hovertemplate: "%{text}<extra></extra>",
-        marker: {
-          size: data.map(d => d.id === selectedId ? 11 : 8),
-          color: data.map(d => colorMap.get(d.productoAsignado) || "#1f77b4"),
-          opacity: 0.85,
-          line: {
-            width: data.map(d => d.id === selectedId ? 2 : 0.8),
-            color: data.map(d => d.id === selectedId ? "#111111" : "#ffffff")
-          }
-        }
-      };
-
-      const layout = {
-        ...basePlotLayout("GWP-total"),
-        xaxis: {
-          title: "Contenido reciclado (%)",
-          zeroline: false
-        },
-        yaxis: {
-          title: "GWP-total",
-          zeroline: false
-        }
-      };
-
-      Plotly.react("scatterPlot", [trace], layout, {
-        responsive: true,
-        displayModeBar: true
+        markers.push(marker);
+        markerById.set(site.id, marker);
+        bounds.push([site.lat, site.lon]);
       });
 
-      document.getElementById("scatterPlot").on("plotly_click", ev => {
-        const id = ev.points?.[0]?.customdata;
-        if (id) selectItem(id, "scatter");
-      });
+      if (bounds.length === 1) {
+        map.setView(bounds[0], 6);
+      } else {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
     }
 
-    function renderSingleBoxplot(divId, data, accessor, yTitle) {
-      const groups = [...new Set(data.map(d => d.steelGroup || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
-      const traces = [];
+    function renderScatterPlot() {
+      const chartCanvas = document.getElementById("scatterChart");
+      const validSites = filteredSites.filter(site =>
+        Number.isFinite(site.recycledPct) && Number.isFinite(site.gwp)
+      );
 
-      groups.forEach(group => {
-        const vals = data
-          .filter(d => (d.steelGroup || "Sin clasificar") === group)
-          .map(accessor)
-          .filter(v => Number.isFinite(v));
+      if (scatterChart) {
+        scatterChart.destroy();
+        scatterChart = null;
+      }
 
-        traces.push({
-          type: "box",
-          name: group,
-          y: vals,
-          boxpoints: false,
-          line: { color: "#6b7280", width: 1.4 },
-          fillcolor: "rgba(148,163,184,0.28)",
-          marker: { color: "#94a3b8" },
-          hovertemplate: `${group}<br>${yTitle}: %{y}<extra></extra>`
+      if (!validSites.length) {
+        chartStatusEl.textContent = "No hay registros con valores numéricos válidos en contenido reciclado y GWP-total.";
+        return;
+      }
+
+      const grouped = new Map();
+
+      validSites.forEach(site => {
+        const category = site.productAssigned;
+        if (!grouped.has(category)) grouped.set(category, []);
+
+        grouped.get(category).push({
+          x: site.recycledPct,
+          y: site.gwp,
+          siteId: site.id,
+          label: site.name,
+          productAssigned: site.productAssigned,
+          codigo: site.raw.codigo_epd || "",
+          archivo: site.raw.archivo || ""
         });
       });
 
-      const selected = data.find(d => d.id === selectedId);
-      if (selected) {
-        const val = accessor(selected);
-        if (Number.isFinite(val)) {
-          traces.push({
-            type: "scatter",
-            mode: "markers",
-            x: [selected.steelGroup || "Sin clasificar"],
-            y: [val],
-            marker: {
-              size: 10,
-              color: "#111111",
-              line: { color: "#ffffff", width: 1.5 }
+      const datasets = Array.from(grouped.entries())
+        .sort((a, b) => a[0].localeCompare(b[0], "es", { sensitivity: "base" }))
+        .map(([category, data]) => {
+          const color = getColorForCategory(category);
+          return {
+            label: category,
+            data,
+            showLine: false,
+            borderColor: color,
+            backgroundColor: color,
+            pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
+            pointHoverRadius: 9,
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2
+          };
+        });
+
+      scatterChart = new Chart(chartCanvas, {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          parsing: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#eaf1ff"
+              }
             },
-            hovertemplate:
-              `<b>${esc(selected.codigo || "EPD seleccionada")}</b><br>` +
-              `Grupo: ${esc(selected.steelGroup || "Sin clasificar")}<br>` +
-              `${yTitle}: ${formatNum(val)}<extra></extra>`
-          });
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const raw = context.raw;
+                  return [
+                    raw.label,
+                    `Producto asignado: ${raw.productAssigned}`,
+                    `Reciclaje: ${raw.x} %`,
+                    `CO₂: ${raw.y} kg CO₂e/t`,
+                    raw.codigo ? `Código EPD: ${raw.codigo}` : null
+                  ].filter(Boolean);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              title: {
+                display: true,
+                text: "Contenido reciclado (%)",
+                color: "#eaf1ff"
+              },
+              ticks: {
+                color: "#9db0d1"
+              },
+              grid: {
+                color: "rgba(157,176,209,0.15)"
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "GWP-total (kg CO₂e/t)",
+                color: "#eaf1ff"
+              },
+              ticks: {
+                color: "#9db0d1"
+              },
+              grid: {
+                color: "rgba(157,176,209,0.15)"
+              }
+            }
+          },
+          onClick(event, elements, chart) {
+            if (!elements.length) return;
+            const first = elements[0];
+            const raw = chart.data.datasets[first.datasetIndex].data[first.index];
+            if (raw?.siteId) {
+              selectSite(raw.siteId, true, true);
+            }
+          }
         }
-      }
-
-      const layout = {
-        ...basePlotLayout(yTitle),
-        xaxis: {
-          categoryorder: "array",
-          categoryarray: groups,
-          tickangle: -30,
-          automargin: true
-        },
-        yaxis: {
-          title: yTitle,
-          automargin: true,
-          zeroline: false
-        }
-      };
-
-      Plotly.react(divId, traces, layout, {
-        responsive: true,
-        displayModeBar: false
       });
-    }
 
-    function renderBoxplots(data) {
-      renderSingleBoxplot("boxplotEmisiones", data, d => d.gwp, "GWP-total");
-      renderSingleBoxplot("boxplotReciclado", data, d => d.reciclado, "Contenido reciclado (%)");
-    }
-
-    function selectItem(id, source = "") {
-      selectedId = id;
-
-      refreshMapSelection();
-      refreshListSelection();
-      renderScatter(filteredData);
-      renderBoxplots(filteredData);
-
-      const item = filteredData.find(d => d.id === id);
-      if (!item) return;
-
-      const marker = markerMap.get(id);
-      if (marker && source !== "map") marker.openPopup();
-
-      const listEl = document.querySelector(`.epd-item[data-id="${CSS.escape(id)}"]`);
-      if (listEl && source !== "list") {
-        listEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      }
-    }
-
-    function populateFilter(data) {
-      const values = [...new Set(data.map(d => d.productoAsignado || "Sin clasificar"))].sort((a,b) => a.localeCompare(b, "es"));
-      productoFilter.innerHTML = `<option value="__ALL__">Todos</option>`;
-      values.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        productoFilter.appendChild(opt);
-      });
+      chartStatusEl.textContent = `Puntos representados: ${validSites.length} de ${filteredSites.length} EPD filtradas.`;
     }
 
     function applyFilter() {
-      const sel = productoFilter.value;
+      const q = searchInput.value.trim().toLowerCase();
+      const selectedProduct = productFilterEl.value.trim();
 
-      filteredData = allData.filter(d => {
-        if (sel !== "__ALL__" && d.productoAsignado !== sel) return false;
-        return true;
+      filteredSites = allSites.filter(site => {
+        const matchesProduct = !selectedProduct || site.productAssigned === selectedProduct;
+        const haystack = Object.values(site.raw).join(" ").toLowerCase();
+        const matchesSearch = !q || haystack.includes(q);
+        return matchesProduct && matchesSearch;
       });
 
-      if (!filteredData.some(d => d.id === selectedId)) {
-        selectedId = filteredData[0]?.id || null;
+      if (!filteredSites.some(site => site.id === selectedId)) {
+        selectedId = filteredSites.length ? filteredSites[0].id : null;
       }
 
-      renderMap(filteredData);
-      renderList(filteredData);
-      renderScatter(filteredData);
-      renderBoxplots(filteredData);
+      statusEl.textContent = `Datos cargados desde datos.csv · ${filteredSites.length} / ${allSites.length} EPD visibles`;
+
+      renderList();
+      renderDetail();
+      renderMarkers();
+      renderScatterPlot();
     }
 
-    function loadCSV() {
-      Papa.parse(CSV_FILE, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: results => {
-          allData = (results.data || [])
-            .map((row, i) => normalizeRow(row, i))
-            .filter(d =>
-              Number.isFinite(d.lat) ||
-              Number.isFinite(d.lon) ||
-              Number.isFinite(d.gwp) ||
-              Number.isFinite(d.reciclado)
-            );
+    function selectSite(id, centerMap, openPopup) {
+      selectedId = id;
+      renderList();
+      renderDetail();
+      updateMarkerStyles();
+      renderScatterPlot();
 
-          colorMap = buildColorMap(allData);
-          populateFilter(allData);
-          applyFilter();
-        },
-        error: err => {
-          console.error(err);
-          listCount.textContent = "Error al cargar datos.csv";
-          epdList.innerHTML = `<div class="empty-note">No se ha podido leer el archivo.</div>`;
+      if (!map) return;
+
+      const site = allSites.find(s => s.id === id);
+      const marker = markerById.get(id);
+
+      if (site && centerMap) {
+        map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
+      }
+
+      if (marker && openPopup) {
+        marker.openPopup();
+      }
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch("./datos.csv", { cache: "no-store" });
+        if (!response.ok) throw new Error("No se encontró datos.csv");
+
+        const text = await response.text();
+        allSites = parseCSV(text);
+
+        if (!allSites.length) {
+          throw new Error("No hay registros válidos");
         }
-      });
+
+        populateProductFilter();
+
+        filteredSites = [...allSites];
+        selectedId = filteredSites.length ? filteredSites[0].id : null;
+
+        statusEl.textContent = `Datos cargados desde datos.csv · ${allSites.length} EPD`;
+        renderList();
+        renderDetail();
+        renderMarkers();
+        renderScatterPlot();
+
+        setTimeout(() => map.invalidateSize(), 50);
+      } catch (error) {
+        statusEl.textContent = "Error al leer datos.csv: " + error.message;
+        chartStatusEl.textContent = "No se pudo construir el gráfico.";
+        allSites = [];
+        filteredSites = [];
+        selectedId = null;
+        renderList();
+        renderDetail();
+      }
     }
 
-    productoFilter.addEventListener("change", applyFilter);
+    searchInput.addEventListener("input", applyFilter);
+    productFilterEl.addEventListener("change", applyFilter);
 
     initMap();
-    loadCSV();
-
-    window.addEventListener("resize", () => {
-      if (map) setTimeout(() => map.invalidateSize(), 100);
-    });
+    loadData();
   </script>
 </body>
 </html>
