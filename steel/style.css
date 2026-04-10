@@ -14,9 +14,6 @@
   --radius-lg: 18px;
   --top-row-height: 540px;
   --map-col-width: 560px;
-  --map-height: 420px;
-  --list-height: 240px;
-  --boxplot-height: 380px;
 }
 
 * { box-sizing: border-box; }
@@ -142,10 +139,11 @@ h1 {
 /* ── Barra de filtros horizontal ────────────────────────────────────────── */
 .filter-bar {
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
   gap: 10px;
+  flex-wrap: nowrap;
   margin-bottom: 14px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--panel);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-xl);
@@ -153,34 +151,19 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.filter-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-row--sliders {
-  align-items: flex-start;
-  padding-top: 4px;
-  border-top: 1px solid var(--border-soft);
-}
-
 .filter-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  min-width: 120px;
+  min-width: 90px;
 }
 
-.filter-item.filter-search {
-  flex: 1.4;
-}
+.filter-item.filter-search { flex: 1.2; }
 
 .filter-item--range {
-  flex: 2;
-  min-width: 200px;
+  flex: 1.6;
+  min-width: 140px;
 }
 
 .filter-bar-label {
@@ -197,10 +180,10 @@ h1 {
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
-  padding: 7px 10px;
+  padding: 6px 8px;
   border-radius: 10px;
   outline: none;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -214,18 +197,78 @@ h1 {
 /* ── Panel principal ────────────────────────────────────────────────────── */
 .main-panel {
   display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ── Fila inferior: lista EPD + scatter ─────────────────────────────────── */
+.bottom-row {
+  display: grid;
   grid-template-columns: var(--map-col-width) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 
-.left-col,
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
+/* ── EPD list ───────────────────────────────────────────────────────────── */
+.epd-list-panel {
+  padding: 0 !important;
+  overflow: hidden;
 }
+
+.epd-list-wrap {
+  height: 240px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.epd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.epd-th {
+  position: sticky;
+  top: 0;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.epd-th--num { text-align: right; }
+
+.epd-td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.epd-td--num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.epd-row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.epd-row:hover { background: rgba(102,179,255,0.07); }
+.epd-row--selected { background: rgba(102,179,255,0.13); }
+.epd-row--selected .epd-td { color: var(--accent); }
 
 .panel {
   background: var(--panel);
@@ -250,95 +293,6 @@ h1 {
   font-size: 0.92rem;
   color: var(--muted);
   line-height: 1.5;
-}
-
-/* ── Columna izquierda ──────────────────────────────────────────────────── */
-.map-panel {
-  min-width: 0;
-  height: var(--map-height);
-  min-height: 0;
-}
-
-/* ── EPD list ───────────────────────────────────────────────────────────── */
-.epd-list-panel {
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.epd-list-wrap {
-  height: var(--list-height);
-  overflow-y: auto;
-  overflow-x: auto;
-}
-
-.epd-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-}
-
-.epd-th {
-  position: sticky;
-  top: 0;
-  padding: 9px 10px;
-  text-align: left;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted-2);
-  background: var(--panel-2);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-
-.epd-th--num { text-align: right; }
-
-.epd-td {
-  padding: 7px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  color: var(--text);
-  vertical-align: middle;
-  white-space: nowrap;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.epd-td--num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-.epd-row {
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.epd-row:hover {
-  background: rgba(102,179,255,0.07);
-}
-
-.epd-row--selected {
-  background: rgba(102,179,255,0.13);
-}
-
-.epd-row--selected .epd-td {
-  color: var(--accent);
-}
-
-/* ── Columna derecha ────────────────────────────────────────────────────── */
-.boxplot-panel {
-  height: var(--boxplot-height);
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.scatter-panel {
-  min-height: 0;
 }
 
 /* ── Range sliders ──────────────────────────────────────────────────────── */
@@ -662,9 +616,8 @@ body.map-fullscreen-open {
 
 @media (max-width: 1480px) {
   :root {
-    --map-col-width: 480px;
-    --map-height: 380px;
-    --boxplot-height: 340px;
+    --map-col-width: 500px;
+    --top-row-height: 500px;
   }
 }
 
@@ -674,20 +627,22 @@ body.map-fullscreen-open {
     padding: 10px 10px 16px;
   }
 
-  .main-panel {
+  .top-row,
+  .bottom-row {
     grid-template-columns: 1fr;
   }
 
-  .map-panel {
-    height: 420px;
+  .map-panel,
+  .boxplot-panel {
+    height: auto;
+  }
+
+  #map {
+    min-height: 420px;
   }
 
   .epd-list-wrap {
-    height: 220px;
-  }
-
-  .boxplot-panel {
-    height: auto;
+    height: 200px;
   }
 
   .boxplot-grid {
@@ -701,6 +656,14 @@ body.map-fullscreen-open {
 
   .chart-wrap {
     height: 300px;
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+
+  .filter-item--range {
+    min-width: 200px;
   }
 
   .popup-shell {
@@ -725,6 +688,7 @@ body.map-fullscreen-open {
   }
 
   .filter-bar {
+    flex-wrap: wrap;
     gap: 8px;
     padding: 10px 12px;
   }
@@ -737,8 +701,8 @@ body.map-fullscreen-open {
     min-width: 100%;
   }
 
-  .map-panel {
-    height: 360px;
+  #map {
+    min-height: 360px;
   }
 
   .boxplot-grid {
