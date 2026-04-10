@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Índice de webs | Javier del Real Tuñón</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #07111e;
+      --surface:  #0d1c2e;
+      --border:   rgba(100,181,255,0.12);
+      --border-h: rgba(100,181,255,0.38);
+      --text:     #ddeeff;
+      --muted:    #7a9bbf;
+      --accent:   #5baaff;
+      --accent-2: #62f0cf;
+      --line:     rgba(100,181,255,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background atmosphere ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 0%, rgba(60,120,220,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 90% 80%, rgba(30,180,160,0.07) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 28px 72px;
+    }
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 52px;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--muted);
+      opacity: 0.5;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      max-width: 520px;
+      font-weight: 300;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* ── Cards list ── */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--border);
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--surface);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .card:first-child { border-radius: 17px 17px 0 0; }
+    .card:last-child  { border-radius: 0 0 17px 17px; }
+
+    .card:nth-child(1) { animation-delay: 0.15s; }
+    .card:nth-child(2) { animation-delay: 0.25s; }
+    .card:nth-child(3) { animation-delay: 0.35s; }
+
+    .card:hover {
+      background: rgba(20, 38, 62, 0.98);
+    }
+
+    .card:hover .card-arrow {
+      transform: translateX(4px);
+      color: var(--accent);
+    }
+
+    .card:hover .card-title {
+      color: var(--accent);
+    }
+
+    /* ── Card icon ── */
+    .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(91,170,255,0.08);
+      border: 1px solid rgba(91,170,255,0.15);
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+
+    /* ── Card body ── */
+    .card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: color 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    /* ── Tooltip ── */
+    .tooltip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      font-size: 0.55rem;
+      font-weight: 700;
+      cursor: default;
+      flex-shrink: 0;
+      opacity: 0.55;
+      transition: opacity 0.15s;
+    }
+
+    .tooltip-wrap:hover .tooltip-icon {
+      opacity: 1;
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      width: 280px;
+      background: #0a1828;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      font-weight: 400;
+      border: 1px solid var(--border-h);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      z-index: 20;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+      pointer-events: none;
+    }
+
+    .tooltip-wrap:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Card arrow ── */
+    .card-arrow {
+      color: var(--muted);
+      font-size: 1rem;
+      transition: transform 0.18s ease, color 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer note ── */
+    .note {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      opacity: 0.7;
+      font-weight: 300;
+    }
+
+    .note code {
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <div class="eyebrow">Repositorio GitHub Pages</div>
+      <h1>Webs y <em>herramientas</em></h1>
+      <p class="lead">
+        Acceso centralizado a mapas, visores y utilidades publicadas en el repositorio.
+        Cada enlace apunta a un subdirectorio independiente.
+      </p>
+    </header>
+
+    <section>
+      <div class="section-label">Disponible ahora</div>
+      <div class="cards">
+
+        <a class="card" href="./meteo/">
+          <div class="card-icon">🌊</div>
+          <div class="card-body">
+            <div class="card-title">
+              Mapa metoceánico
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Visualización de localizaciones metoceánicas sobre mapa, con selección de puntos y lectura de datos desde un archivo CSV alojado en el repositorio.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="./EPD/">
+          <div class="card-icon">🌿</div>
+          <div class="card-body">
+            <div class="card-title">
+              Sostenibilidad de materiales para eólica marina
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Visor de materiales clave para eólica marina, con marcadores georreferenciados por centro de producción y ficha descriptiva de cada declaración ambiental.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+      </div>
+    </section>
+
+    <p class="note">
+      Para añadir nuevas webs, crea un subdirectorio con su propio
+      <code>index.html</code> y enlázalo desde esta página.
+    </p>
+
+  </main>
+</body>
+</html>
