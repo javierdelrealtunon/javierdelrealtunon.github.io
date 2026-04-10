@@ -29,78 +29,116 @@
     </header>
 
     <div class="filter-bar">
-      <div class="filter-item">
-        <label id="continentFilterLabel" class="filter-bar-label" for="continentFilter">Continente</label>
-        <select id="continentFilter" class="filter-select-bar">
-          <option value="">Todos</option>
-        </select>
+      <div class="filter-row filter-row--dropdowns">
+        <div class="filter-item">
+          <label id="continentFilterLabel" class="filter-bar-label" for="continentFilter">Continente</label>
+          <select id="continentFilter" class="filter-select-bar">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label id="countryFilterLabel" class="filter-bar-label" for="countryFilter">País de producción</label>
+          <select id="countryFilter" class="filter-select-bar">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label id="productFilterLabel" class="filter-bar-label" for="productFilter">Tipo de acero</label>
+          <select id="productFilter" class="filter-select-bar">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-item filter-search">
+          <label id="searchLabel" class="filter-bar-label" for="searchInput">Buscar</label>
+          <input id="searchInput" class="search-bar" type="text" placeholder="Nombre, código…" />
+        </div>
       </div>
 
-      <div class="filter-item">
-        <label id="countryFilterLabel" class="filter-bar-label" for="countryFilter">País de producción</label>
-        <select id="countryFilter" class="filter-select-bar">
-          <option value="">Todos</option>
-        </select>
-      </div>
+      <div class="filter-row filter-row--sliders">
+        <div class="filter-item filter-item--range">
+          <div class="range-header">
+            <label class="filter-bar-label" id="gwpRangeLabel">GWP (kg CO₂e/t)</label>
+            <span class="range-values"><span id="gwpMinLabel">0</span> – <span id="gwpMaxLabel">3500</span></span>
+          </div>
+          <div class="dual-range-wrap">
+            <div class="range-track"><div class="range-fill" id="gwpRangeFill"></div></div>
+            <input type="range" id="gwpRangeMin" min="0" max="3500" value="0" step="50">
+            <input type="range" id="gwpRangeMax" min="0" max="3500" value="3500" step="50">
+          </div>
+        </div>
 
-      <div class="filter-item">
-        <label id="productFilterLabel" class="filter-bar-label" for="productFilter">Tipo de acero</label>
-        <select id="productFilter" class="filter-select-bar">
-          <option value="">Todos</option>
-        </select>
-      </div>
-
-      <div class="filter-item filter-search">
-        <label id="searchLabel" class="filter-bar-label" for="searchInput">Buscar</label>
-        <input id="searchInput" class="search-bar" type="text" placeholder="Nombre, código…" />
+        <div class="filter-item filter-item--range">
+          <div class="range-header">
+            <label class="filter-bar-label" id="recycledRangeLabel">Contenido reciclado (%)</label>
+            <span class="range-values"><span id="recycledMinLabel">0%</span> – <span id="recycledMaxLabel">100%</span></span>
+          </div>
+          <div class="dual-range-wrap">
+            <div class="range-track"><div class="range-fill" id="recycledRangeFill"></div></div>
+            <input type="range" id="recycledRangeMin" min="0" max="100" value="0" step="1">
+            <input type="range" id="recycledRangeMax" min="0" max="100" value="100" step="1">
+          </div>
+        </div>
       </div>
     </div>
 
     <section class="main-panel">
 
-      <section class="top-row">
-<div class="map-panel" id="mapPanel">
-  <div class="map-shell">
-    <button id="mapExpandBtn" class="map-expand-btn" type="button" aria-expanded="false">
-      Ampliar mapa
-    </button>
-    <div id="map"></div>
-  </div>
-</div>
+      <div class="left-col">
+        <div class="map-panel" id="mapPanel">
+          <div class="map-shell">
+            <button id="mapExpandBtn" class="map-expand-btn" type="button" aria-expanded="false">
+              Ampliar mapa
+            </button>
+            <div id="map"></div>
+          </div>
+        </div>
 
+        <section class="panel epd-list-panel">
+          <div class="epd-list-wrap">
+            <table class="epd-table">
+              <thead>
+                <tr>
+                  <th id="colCode"     class="epd-th">Código</th>
+                  <th id="colCountry"  class="epd-th">País</th>
+                  <th id="colProduct"  class="epd-th">Tipo</th>
+                  <th id="colGwp"      class="epd-th epd-th--num">GWP</th>
+                  <th id="colRecycled" class="epd-th epd-th--num">Reciclado</th>
+                </tr>
+              </thead>
+              <tbody id="epdListBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="right-col">
         <section class="panel boxplot-panel">
           <h2 id="distributionTitle">Distribución por tipo de acero</h2>
-          <div id="distributionStatus" class="status" style="margin-bottom:12px;">
+          <div id="distributionStatus" class="status" style="margin-bottom:8px;">
             El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.
           </div>
-
           <div class="boxplot-grid">
             <div class="mini-plot">
               <h3 id="gwpBoxTitle">GWP-total</h3>
               <div id="gwpBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
-              <div class="boxplot-wrap">
-                <div id="boxplotGwp"></div>
-              </div>
+              <div class="boxplot-wrap"><div id="boxplotGwp"></div></div>
             </div>
-
             <div class="mini-plot">
               <h3 id="recycledBoxTitle">Contenido reciclado</h3>
               <div id="recycledBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
-              <div class="boxplot-wrap">
-                <div id="boxplotRecycled"></div>
-              </div>
+              <div class="boxplot-wrap"><div id="boxplotRecycled"></div></div>
             </div>
           </div>
         </section>
-      </section>
 
-      <section class="panel">
-        <h2 id="scatterPanelTitle">Reciclaje vs emisiones</h2>
-        <div id="chartStatus" class="status">Preparando gráfico...</div>
-        <div class="chart-wrap">
-          <canvas id="scatterChart"></canvas>
-        </div>
-      </section>
+        <section class="panel scatter-panel">
+          <h2 id="scatterPanelTitle">Reciclaje vs emisiones</h2>
+          <div id="chartStatus" class="status">Preparando gráfico...</div>
+          <div class="chart-wrap">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </section>
+      </div>
 
     </section>
 

@@ -252,6 +252,21 @@ const langSwitchEl      = document.getElementById("langSwitch");
 const mapPanelEl        = document.getElementById("mapPanel");
 const mapExpandBtn      = document.getElementById("mapExpandBtn");
 
+// Range slider refs
+const gwpRangeMinEl      = document.getElementById("gwpRangeMin");
+const gwpRangeMaxEl      = document.getElementById("gwpRangeMax");
+const recycledRangeMinEl = document.getElementById("recycledRangeMin");
+const recycledRangeMaxEl = document.getElementById("recycledRangeMax");
+const gwpMinLabelEl      = document.getElementById("gwpMinLabel");
+const gwpMaxLabelEl      = document.getElementById("gwpMaxLabel");
+const recycledMinLabelEl = document.getElementById("recycledMinLabel");
+const recycledMaxLabelEl = document.getElementById("recycledMaxLabel");
+const epdListBodyEl      = document.getElementById("epdListBody");
+
+// Range state
+let gwpFilterMin = 0, gwpFilterMax = Infinity;
+let recycledFilterMin = 0, recycledFilterMax = 100;
+
 // ─── Utilidades ─────────────────────────────────────────────────────────────
 function t(key) {
   return I18N[currentLang]?.[key] ?? key;
@@ -959,6 +974,81 @@ function renderBoxplots() {
   renderSingleBoxplot("boxplotRecycled", s => s.recycledPct, t("recycledContentAxis"));
 }
 
+// ─── Rangos de filtro ───────────────────────────────────────────────────────
+function initRanges() {
+  const gwpValues      = allSites.map(s => s.gwp).filter(v => Number.isFinite(v));
+  const recycledValues = allSites.map(s => s.recycledPct).filter(v => Number.isFinite(v));
+
+  if (gwpValues.length && gwpRangeMinEl) {
+    const minG = Math.floor(Math.min(...gwpValues) / 50) * 50;
+    const maxG = Math.ceil(Math.max(...gwpValues)  / 50) * 50;
+    [gwpRangeMinEl, gwpRangeMaxEl].forEach(el => { el.min = minG; el.max = maxG; });
+    gwpRangeMinEl.value = minG;
+    gwpRangeMaxEl.value = maxG;
+    gwpFilterMin = minG;
+    gwpFilterMax = maxG;
+  }
+
+  if (recycledValues.length && recycledRangeMinEl) {
+    recycledRangeMinEl.value = 0;
+    recycledRangeMaxEl.value = 100;
+    recycledFilterMin = 0;
+    recycledFilterMax = 100;
+  }
+
+  updateRangeFill("gwp");
+  updateRangeFill("recycled");
+  updateRangeLabels();
+}
+
+function updateRangeFill(type) {
+  const minEl  = type === "gwp" ? gwpRangeMinEl  : recycledRangeMinEl;
+  const maxEl  = type === "gwp" ? gwpRangeMaxEl  : recycledRangeMaxEl;
+  const fillEl = document.getElementById(type === "gwp" ? "gwpRangeFill" : "recycledRangeFill");
+  if (!minEl || !maxEl || !fillEl) return;
+
+  const min    = parseFloat(minEl.min);
+  const max    = parseFloat(minEl.max);
+  const valMin = parseFloat(minEl.value);
+  const valMax = parseFloat(maxEl.value);
+  const pctL   = ((valMin - min) / (max - min)) * 100;
+  const pctR   = ((valMax - min) / (max - min)) * 100;
+  fillEl.style.left  = pctL + "%";
+  fillEl.style.width = (pctR - pctL) + "%";
+}
+
+function updateRangeLabels() {
+  if (gwpMinLabelEl)      gwpMinLabelEl.textContent      = Math.round(gwpFilterMin);
+  if (gwpMaxLabelEl)      gwpMaxLabelEl.textContent      = Math.round(gwpFilterMax);
+  if (recycledMinLabelEl) recycledMinLabelEl.textContent = Math.round(recycledFilterMin) + "%";
+  if (recycledMaxLabelEl) recycledMaxLabelEl.textContent = Math.round(recycledFilterMax) + "%";
+}
+
+// ─── Lista de EPD ───────────────────────────────────────────────────────────
+function renderEpdList() {
+  if (!epdListBodyEl) return;
+
+  epdListBodyEl.innerHTML = filteredSites.map(site => {
+    const sel = site.id === selectedId ? " epd-row--selected" : "";
+    const gwp = Number.isFinite(site.gwp) ? site.gwp.toLocaleString() : "—";
+    const rec = Number.isFinite(site.recycledPct) ? site.recycledPct + "%" : "—";
+    return `<tr class="epd-row${sel}" data-id="${escapeHtml(site.id)}">
+      <td class="epd-td" title="${escapeHtml(site.raw.codigo_epd || site.name)}">${escapeHtml(site.raw.codigo_epd || site.name)}</td>
+      <td class="epd-td" title="${escapeHtml(site.raw.pais_produccion || "")}">${escapeHtml(site.raw.pais_produccion || "—")}</td>
+      <td class="epd-td" title="${escapeHtml(site.productAssigned)}">${escapeHtml(site.productAssigned)}</td>
+      <td class="epd-td epd-td--num">${gwp}</td>
+      <td class="epd-td epd-td--num">${rec}</td>
+    </tr>`;
+  }).join("");
+
+  epdListBodyEl.querySelectorAll(".epd-row").forEach(row => {
+    row.addEventListener("click", () => {
+      selectSite(row.dataset.id, true, true);
+      renderEpdList();
+    });
+  });
+}
+
 // ─── Filtrar y redibujar ────────────────────────────────────────────────────
 function applyFilter() {
   const q = searchInput.value.trim().toLowerCase();
@@ -971,6 +1061,8 @@ function applyFilter() {
     if (selectedCountry && String(site.raw.pais_produccion || "").trim() !== selectedCountry) return false;
     if (selectedProduct && site.productAssigned !== selectedProduct) return false;
     if (q && !Object.values(site.raw).join(" ").toLowerCase().includes(q)) return false;
+    if (Number.isFinite(site.gwp) && (site.gwp < gwpFilterMin || site.gwp > gwpFilterMax)) return false;
+    if (Number.isFinite(site.recycledPct) && (site.recycledPct < recycledFilterMin || site.recycledPct > recycledFilterMax)) return false;
     return true;
   });
 
@@ -982,6 +1074,7 @@ function applyFilter() {
   renderMarkers();
   renderScatterPlot();
   renderBoxplots();
+  renderEpdList();
 }
 
 function selectSite(id, centerMap, openPopup) {
@@ -1018,6 +1111,8 @@ async function loadData() {
     renderMarkers();
     renderScatterPlot();
     renderBoxplots();
+    initRanges();
+    renderEpdList();
 
     setTimeout(() => {
       map.invalidateSize();
@@ -1038,6 +1133,34 @@ async function loadData() {
 searchInput.addEventListener("input", applyFilter);
 productFilterEl.addEventListener("change", applyFilter);
 countryFilterEl.addEventListener("change", applyFilter);
+
+// Range slider events
+function onGwpRange() {
+  let minVal = parseFloat(gwpRangeMinEl.value);
+  let maxVal = parseFloat(gwpRangeMaxEl.value);
+  if (minVal > maxVal) { gwpRangeMinEl.value = maxVal; minVal = maxVal; }
+  gwpFilterMin = minVal;
+  gwpFilterMax = maxVal;
+  updateRangeFill("gwp");
+  updateRangeLabels();
+  applyFilter();
+}
+
+function onRecycledRange() {
+  let minVal = parseFloat(recycledRangeMinEl.value);
+  let maxVal = parseFloat(recycledRangeMaxEl.value);
+  if (minVal > maxVal) { recycledRangeMinEl.value = maxVal; minVal = maxVal; }
+  recycledFilterMin = minVal;
+  recycledFilterMax = maxVal;
+  updateRangeFill("recycled");
+  updateRangeLabels();
+  applyFilter();
+}
+
+if (gwpRangeMinEl) gwpRangeMinEl.addEventListener("input", onGwpRange);
+if (gwpRangeMaxEl) gwpRangeMaxEl.addEventListener("input", onGwpRange);
+if (recycledRangeMinEl) recycledRangeMinEl.addEventListener("input", onRecycledRange);
+if (recycledRangeMaxEl) recycledRangeMaxEl.addEventListener("input", onRecycledRange);
 
 continentFilterEl.addEventListener("change", () => {
   updateCountryFilter(continentFilterEl.value, "");
