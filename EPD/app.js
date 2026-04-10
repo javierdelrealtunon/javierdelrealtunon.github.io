@@ -306,11 +306,31 @@ function applyStaticLanguage() {
   }
 }
 
+// ─── Mapa de normalización: valor CSV → etiqueta de visualización ────────────
+const CONTINENT_DISPLAY = {
+  "europa":        "Europa",
+  "europa / asia": "Europa / Asia",
+  "asia":          "Asia",
+  "america":       "América",
+  "africa":        "África",
+  "medio oriente": "Medio Oriente",
+  "oceania":       "Oceanía",
+};
+
 // ─── Continente ─────────────────────────────────────────────────────────────
 function getContinentForSite(site) {
+  // 1. Usar directamente la columna Continente del CSV
+  const raw = String(site?.raw?.Continente || "").trim();
+  if (raw) {
+    const key = raw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (CONTINENT_DISPLAY[key]) return CONTINENT_DISPLAY[key];
+    // Si el valor existe pero no está en el mapa, devolverlo en title case
+    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  }
+
+  // 2. Fallback: buscar por país (para registros sin columna Continente)
   const country = String(site?.raw?.pais_produccion || "").trim().toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
   for (const [key, continent] of Object.entries(COUNTRY_TO_CONTINENT)) {
     const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     if (country === keyNorm) return continent;
