@@ -280,7 +280,8 @@ function applyStaticLanguage() {
   document.title = t("pageTitle");
   document.getElementById("backLink").textContent = t("back");
   document.getElementById("pageTitle").textContent = t("pageTitle");
-  document.getElementById("pageSubtitle").innerHTML = t("pageSubtitle");
+  const subtitleEl = document.getElementById("pageSubtitle");
+  if (subtitleEl) subtitleEl.innerHTML = t("pageSubtitle");
   document.getElementById("continentFilterLabel").textContent = t("continentFilter");
   document.getElementById("countryFilterLabel").textContent = t("countryFilter");
   document.getElementById("productFilterLabel").textContent = t("productFilter");
