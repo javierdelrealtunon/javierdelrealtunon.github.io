@@ -1,3 +1,4 @@
+
 // ─── Constantes de configuración ───────────────────────────────────────────
 const REQUIRED_KEYS = ["name", "lat", "lon"];
 const INITIAL_CENTER = [20, 0];
@@ -114,6 +115,7 @@ const I18N = {
     emptyCsv:         "CSV vacío o sin filas de datos",
     requiredColumnsMissing: missing => `Faltan columnas obligatorias: ${missing.join(", ")}`,
     trendLabel: "Tendencia",
+    globalTrendLabel: "Tendencia global",
     refs:   n  => `n=${n}`,
     loadedData:    (visible, total) => `${visible} / ${total} EPD visibles`,
     loadedAllData: total            => `${total} EPD cargadas`,
@@ -179,6 +181,7 @@ const I18N = {
     emptyCsv:         "Empty CSV or no data rows",
     requiredColumnsMissing: missing => `Missing required columns: ${missing.join(", ")}`,
     trendLabel: "Trend",
+    globalTrendLabel: "Global trend",
     refs:   n  => `n=${n}`,
     loadedData:    (visible, total) => `${visible} / ${total} visible EPDs`,
     loadedAllData: total            => `${total} EPDs loaded`,
@@ -291,7 +294,6 @@ function getContinentForSite(site) {
   const country = String(site?.raw?.pais_produccion || "").trim().toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-  // Buscar en el mapa normalizado
   for (const [key, continent] of Object.entries(COUNTRY_TO_CONTINENT)) {
     const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     if (country === keyNorm) return continent;
@@ -318,7 +320,8 @@ function splitCSVLine(line, delimiter) {
       if (inQuotes && next === '"') { current += '"'; i++; }
       else { inQuotes = !inQuotes; }
     } else if (char === delimiter && !inQuotes) {
-      result.push(current); current = "";
+      result.push(current);
+      current = "";
     } else {
       current += char;
     }
@@ -409,7 +412,6 @@ function parseCSV(text) {
     site.productAssigned = getAssignedProduct(site);
     site.recycledPct     = parseLocaleNumber(site.raw.contenido_reciclado_pct);
     site.gwp             = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
-    // continent se asigna después de cargar (necesita t())
     return site;
   }).filter(Boolean);
 }
@@ -420,7 +422,6 @@ function populateAllFilters() {
   const countrySel   = countryFilterEl.value;
   const productSel   = productFilterEl.value;
 
-  // Reasignar continentes por si cambió el idioma
   allSites.forEach(site => { site.continent = getContinentForSite(site); });
 
   const continents = Array.from(new Set(allSites.map(s => s.continent))).sort();
@@ -478,7 +479,7 @@ function buildPdfHref(site) {
   return safeDir ? `${PDF_BASE_PATH}${safeDir}/${safeName}` : `${PDF_BASE_PATH}${safeName}`;
 }
 
-// ─── Popup ───────────────────────────────────────────────────────────────────
+// ─── Popup ──────────────────────────────────────────────────────────────────
 function buildPopupHtml(site) {
   const popupKeys = ["contenido_reciclado_pct", "gwp_total_kg_co2e_t"]
     .filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
@@ -509,7 +510,7 @@ function buildPopupHtml(site) {
     </div>`;
 }
 
-// ─── Mapa ────────────────────────────────────────────────────────────────────
+// ─── Mapa ───────────────────────────────────────────────────────────────────
 function initMap() {
   cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
@@ -548,7 +549,10 @@ function renderMarkers() {
   markers    = [];
   markerById = new Map();
 
-  if (!filteredSites.length) { map.setView(INITIAL_CENTER, INITIAL_ZOOM); return; }
+  if (!filteredSites.length) {
+    map.setView(INITIAL_CENTER, INITIAL_ZOOM);
+    return;
+  }
 
   const bounds = [];
   filteredSites.forEach(site => {
@@ -570,9 +574,10 @@ function renderMarkers() {
     : map.fitBounds(bounds, { padding: [30, 30] });
 }
 
-// ─── Gráfico de dispersión ───────────────────────────────────────────────────
+// ─── Gráfico de dispersión ──────────────────────────────────────────────────
 function computeTrendLine(points) {
   if (!points || points.length < 2) return null;
+
   const xs  = points.map(p => p.x);
   const ys  = points.map(p => p.y);
   const n   = points.length;
@@ -581,72 +586,150 @@ function computeTrendLine(points) {
   const sumXY = points.reduce((a, p) => a + p.x * p.y, 0);
   const sumXX = xs.reduce((a, x) => a + x * x, 0);
   const denom = n * sumXX - sumX * sumX;
+
   if (!Number.isFinite(denom) || denom === 0) return null;
+
   const slope     = (n * sumXY - sumX * sumY) / denom;
   const intercept = (sumY - slope * sumX) / n;
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  return [{ x: minX, y: slope * minX + intercept }, { x: maxX, y: slope * maxX + intercept }];
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+
+  return [
+    { x: minX, y: slope * minX + intercept },
+    { x: maxX, y: slope * maxX + intercept }
+  ];
 }
 
 function renderScatterPlot() {
   const chartCanvas = document.getElementById("scatterChart");
   const validSites  = filteredSites.filter(s => Number.isFinite(s.recycledPct) && Number.isFinite(s.gwp));
 
-  if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
-  if (!validSites.length) { chartStatusEl.textContent = t("noValidChartData"); return; }
+  if (scatterChart) {
+    scatterChart.destroy();
+    scatterChart = null;
+  }
+
+  if (!validSites.length) {
+    chartStatusEl.textContent = t("noValidChartData");
+    return;
+  }
 
   const grouped        = new Map();
   const categoryCounts = getCategoryCounts(validSites);
+
   validSites.forEach(site => {
     if (!grouped.has(site.productAssigned)) grouped.set(site.productAssigned, []);
     grouped.get(site.productAssigned).push({
-      x: site.recycledPct, y: site.gwp,
-      siteId: site.id, label: site.name,
+      x: site.recycledPct,
+      y: site.gwp,
+      siteId: site.id,
+      label: site.name,
       productAssigned: site.productAssigned,
       codigo: site.raw.codigo_epd || ""
     });
   });
 
   const datasets = [];
+
   Array.from(grouped.entries())
     .sort((a, b) => a[0].localeCompare(b[0], currentLang, { sensitivity: "base" }))
     .forEach(([category, data]) => {
       const color = getColorForCategory(category);
       const label = formatCategoryWithCount(category, categoryCounts.get(category) || data.length);
+
       datasets.push({
-        label, data, showLine: false,
-        borderColor: color, backgroundColor: color,
-        pointRadius:      ctx => ctx.raw.siteId === selectedId ? 8 : 5,
+        label,
+        data,
+        showLine: false,
+        borderColor: color,
+        backgroundColor: color,
+        pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
         pointHoverRadius: 9,
         pointBorderColor: "#ffffff",
         pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2,
         order: 2
       });
-      const trend = computeTrendLine(data);
-      if (trend) datasets.push({
-        label: `${label} · ${t("trendLabel")}`, data: trend,
-        type: "line", showLine: true, parsing: false,
-        borderColor: color, backgroundColor: color,
-        borderWidth: 2, borderDash: [6, 4],
-        pointRadius: 0, pointHoverRadius: 0,
-        fill: false, tension: 0, order: 1
-      });
     });
+
+  const globalTrendData = validSites.map(site => ({
+    x: site.recycledPct,
+    y: site.gwp
+  }));
+
+  const globalTrend = computeTrendLine(globalTrendData);
+
+  if (globalTrend) {
+    datasets.push({
+      label: t("globalTrendLabel"),
+      data: globalTrend,
+      type: "line",
+      showLine: true,
+      parsing: false,
+      borderColor: "#ffffff",
+      backgroundColor: "#ffffff",
+      borderWidth: 2.5,
+      borderDash: [],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      pointHitRadius: 8,
+      fill: false,
+      tension: 0,
+      order: 1
+    });
+  }
 
   scatterChart = new Chart(chartCanvas, {
     type: "scatter",
     data: { datasets },
     options: {
-      responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      parsing: false,
       plugins: {
-        legend: { labels: { color: "#eaf1ff", filter: (item, d) => !!d.datasets[item.datasetIndex].label } },
+        legend: {
+          labels: {
+            color: "#eaf1ff",
+            usePointStyle: true,
+            filter: (item, d) => !!d.datasets[item.datasetIndex].label,
+            generateLabels(chart) {
+              const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+
+              return defaultLabels.map(label => {
+                const ds = chart.data.datasets[label.datasetIndex];
+
+                if (ds.type === "line") {
+                  return {
+                    ...label,
+                    pointStyle: "line",
+                    strokeStyle: ds.borderColor,
+                    fillStyle: ds.borderColor,
+                    lineWidth: ds.borderWidth || 2
+                  };
+                }
+
+                return {
+                  ...label,
+                  pointStyle: "circle"
+                };
+              });
+            }
+          }
+        },
         tooltip: {
-          backgroundColor: "rgba(10,16,29,0.95)", borderColor: "rgba(102,179,255,0.35)", borderWidth: 1,
-          titleColor: "#ffffff", bodyColor: "#eaf1ff",
+          backgroundColor: "rgba(10,16,29,0.95)",
+          borderColor: "rgba(102,179,255,0.35)",
+          borderWidth: 1,
+          titleColor: "#ffffff",
+          bodyColor: "#eaf1ff",
           callbacks: {
             label(ctx) {
               const raw = ctx.raw;
-              if (!raw?.siteId) return ctx.dataset?.label || "";
+
+              if (!raw?.siteId) {
+                return ctx.dataset?.label || "";
+              }
+
               return [
                 raw.label,
                 `${t("assignedProduct")}: ${raw.productAssigned}`,
@@ -659,17 +742,31 @@ function renderScatterPlot() {
         }
       },
       scales: {
-        x: { min: 0, max: 100,
-          title: { display: true, text: t("recycledContentAxis"), color: "#eaf1ff" },
-          ticks: { color: "#9db0d1" }, grid: { color: "rgba(157,176,209,0.15)" }
+        x: {
+          min: 0,
+          max: 100,
+          title: {
+            display: true,
+            text: t("recycledContentAxis"),
+            color: "#eaf1ff"
+          },
+          ticks: { color: "#9db0d1" },
+          grid: { color: "rgba(157,176,209,0.15)" }
         },
-        y: { beginAtZero: true,
-          title: { display: true, text: t("gwpAxis"), color: "#eaf1ff" },
-          ticks: { color: "#9db0d1" }, grid: { color: "rgba(157,176,209,0.15)" }
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: t("gwpAxis"),
+            color: "#eaf1ff"
+          },
+          ticks: { color: "#9db0d1" },
+          grid: { color: "rgba(157,176,209,0.15)" }
         }
       },
       onClick(event, elements, chart) {
         if (!elements.length) return;
+
         const raw = chart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
         if (raw?.siteId) selectSite(raw.siteId, true, true);
       }
@@ -679,21 +776,42 @@ function renderScatterPlot() {
   chartStatusEl.textContent = t("chartPoints")(validSites.length, filteredSites.length);
 }
 
-// ─── Boxplots ────────────────────────────────────────────────────────────────
+// ─── Boxplots ───────────────────────────────────────────────────────────────
 function getPlotlyBaseLayout(yTitle) {
   return {
-    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    margin: { l: 56, r: 12, t: 8, b: 92 }, autosize: true, showlegend: false,
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    margin: { l: 56, r: 12, t: 8, b: 92 },
+    autosize: true,
+    showlegend: false,
     font: { color: "#eaf1ff", family: 'Inter, system-ui, sans-serif' },
-    xaxis: { title: "", tickangle: -24, automargin: true, color: "#9db0d1", gridcolor: "rgba(157,176,209,0.08)", zeroline: false },
-    yaxis: { title: yTitle, automargin: true, color: "#9db0d1", gridcolor: "rgba(157,176,209,0.15)", zeroline: false }
+    xaxis: {
+      title: "",
+      tickangle: -24,
+      automargin: true,
+      color: "#9db0d1",
+      gridcolor: "rgba(157,176,209,0.08)",
+      zeroline: false
+    },
+    yaxis: {
+      title: yTitle,
+      automargin: true,
+      color: "#9db0d1",
+      gridcolor: "rgba(157,176,209,0.15)",
+      zeroline: false
+    }
   };
 }
 
 function renderSingleBoxplot(targetId, accessor, yTitle) {
   const validSites = filteredSites.filter(s => Number.isFinite(accessor(s)));
   const targetEl   = document.getElementById(targetId);
-  if (!validSites.length) { Plotly.purge(targetEl); targetEl.innerHTML = ""; return; }
+
+  if (!validSites.length) {
+    Plotly.purge(targetEl);
+    targetEl.innerHTML = "";
+    return;
+  }
 
   const categoryCounts  = getCategoryCounts(validSites);
   const categories      = Array.from(new Set(validSites.map(s => s.productAssigned)))
@@ -701,7 +819,8 @@ function renderSingleBoxplot(targetId, accessor, yTitle) {
   const labelMap = new Map(categories.map(c => [c, formatCategoryWithCount(c, categoryCounts.get(c) || 0)]));
 
   const traces = categories.map(cat => ({
-    type: "box", name: labelMap.get(cat),
+    type: "box",
+    name: labelMap.get(cat),
     y: validSites.filter(s => s.productAssigned === cat).map(s => accessor(s)),
     boxpoints: false,
     line:  { color: getColorForCategory(cat), width: 1.8 },
@@ -712,8 +831,10 @@ function renderSingleBoxplot(targetId, accessor, yTitle) {
 
   const sel = validSites.find(s => s.id === selectedId);
   if (sel) traces.push({
-    type: "scatter", mode: "markers",
-    x: [labelMap.get(sel.productAssigned)], y: [accessor(sel)],
+    type: "scatter",
+    mode: "markers",
+    x: [labelMap.get(sel.productAssigned)],
+    y: [accessor(sel)],
     marker: { size: 12, color: "#ffffff", line: { color: "#111827", width: 2 } },
     hovertemplate:
       `<b>${escapeHtml(sel.name)}</b><br>` +
@@ -721,7 +842,10 @@ function renderSingleBoxplot(targetId, accessor, yTitle) {
       `${escapeHtml(yTitle)}: ${accessor(sel)}<extra></extra>`
   });
 
-  Plotly.react(targetEl, traces, getPlotlyBaseLayout(yTitle), { responsive: true, displayModeBar: false });
+  Plotly.react(targetEl, traces, getPlotlyBaseLayout(yTitle), {
+    responsive: true,
+    displayModeBar: false
+  });
 }
 
 function renderBoxplots() {
@@ -729,7 +853,7 @@ function renderBoxplots() {
   renderSingleBoxplot("boxplotRecycled", s => s.recycledPct, t("recycledContentAxis"));
 }
 
-// ─── Filtrar y redibujar ─────────────────────────────────────────────────────
+// ─── Filtrar y redibujar ────────────────────────────────────────────────────
 function applyFilter() {
   const q                 = searchInput.value.trim().toLowerCase();
   const selectedContinent = continentFilterEl.value.trim();
@@ -759,14 +883,17 @@ function selectSite(id, centerMap, openPopup) {
   updateMarkerStyles();
   renderScatterPlot();
   renderBoxplots();
+
   if (!map) return;
+
   const site   = allSites.find(s => s.id === id);
   const marker = markerById.get(id);
+
   if (site && centerMap)   map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
   if (marker && openPopup) marker.openPopup();
 }
 
-// ─── Carga de datos ──────────────────────────────────────────────────────────
+// ─── Carga de datos ─────────────────────────────────────────────────────────
 async function loadData() {
   try {
     const response = await fetch("./datos.csv", { cache: "no-store" });
@@ -775,7 +902,6 @@ async function loadData() {
     allSites = parseCSV(await response.text());
     if (!allSites.length) throw new Error(t("noValidRecords"));
 
-    // Asignar continentes
     allSites.forEach(site => { site.continent = getContinentForSite(site); });
 
     populateAllFilters();
@@ -787,18 +913,22 @@ async function loadData() {
     renderScatterPlot();
     renderBoxplots();
 
-    setTimeout(() => { map.invalidateSize(); window.dispatchEvent(new Event("resize")); }, 80);
+    setTimeout(() => {
+      map.invalidateSize();
+      window.dispatchEvent(new Event("resize"));
+    }, 80);
   } catch (error) {
     statusEl.textContent      = t("errorReadingCsv")(error.message);
     chartStatusEl.textContent = t("chartBuildError");
-    allSites = filteredSites = [];
+    allSites = [];
+    filteredSites = [];
     selectedId = null;
     Plotly.purge("boxplotGwp");
     Plotly.purge("boxplotRecycled");
   }
 }
 
-// ─── Eventos ─────────────────────────────────────────────────────────────────
+// ─── Eventos ────────────────────────────────────────────────────────────────
 searchInput.addEventListener("input", applyFilter);
 productFilterEl.addEventListener("change", applyFilter);
 countryFilterEl.addEventListener("change", applyFilter);
@@ -814,13 +944,20 @@ langSwitchEl.addEventListener("change", e => {
   localStorage.setItem("epd_lang", currentLang);
   applyStaticLanguage();
   populateAllFilters();
-  if (allSites.length) applyFilter();
-  else { statusEl.textContent = t("loading"); chartStatusEl.textContent = t("preparingChart"); }
+
+  if (allSites.length) {
+    applyFilter();
+  } else {
+    statusEl.textContent = t("loading");
+    chartStatusEl.textContent = t("preparingChart");
+  }
 });
 
-window.addEventListener("resize", () => { if (map) setTimeout(() => map.invalidateSize(), 50); });
+window.addEventListener("resize", () => {
+  if (map) setTimeout(() => map.invalidateSize(), 50);
+});
 
-// ─── Arranque ─────────────────────────────────────────────────────────────────
+// ─── Arranque ───────────────────────────────────────────────────────────────
 applyStaticLanguage();
 initMap();
 loadData();
