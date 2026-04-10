@@ -22,78 +22,86 @@
     </div>
 
     <header class="hero">
-      <h1 id="pageTitle">EPD geolocalizadas</h1>
-      <div id="pageSubtitle" class="subtitle">
-        Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.
+      <div class="hero-inner">
+        <h1 id="pageTitle">EPD geolocalizadas</h1>
+        <p id="pageSubtitle" class="subtitle">
+          Declaraciones ambientales de producto georreferenciadas · <strong>datos.csv</strong>
+        </p>
       </div>
+      <div id="status" class="status-badge">Cargando datos...</div>
     </header>
 
-    <section class="layout">
+    <div class="filter-bar">
+      <div class="filter-item">
+        <label id="continentFilterLabel" class="filter-bar-label" for="continentFilter">Continente</label>
+        <select id="continentFilter" class="filter-select-bar">
+          <option value="">Todos</option>
+        </select>
+      </div>
 
-      <aside class="left-panel">
-        <section class="panel">
-          <h2 id="availableTitle">EPD disponibles</h2>
-          <div id="status" class="status">Cargando datos...</div>
+      <div class="filter-item">
+        <label id="countryFilterLabel" class="filter-bar-label" for="countryFilter">País de producción</label>
+        <select id="countryFilter" class="filter-select-bar">
+          <option value="">Todos</option>
+        </select>
+      </div>
 
-          <label id="productFilterLabel" class="filter-label" for="productFilter">Producto asignado</label>
-          <select id="productFilter" class="filter-select">
-            <option value="">Todos</option>
-          </select>
+      <div class="filter-item">
+        <label id="productFilterLabel" class="filter-bar-label" for="productFilter">Tipo de acero</label>
+        <select id="productFilter" class="filter-select-bar">
+          <option value="">Todos</option>
+        </select>
+      </div>
 
-          <input id="searchInput" class="search" type="text" placeholder="Buscar EPD..." />
+      <div class="filter-item filter-search">
+        <label id="searchLabel" class="filter-bar-label" for="searchInput">Buscar</label>
+        <input id="searchInput" class="search-bar" type="text" placeholder="Nombre, código…" />
+      </div>
+    </div>
 
-          <div id="legendNote" class="legend-note">
-            El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.
+    <section class="main-panel">
+
+      <section class="top-row">
+        <div class="map-panel">
+          <div class="map-shell">
+            <div id="map"></div>
+          </div>
+        </div>
+
+        <section class="panel boxplot-panel">
+          <h2 id="distributionTitle">Distribución por tipo de acero</h2>
+          <div id="distributionStatus" class="status" style="margin-bottom:12px;">
+            El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.
           </div>
 
-          <div id="siteList" class="site-list"></div>
-        </section>
-      </aside>
-
-      <section class="main-panel">
-
-        <section class="top-row">
-          <div class="map-panel">
-            <div class="map-shell">
-              <div id="map"></div>
-            </div>
-          </div>
-
-          <section class="panel boxplot-panel">
-            <h2 id="distributionTitle">Distribución por tipo de acero</h2>
-            <div id="distributionStatus" class="status" style="margin-bottom:12px;">
-              El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.
-            </div>
-
-            <div class="boxplot-grid">
-              <div class="mini-plot">
-                <h3 id="gwpBoxTitle">GWP-total</h3>
-                <div id="gwpBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
-                <div class="boxplot-wrap">
-                  <div id="boxplotGwp"></div>
-                </div>
-              </div>
-
-              <div class="mini-plot">
-                <h3 id="recycledBoxTitle">Contenido reciclado</h3>
-                <div id="recycledBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
-                <div class="boxplot-wrap">
-                  <div id="boxplotRecycled"></div>
-                </div>
+          <div class="boxplot-grid">
+            <div class="mini-plot">
+              <h3 id="gwpBoxTitle">GWP-total</h3>
+              <div id="gwpBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
+              <div class="boxplot-wrap">
+                <div id="boxplotGwp"></div>
               </div>
             </div>
-          </section>
-        </section>
 
-        <section class="panel">
-          <h2 id="scatterPanelTitle">Reciclaje vs emisiones</h2>
-          <div id="chartStatus" class="status">Preparando gráfico...</div>
-          <div class="chart-wrap">
-            <canvas id="scatterChart"></canvas>
+            <div class="mini-plot">
+              <h3 id="recycledBoxTitle">Contenido reciclado</h3>
+              <div id="recycledBoxSubtitle" class="mini-subtitle">Distribución por producto asignado</div>
+              <div class="boxplot-wrap">
+                <div id="boxplotRecycled"></div>
+              </div>
+            </div>
           </div>
         </section>
-
       </section>
+
+      <section class="panel">
+        <h2 id="scatterPanelTitle">Reciclaje vs emisiones</h2>
+        <div id="chartStatus" class="status">Preparando gráfico...</div>
+        <div class="chart-wrap">
+          <canvas id="scatterChart"></canvas>
+        </div>
+      </section>
+
     </section>
 
   </main>

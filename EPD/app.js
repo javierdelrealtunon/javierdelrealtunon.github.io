@@ -1,10 +1,8 @@
 // ─── Constantes de configuración ───────────────────────────────────────────
 const REQUIRED_KEYS = ["name", "lat", "lon"];
-const RESERVED_KEYS = ["id", "name", "lat", "lon"];
-
 const INITIAL_CENTER = [20, 0];
-const INITIAL_ZOOM = 2;
-const PDF_BASE_PATH = "./pdffiles/";
+const INITIAL_ZOOM   = 2;
+const PDF_BASE_PATH  = "./pdffiles/";
 
 const CATEGORY_COLORS = [
   "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
@@ -13,52 +11,131 @@ const CATEGORY_COLORS = [
   "#8d6e63", "#42a5f5"
 ];
 
+// Mapa de país (en minúsculas) → continente
+const COUNTRY_TO_CONTINENT = {
+  // Europa
+  "españa": "Europa",        "spain": "Europa",
+  "alemania": "Europa",      "germany": "Europa",
+  "francia": "Europa",       "france": "Europa",
+  "italia": "Europa",        "italy": "Europa",
+  "reino unido": "Europa",   "united kingdom": "Europa",
+  "suecia": "Europa",        "sweden": "Europa",
+  "noruega": "Europa",       "norway": "Europa",
+  "finlandia": "Europa",     "finland": "Europa",
+  "dinamarca": "Europa",     "denmark": "Europa",
+  "países bajos": "Europa",  "netherlands": "Europa",
+  "holanda": "Europa",
+  "bélgica": "Europa",       "belgium": "Europa",
+  "austria": "Europa",
+  "suiza": "Europa",         "switzerland": "Europa",
+  "portugal": "Europa",
+  "polonia": "Europa",       "poland": "Europa",
+  "república checa": "Europa", "czech republic": "Europa",
+  "eslovaquia": "Europa",    "slovakia": "Europa",
+  "hungría": "Europa",       "hungary": "Europa",
+  "rumanía": "Europa",       "romania": "Europa",
+  "bulgaria": "Europa",
+  "grecia": "Europa",        "greece": "Europa",
+  "turquía": "Europa",       "turkey": "Europa",
+  "ucrania": "Europa",       "ukraine": "Europa",
+  "rusia": "Europa",         "russia": "Europa",
+  "luxemburgo": "Europa",    "luxembourg": "Europa",
+  "croacia": "Europa",       "croatia": "Europa",
+  "eslovenia": "Europa",     "slovenia": "Europa",
+  "serbia": "Europa",
+  "lituania": "Europa",      "lithuania": "Europa",
+  "letonia": "Europa",       "latvia": "Europa",
+  "estonia": "Europa",
+  // América del Norte
+  "estados unidos": "América del Norte", "united states": "América del Norte", "usa": "América del Norte",
+  "canadá": "América del Norte",         "canada": "América del Norte",
+  "méxico": "América del Norte",         "mexico": "América del Norte",
+  // América del Sur
+  "brasil": "América del Sur",  "brazil": "América del Sur",
+  "argentina": "América del Sur",
+  "chile": "América del Sur",
+  "colombia": "América del Sur",
+  "perú": "América del Sur",    "peru": "América del Sur",
+  "venezuela": "América del Sur",
+  "ecuador": "América del Sur",
+  // Asia
+  "china": "Asia",
+  "japón": "Asia",          "japan": "Asia",
+  "corea del sur": "Asia",  "south korea": "Asia",
+  "india": "Asia",
+  "taiwán": "Asia",         "taiwan": "Asia",
+  "vietnam": "Asia",
+  "indonesia": "Asia",
+  "tailandia": "Asia",      "thailand": "Asia",
+  "malasia": "Asia",        "malaysia": "Asia",
+  "singapur": "Asia",       "singapore": "Asia",
+  // Oriente Medio
+  "emiratos árabes": "Oriente Medio", "uae": "Oriente Medio",
+  "arabia saudí": "Oriente Medio",    "saudi arabia": "Oriente Medio",
+  "qatar": "Oriente Medio",
+  "irán": "Oriente Medio",            "iran": "Oriente Medio",
+  // África
+  "sudáfrica": "África",    "south africa": "África",
+  "egipto": "África",       "egypt": "África",
+  "marruecos": "África",    "morocco": "África",
+  // Oceanía
+  "australia": "Oceanía",
+  "nueva zelanda": "Oceanía", "new zealand": "Oceanía",
+};
+
 // ─── Traducciones ───────────────────────────────────────────────────────────
 const I18N = {
   es: {
-    pageTitle: "EPD geolocalizadas",
-    pageSubtitle: 'Mapa de declaraciones ambientales de producto (EPD) georreferenciadas a partir del archivo <strong>datos.csv</strong>, con filtro por producto asignado y gráfico de reciclaje vs emisiones.',
-    back: "← Volver al índice",
-    available: "EPD disponibles",
-    loading: "Cargando datos...",
-    productFilter: "Producto asignado",
-    all: "Todos",
-    searchPlaceholder: "Buscar EPD...",
-    legendNote: 'El color representa el <strong>producto asignado</strong> y se mantiene igual en mapa, lista y gráfico.',
-    distributionTitle: "Distribución por tipo de acero",
-    distributionStatus: "El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.",
-    gwpBoxTitle: "GWP-total",
-    gwpBoxSubtitle: "Distribución por producto asignado",
-    recycledBoxTitle: "Contenido reciclado",
+    pageTitle:    "EPD geolocalizadas",
+    pageSubtitle: "Declaraciones ambientales de producto georreferenciadas · <strong>datos.csv</strong>",
+    back:         "← Volver al índice",
+    loading:      "Cargando datos...",
+    continentFilter: "Continente",
+    countryFilter:   "País de producción",
+    productFilter:   "Tipo de acero",
+    searchLabel:     "Buscar",
+    searchPlaceholder: "Nombre, código…",
+    allContinents: "Todos los continentes",
+    allCountries:  "Todos los países",
+    all:           "Todos",
+    distributionTitle:   "Distribución por tipo de acero",
+    distributionStatus:  "El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.",
+    gwpBoxTitle:         "GWP-total",
+    gwpBoxSubtitle:      "Distribución por producto asignado",
+    recycledBoxTitle:    "Contenido reciclado",
     recycledBoxSubtitle: "Distribución por producto asignado",
-    scatterPanelTitle: "Reciclaje vs emisiones",
+    scatterPanelTitle:   "Reciclaje vs emisiones",
     preparingChart: "Preparando gráfico...",
-    noMatch: "No hay EPD que coincidan con el filtro actual.",
-    noExtraData: "Sin datos complementarios",
-    geolocatedEPD: "EPD geolocalizada",
-    location: "Ubicación",
-    openPdf: "Abrir PDF",
-    viewLocation: "Ver ubicación",
-    latitude: "Lat",
-    longitude: "Lon",
-    loadedData: (visible, total) => `Datos cargados desde datos.csv · ${visible} / ${total} EPD visibles`,
-    loadedAllData: total => `Datos cargados desde datos.csv · ${total} EPD`,
-    chartPoints: (valid, total) => `Puntos representados: ${valid} de ${total} EPD filtradas.`,
     noValidChartData: "No hay registros con valores numéricos válidos en contenido reciclado y GWP-total.",
-    errorReadingCsv: msg => `Error al leer datos.csv: ${msg}`,
-    chartBuildError: "No se pudo construir el gráfico.",
-    noValidRecords: "No hay registros válidos",
-    fileNotFound: "No se encontró datos.csv",
-    emptyCsv: "CSV vacío o sin filas de datos",
+    errorReadingCsv:  msg => `Error al leer datos.csv: ${msg}`,
+    chartBuildError:  "No se pudo construir el gráfico.",
+    noValidRecords:   "No hay registros válidos",
+    fileNotFound:     "No se encontró datos.csv",
+    emptyCsv:         "CSV vacío o sin filas de datos",
     requiredColumnsMissing: missing => `Faltan columnas obligatorias: ${missing.join(", ")}`,
     trendLabel: "Tendencia",
-    refs: n => `n=${n}`,
+    refs:   n  => `n=${n}`,
+    loadedData:    (visible, total) => `${visible} / ${total} EPD visibles`,
+    loadedAllData: total            => `${total} EPD cargadas`,
+    chartPoints:   (valid, total)   => `Puntos representados: ${valid} de ${total} EPD filtradas.`,
+    noExtraData:     "Sin datos complementarios",
+    geolocatedEPD:   "EPD geolocalizada",
+    location:        "Ubicación",
+    openPdf:         "Abrir PDF",
+    latitude:        "Lat",
+    longitude:       "Lon",
+    googleMapsLabel: "Ver ubicación",
+    assignedProduct:     "Producto asignado",
+    recycledContentAxis: "Contenido reciclado (%)",
+    gwpAxis:             "GWP-total (kg CO₂e/t)",
+    recycledTooltip:     "Reciclaje",
+    gwpTooltip:          "CO₂",
+    epdCode:             "Código EPD",
+    selectedCategory:    "Categoría",
+    unknownContinent:    "Sin datos",
     metrics: {
-      name: "Nombre",
-      lat: "Latitud",
-      lon: "Longitud",
-      codigo_epd: "Código EPD",
-      producto: "Producto",
+      name: "Nombre", lat: "Latitud", lon: "Longitud",
+      codigo_epd: "Código EPD", producto: "Producto",
       producto_asignado: "Producto asignado",
       pais_produccion: "País producción",
       ciudad_produccion: "Ciudad producción",
@@ -69,63 +146,61 @@ const I18N = {
       ruta_de_produccion: "Ruta de producción",
       contenido_reciclado_pct: "Contenido reciclado %",
       gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-      archivo: "Archivo PDF",
-      pdf_url: "PDF",
+      archivo: "Archivo PDF", pdf_url: "PDF",
       caracteristicas_funcionales: "Características funcionales"
-    },
-    assignedProduct: "Producto asignado",
-    recycledContentAxis: "Contenido reciclado (%)",
-    gwpAxis: "GWP-total (kg CO₂e/t)",
-    recycledTooltip: "Reciclaje",
-    gwpTooltip: "CO₂",
-    epdCode: "Código EPD",
-    selectedCategory: "Categoría",
-    googleMapsLabel: "Ver ubicación"
+    }
   },
   en: {
-    pageTitle: "Geolocated EPDs",
-    pageSubtitle: 'Map of Environmental Product Declarations (EPDs) georeferenced from <strong>datos.csv</strong>, with assigned-product filter and recycled-content-vs-emissions chart.',
-    back: "← Back to index",
-    available: "Available EPDs",
-    loading: "Loading data...",
-    productFilter: "Assigned product",
-    all: "All",
-    searchPlaceholder: "Search EPD...",
-    legendNote: 'Color represents the <strong>assigned product</strong> and is kept consistent across map, list, and chart.',
-    distributionTitle: "Distribution by steel type",
-    distributionStatus: "The highlighted point shows the selected EPD within the distribution of its category.",
-    gwpBoxTitle: "GWP-total",
-    gwpBoxSubtitle: "Distribution by assigned product",
-    recycledBoxTitle: "Recycled content",
+    pageTitle:    "Geolocated EPDs",
+    pageSubtitle: "Environmental Product Declarations georeferenced from <strong>datos.csv</strong>",
+    back:         "← Back to index",
+    loading:      "Loading data...",
+    continentFilter: "Continent",
+    countryFilter:   "Production country",
+    productFilter:   "Steel type",
+    searchLabel:     "Search",
+    searchPlaceholder: "Name, code…",
+    allContinents: "All continents",
+    allCountries:  "All countries",
+    all:           "All",
+    distributionTitle:   "Distribution by steel type",
+    distributionStatus:  "The highlighted point shows the selected EPD within the distribution of its category.",
+    gwpBoxTitle:         "GWP-total",
+    gwpBoxSubtitle:      "Distribution by assigned product",
+    recycledBoxTitle:    "Recycled content",
     recycledBoxSubtitle: "Distribution by assigned product",
-    scatterPanelTitle: "Recycled content vs emissions",
-    preparingChart: "Preparing chart...",
-    noMatch: "No EPDs match the current filter.",
-    noExtraData: "No additional data",
-    geolocatedEPD: "Geolocated EPD",
-    location: "Location",
-    openPdf: "Open PDF",
-    viewLocation: "View location",
-    latitude: "Lat",
-    longitude: "Lon",
-    loadedData: (visible, total) => `Data loaded from datos.csv · ${visible} / ${total} visible EPDs`,
-    loadedAllData: total => `Data loaded from datos.csv · ${total} EPDs`,
-    chartPoints: (valid, total) => `Displayed points: ${valid} out of ${total} filtered EPDs.`,
+    scatterPanelTitle:   "Recycled content vs emissions",
+    preparingChart:   "Preparing chart...",
     noValidChartData: "There are no records with valid numeric values for recycled content and GWP-total.",
-    errorReadingCsv: msg => `Error reading datos.csv: ${msg}`,
-    chartBuildError: "The chart could not be built.",
-    noValidRecords: "No valid records",
-    fileNotFound: "datos.csv was not found",
-    emptyCsv: "Empty CSV or no data rows",
+    errorReadingCsv:  msg => `Error reading datos.csv: ${msg}`,
+    chartBuildError:  "The chart could not be built.",
+    noValidRecords:   "No valid records",
+    fileNotFound:     "datos.csv was not found",
+    emptyCsv:         "Empty CSV or no data rows",
     requiredColumnsMissing: missing => `Missing required columns: ${missing.join(", ")}`,
     trendLabel: "Trend",
-    refs: n => `n=${n}`,
+    refs:   n  => `n=${n}`,
+    loadedData:    (visible, total) => `${visible} / ${total} visible EPDs`,
+    loadedAllData: total            => `${total} EPDs loaded`,
+    chartPoints:   (valid, total)   => `Displayed points: ${valid} out of ${total} filtered EPDs.`,
+    noExtraData:     "No additional data",
+    geolocatedEPD:   "Geolocated EPD",
+    location:        "Location",
+    openPdf:         "Open PDF",
+    latitude:        "Lat",
+    longitude:       "Lon",
+    googleMapsLabel: "View location",
+    assignedProduct:     "Assigned product",
+    recycledContentAxis: "Recycled content (%)",
+    gwpAxis:             "GWP-total (kg CO₂e/t)",
+    recycledTooltip:     "Recycled content",
+    gwpTooltip:          "CO₂",
+    epdCode:             "EPD code",
+    selectedCategory:    "Category",
+    unknownContinent:    "No data",
     metrics: {
-      name: "Name",
-      lat: "Latitude",
-      lon: "Longitude",
-      codigo_epd: "EPD code",
-      producto: "Product",
+      name: "Name", lat: "Latitude", lon: "Longitude",
+      codigo_epd: "EPD code", producto: "Product",
       producto_asignado: "Assigned product",
       pais_produccion: "Production country",
       ciudad_produccion: "Production city",
@@ -136,84 +211,99 @@ const I18N = {
       ruta_de_produccion: "Production route",
       contenido_reciclado_pct: "Recycled content %",
       gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-      archivo: "PDF file",
-      pdf_url: "PDF",
+      archivo: "PDF file", pdf_url: "PDF",
       caracteristicas_funcionales: "Functional characteristics"
-    },
-    assignedProduct: "Assigned product",
-    recycledContentAxis: "Recycled content (%)",
-    gwpAxis: "GWP-total (kg CO₂e/t)",
-    recycledTooltip: "Recycled content",
-    gwpTooltip: "CO₂",
-    epdCode: "EPD code",
-    selectedCategory: "Category",
-    googleMapsLabel: "View location"
+    }
   }
 };
 
 // ─── Estado global ──────────────────────────────────────────────────────────
-let currentLang = localStorage.getItem("epd_lang") || "es";
-
-let allSites = [];
+let currentLang   = localStorage.getItem("epd_lang") || "es";
+let allSites      = [];
 let filteredSites = [];
-let selectedId = null;
+let selectedId    = null;
 
-let map;
-let cartoLayer;
-let orthoLayer;
-let markers = [];
+let map, cartoLayer, orthoLayer;
+let markers   = [];
 let markerById = new Map();
-
-let scatterChart = null;
+let scatterChart   = null;
 const categoryColorMap = new Map();
 
 // ─── Referencias al DOM ─────────────────────────────────────────────────────
-const statusEl        = document.getElementById("status");
-const chartStatusEl   = document.getElementById("chartStatus");
-const siteListEl      = document.getElementById("siteList");
-const searchInput     = document.getElementById("searchInput");
-const productFilterEl = document.getElementById("productFilter");
-const langSwitchEl    = document.getElementById("langSwitch");
+const statusEl          = document.getElementById("status");
+const chartStatusEl     = document.getElementById("chartStatus");
+const searchInput       = document.getElementById("searchInput");
+const continentFilterEl = document.getElementById("continentFilter");
+const countryFilterEl   = document.getElementById("countryFilter");
+const productFilterEl   = document.getElementById("productFilter");
+const langSwitchEl      = document.getElementById("langSwitch");
 
-// ─── Utilidades de traducción ───────────────────────────────────────────────
+// ─── Utilidades ─────────────────────────────────────────────────────────────
 function t(key) {
   return I18N[currentLang]?.[key] ?? key;
 }
 
 function tm(key) {
-  return I18N[currentLang]?.metrics?.[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  return I18N[currentLang]?.metrics?.[key]
+    ?? key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// ─── Aplicar textos estáticos según idioma ──────────────────────────────────
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// ─── Idioma ─────────────────────────────────────────────────────────────────
 function applyStaticLanguage() {
   document.documentElement.lang = currentLang;
   document.title = t("pageTitle");
-  document.getElementById("backLink").textContent           = t("back");
-  document.getElementById("pageTitle").textContent          = t("pageTitle");
-  document.getElementById("pageSubtitle").innerHTML         = t("pageSubtitle");
-  document.getElementById("availableTitle").textContent     = t("available");
-  document.getElementById("productFilterLabel").textContent = t("productFilter");
-  document.getElementById("searchInput").placeholder        = t("searchPlaceholder");
-  document.getElementById("legendNote").innerHTML           = t("legendNote");
-  document.getElementById("distributionTitle").textContent  = t("distributionTitle");
-  document.getElementById("distributionStatus").textContent = t("distributionStatus");
-  document.getElementById("gwpBoxTitle").textContent        = t("gwpBoxTitle");
-  document.getElementById("gwpBoxSubtitle").textContent     = t("gwpBoxSubtitle");
-  document.getElementById("recycledBoxTitle").textContent   = t("recycledBoxTitle");
-  document.getElementById("recycledBoxSubtitle").textContent= t("recycledBoxSubtitle");
-  document.getElementById("scatterPanelTitle").textContent  = t("scatterPanelTitle");
+  document.getElementById("backLink").textContent          = t("back");
+  document.getElementById("pageTitle").textContent         = t("pageTitle");
+  document.getElementById("pageSubtitle").innerHTML        = t("pageSubtitle");
+  document.getElementById("continentFilterLabel").textContent = t("continentFilter");
+  document.getElementById("countryFilterLabel").textContent   = t("countryFilter");
+  document.getElementById("productFilterLabel").textContent   = t("productFilter");
+  document.getElementById("searchLabel").textContent          = t("searchLabel");
+  document.getElementById("searchInput").placeholder          = t("searchPlaceholder");
+  document.getElementById("distributionTitle").textContent    = t("distributionTitle");
+  document.getElementById("distributionStatus").textContent   = t("distributionStatus");
+  document.getElementById("gwpBoxTitle").textContent          = t("gwpBoxTitle");
+  document.getElementById("gwpBoxSubtitle").textContent       = t("gwpBoxSubtitle");
+  document.getElementById("recycledBoxTitle").textContent     = t("recycledBoxTitle");
+  document.getElementById("recycledBoxSubtitle").textContent  = t("recycledBoxSubtitle");
+  document.getElementById("scatterPanelTitle").textContent    = t("scatterPanelTitle");
 
   if (!allSites.length) {
-    statusEl.textContent    = t("loading");
+    statusEl.textContent      = t("loading");
     chartStatusEl.textContent = t("preparingChart");
   }
 }
 
+// ─── Continente ─────────────────────────────────────────────────────────────
+function getContinentForSite(site) {
+  const country = String(site?.raw?.pais_produccion || "").trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  // Buscar en el mapa normalizado
+  for (const [key, continent] of Object.entries(COUNTRY_TO_CONTINENT)) {
+    const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (country === keyNorm) return continent;
+  }
+  return t("unknownContinent");
+}
+
 // ─── Parseo de CSV ──────────────────────────────────────────────────────────
 function detectDelimiter(headerLine) {
-  const semicolons = (headerLine.match(/;/g) || []).length;
-  const commas     = (headerLine.match(/,/g) || []).length;
-  return semicolons > commas ? ";" : ",";
+  const sc = (headerLine.match(/;/g) || []).length;
+  const co = (headerLine.match(/,/g) || []).length;
+  return sc > co ? ";" : ",";
 }
 
 function splitCSVLine(line, delimiter) {
@@ -224,70 +314,39 @@ function splitCSVLine(line, delimiter) {
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
     const next = line[i + 1];
-
     if (char === '"') {
       if (inQuotes && next === '"') { current += '"'; i++; }
       else { inQuotes = !inQuotes; }
     } else if (char === delimiter && !inQuotes) {
-      result.push(current);
-      current = "";
+      result.push(current); current = "";
     } else {
       current += char;
     }
   }
-
   result.push(current);
   return result;
-}
-
-function slugify(text) {
-  return String(text || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function parseCoordinate(value) {
   const raw = String(value ?? "").trim();
   if (!raw) return NaN;
-
   if (/[.,]/.test(raw)) return parseFloat(raw.replace(",", "."));
-
   const sign   = raw.startsWith("-") ? -1 : 1;
   const digits = raw.replace(/^[+-]/, "");
-
   if (!/^\d+$/.test(digits)) return NaN;
-
   if (digits.length >= 3) {
-    const whole   = digits.slice(0, digits.length - 2);
-    const decimal = digits.slice(-2);
-    return sign * parseFloat(`${whole}.${decimal}`);
+    return sign * parseFloat(`${digits.slice(0, digits.length - 2)}.${digits.slice(-2)}`);
   }
-
   return sign * parseFloat(digits);
 }
 
 function parseLocaleNumber(value) {
   let raw = String(value ?? "").trim();
   if (!raw) return NaN;
-
   raw = raw.replace(/\s+/g, "").replace(/[%‰]/g, "").replace(/[^\d,.\-]/g, "");
   if (!raw) return NaN;
-
   const hasComma = raw.includes(",");
   const hasDot   = raw.includes(".");
-
   if (hasComma && hasDot) {
     raw = raw.lastIndexOf(",") > raw.lastIndexOf(".")
       ? raw.replace(/\./g, "").replace(",", ".")
@@ -295,12 +354,10 @@ function parseLocaleNumber(value) {
   } else if (hasComma) {
     raw = raw.replace(",", ".");
   }
-
   const n = parseFloat(raw);
   return Number.isFinite(n) ? n : NaN;
 }
 
-// ─── Datos y categorías ─────────────────────────────────────────────────────
 function getAssignedProduct(site) {
   const value = site?.raw?.producto_asignado;
   return value && String(value).trim() !== ""
@@ -318,10 +375,7 @@ function getColorForCategory(category) {
 
 function getCategoryCounts(sites) {
   const counts = new Map();
-  sites.forEach(site => {
-    const key = site.productAssigned;
-    counts.set(key, (counts.get(key) || 0) + 1);
-  });
+  sites.forEach(site => counts.set(site.productAssigned, (counts.get(site.productAssigned) || 0) + 1));
   return counts;
 }
 
@@ -329,80 +383,18 @@ function formatCategoryWithCount(category, count) {
   return `${category} (${t("refs")(count)})`;
 }
 
-function labelFromKey(key) {
-  return tm(key);
-}
-
-// ─── Rutas de PDF ───────────────────────────────────────────────────────────
-function getPdfSubdir(site) {
-  const explicitFolder = String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
-  if (explicitFolder) {
-    return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-  }
-
-  const productAssigned = String(site?.productAssigned || "").trim();
-  const normalized = productAssigned
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-  if (normalized.includes("b500sd")) return "B500SD";
-  if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
-  if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
-
-  return slugify(productAssigned).replace(/-/g, "_");
-}
-
-function buildPdfHref(site) {
-  const archivoRaw = String(site?.raw?.archivo || "").trim();
-  if (!archivoRaw) {
-    const pdfUrl = String(site?.raw?.pdf_url || "").trim();
-    return pdfUrl || "";
-  }
-
-  const fileName = archivoRaw.split(/[\\/]/).pop().trim();
-  const subdir   = getPdfSubdir(site);
-
-  const safeFileName = fileName.split("/").filter(Boolean)
-    .map(part => encodeURIComponent(part)).join("/");
-  const safeSubdir   = String(subdir || "").split("/").filter(Boolean)
-    .map(part => encodeURIComponent(part)).join("/");
-
-  return safeSubdir
-    ? `${PDF_BASE_PATH}${safeSubdir}/${safeFileName}`
-    : `${PDF_BASE_PATH}${safeFileName}`;
-}
-
-// ─── Subtítulos de lista y popup ────────────────────────────────────────────
-function getListSubtitle(site) {
-  const candidates = ["pais_produccion", "ciudad_produccion", "producto_asignado", "producto"];
-  const parts = candidates
-    .map(k => site.raw[k])
-    .filter(v => v && String(v).trim() !== "");
-  return parts.join(" · ") || t("noExtraData");
-}
-
-function getPopupSubtitle(site) {
-  const producto = String(site.raw.producto || "").trim();
-  return producto || t("geolocatedEPD");
-}
-
-// ─── Parseo del CSV ─────────────────────────────────────────────────────────
 function parseCSV(text) {
-  const cleanedText = text.replace(/^\uFEFF/, "").trim();
-  const lines       = cleanedText.split(/\r?\n/).filter(Boolean);
+  const lines     = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) throw new Error(t("emptyCsv"));
-
   const delimiter = detectDelimiter(lines[0]);
   const headers   = splitCSVLine(lines[0], delimiter).map(h => h.trim());
   const missing   = REQUIRED_KEYS.filter(k => !headers.includes(k));
-
   if (missing.length) throw new Error(t("requiredColumnsMissing")(missing));
 
   return lines.slice(1).map((line, idx) => {
     const values = splitCSVLine(line, delimiter);
     const raw    = {};
-    headers.forEach((header, i) => { raw[header] = (values[i] || "").trim(); });
+    headers.forEach((h, i) => { raw[h] = (values[i] || "").trim(); });
 
     const site = {
       id:   raw.id || slugify(raw.name) || `epd-${idx + 1}`,
@@ -417,50 +409,76 @@ function parseCSV(text) {
     site.productAssigned = getAssignedProduct(site);
     site.recycledPct     = parseLocaleNumber(site.raw.contenido_reciclado_pct);
     site.gwp             = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
-
+    // continent se asigna después de cargar (necesita t())
     return site;
   }).filter(Boolean);
 }
 
-// ─── Lista lateral ──────────────────────────────────────────────────────────
-function populateProductFilter() {
-  const currentValue = productFilterEl.value;
-  const products = Array.from(new Set(allSites.map(site => site.productAssigned)))
-    .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
+// ─── Filtros desplegables ───────────────────────────────────────────────────
+function populateAllFilters() {
+  const continentSel = continentFilterEl.value;
+  const countrySel   = countryFilterEl.value;
+  const productSel   = productFilterEl.value;
 
+  // Reasignar continentes por si cambió el idioma
+  allSites.forEach(site => { site.continent = getContinentForSite(site); });
+
+  const continents = Array.from(new Set(allSites.map(s => s.continent))).sort();
+  continentFilterEl.innerHTML =
+    `<option value="">${escapeHtml(t("allContinents"))}</option>` +
+    continents.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if (continents.includes(continentSel)) continentFilterEl.value = continentSel;
+
+  updateCountryFilter(continentFilterEl.value, countrySel);
+
+  const products = Array.from(new Set(allSites.map(s => s.productAssigned)))
+    .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
   productFilterEl.innerHTML =
     `<option value="">${escapeHtml(t("all"))}</option>` +
-    products.map(product =>
-      `<option value="${escapeHtml(product)}">${escapeHtml(product)}</option>`
-    ).join("");
-
-  if (products.includes(currentValue)) productFilterEl.value = currentValue;
+    products.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+  if (products.includes(productSel)) productFilterEl.value = productSel;
 }
 
-function renderList() {
-  siteListEl.innerHTML = "";
+function updateCountryFilter(selectedContinent, keepValue = "") {
+  const sourceSites = selectedContinent
+    ? allSites.filter(s => s.continent === selectedContinent)
+    : allSites;
 
-  if (!filteredSites.length) {
-    siteListEl.innerHTML = `<div class="empty">${escapeHtml(t("noMatch"))}</div>`;
-    return;
-  }
+  const countries = Array.from(new Set(
+    sourceSites.map(s => String(s.raw.pais_produccion || "").trim()).filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
 
-  filteredSites.forEach(site => {
-    const btn = document.createElement("button");
-    btn.className = "site-btn" + (site.id === selectedId ? " active" : "");
-    btn.innerHTML = `
-      <strong>
-        <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))};"></span>
-        ${escapeHtml(site.name)}
-      </strong>
-      <span>${escapeHtml(getListSubtitle(site))}</span>
-    `;
-    btn.addEventListener("click", () => selectSite(site.id, true, true));
-    siteListEl.appendChild(btn);
-  });
+  countryFilterEl.innerHTML =
+    `<option value="">${escapeHtml(t("allCountries"))}</option>` +
+    countries.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+  if (countries.includes(keepValue)) countryFilterEl.value = keepValue;
 }
 
-// ─── Popup del mapa ─────────────────────────────────────────────────────────
+// ─── Rutas de PDF ───────────────────────────────────────────────────────────
+function getPdfSubdir(site) {
+  const explicitFolder = String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
+  if (explicitFolder) return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+
+  const normalized = String(site?.productAssigned || "")
+    .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (normalized.includes("b500sd")) return "B500SD";
+  if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
+  if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
+  return slugify(site?.productAssigned || "").replace(/-/g, "_");
+}
+
+function buildPdfHref(site) {
+  const archivoRaw = String(site?.raw?.archivo || "").trim();
+  if (!archivoRaw) return String(site?.raw?.pdf_url || "").trim();
+  const fileName = archivoRaw.split(/[\\/]/).pop().trim();
+  const subdir   = getPdfSubdir(site);
+  const safeName = fileName.split("/").filter(Boolean).map(encodeURIComponent).join("/");
+  const safeDir  = String(subdir || "").split("/").filter(Boolean).map(encodeURIComponent).join("/");
+  return safeDir ? `${PDF_BASE_PATH}${safeDir}/${safeName}` : `${PDF_BASE_PATH}${safeName}`;
+}
+
+// ─── Popup ───────────────────────────────────────────────────────────────────
 function buildPopupHtml(site) {
   const popupKeys = ["contenido_reciclado_pct", "gwp_total_kg_co2e_t"]
     .filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
@@ -468,52 +486,42 @@ function buildPopupHtml(site) {
   const popupItems = popupKeys.length
     ? popupKeys.map(key => `
         <div class="popup-item">
-          <span class="k">${escapeHtml(labelFromKey(key))}</span>
+          <span class="k">${escapeHtml(tm(key))}</span>
           <span class="v">${escapeHtml(site.raw[key])}</span>
-        </div>
-      `).join("")
-    : `
-        <div class="popup-item">
-          <span class="k">${escapeHtml(t("location"))}</span>
-          <span class="v">${escapeHtml(t("latitude"))} ${site.lat.toFixed(4)}, ${escapeHtml(t("longitude"))} ${site.lon.toFixed(4)}</span>
-        </div>
-      `;
+        </div>`).join("")
+    : `<div class="popup-item">
+        <span class="k">${escapeHtml(t("location"))}</span>
+        <span class="v">${escapeHtml(t("latitude"))} ${site.lat.toFixed(4)}, ${escapeHtml(t("longitude"))} ${site.lon.toFixed(4)}</span>
+       </div>`;
 
   const pdfHref = buildPdfHref(site);
-
   return `
     <div class="popup-shell">
       <div class="popup-head">
         <div class="popup-title">${escapeHtml(site.name)}</div>
-        <div class="popup-subtitle">${escapeHtml(getPopupSubtitle(site))}</div>
+        <div class="popup-subtitle">${escapeHtml(String(site.raw.producto || "").trim() || t("geolocatedEPD"))}</div>
       </div>
       <div class="popup-grid">${popupItems}</div>
       <div class="popup-links">
         ${pdfHref ? `<a class="popup-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("openPdf"))}</a>` : ""}
         <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("googleMapsLabel"))}</a>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ─── Mapa ───────────────────────────────────────────────────────────────────
+// ─── Mapa ────────────────────────────────────────────────────────────────────
 function initMap() {
   cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
+    maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
   });
-
   orthoLayer = L.tileLayer(
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     { maxZoom: 19, attribution: "Tiles &copy; Esri" }
   );
-
   map = L.map("map", { center: INITIAL_CENTER, zoom: INITIAL_ZOOM, layers: [cartoLayer] });
-
   L.control.layers(
     { "Cartografía / Map": cartoLayer, "Ortofoto / Imagery": orthoLayer },
-    {},
-    { collapsed: false }
+    {}, { collapsed: false }
   ).addTo(map);
 }
 
@@ -531,115 +539,82 @@ function getMarkerStyle(site, isSelected = false) {
 function updateMarkerStyles() {
   markerById.forEach((marker, id) => {
     const site = allSites.find(s => s.id === id);
-    if (!site) return;
-    marker.setStyle(getMarkerStyle(site, id === selectedId));
+    if (site) marker.setStyle(getMarkerStyle(site, id === selectedId));
   });
 }
 
 function renderMarkers() {
-  markers.forEach(marker => map.removeLayer(marker));
+  markers.forEach(m => map.removeLayer(m));
   markers    = [];
   markerById = new Map();
 
-  if (!filteredSites.length) {
-    map.setView(INITIAL_CENTER, INITIAL_ZOOM);
-    return;
-  }
+  if (!filteredSites.length) { map.setView(INITIAL_CENTER, INITIAL_ZOOM); return; }
 
   const bounds = [];
-
   filteredSites.forEach(site => {
-    const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId))
-      .addTo(map);
-
+    const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId)).addTo(map);
     marker.bindPopup(buildPopupHtml(site), { maxWidth: 580, minWidth: 320, autoPan: true });
-
     marker.on("click", () => {
       selectedId = site.id;
-      renderList();
       updateMarkerStyles();
       renderScatterPlot();
       renderBoxplots();
     });
-
     markers.push(marker);
     markerById.set(site.id, marker);
     bounds.push([site.lat, site.lon]);
   });
 
-  if (bounds.length === 1) {
-    map.setView(bounds[0], 6);
-  } else {
-    map.fitBounds(bounds, { padding: [30, 30] });
-  }
+  bounds.length === 1
+    ? map.setView(bounds[0], 6)
+    : map.fitBounds(bounds, { padding: [30, 30] });
 }
 
-// ─── Gráfico de dispersión ──────────────────────────────────────────────────
+// ─── Gráfico de dispersión ───────────────────────────────────────────────────
 function computeTrendLine(points) {
   if (!points || points.length < 2) return null;
-
   const xs  = points.map(p => p.x);
   const ys  = points.map(p => p.y);
   const n   = points.length;
   const sumX  = xs.reduce((a, b) => a + b, 0);
   const sumY  = ys.reduce((a, b) => a + b, 0);
-  const sumXY = points.reduce((acc, p) => acc + p.x * p.y, 0);
-  const sumXX = xs.reduce((acc, x) => acc + x * x, 0);
-  const denom = (n * sumXX) - (sumX * sumX);
-
+  const sumXY = points.reduce((a, p) => a + p.x * p.y, 0);
+  const sumXX = xs.reduce((a, x) => a + x * x, 0);
+  const denom = n * sumXX - sumX * sumX;
   if (!Number.isFinite(denom) || denom === 0) return null;
-
-  const slope     = ((n * sumXY) - (sumX * sumY)) / denom;
+  const slope     = (n * sumXY - sumX * sumY) / denom;
   const intercept = (sumY - slope * sumX) / n;
-  const minX      = Math.min(...xs);
-  const maxX      = Math.max(...xs);
-
-  return [
-    { x: minX, y: slope * minX + intercept },
-    { x: maxX, y: slope * maxX + intercept }
-  ];
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  return [{ x: minX, y: slope * minX + intercept }, { x: maxX, y: slope * maxX + intercept }];
 }
 
 function renderScatterPlot() {
-  const chartCanvas  = document.getElementById("scatterChart");
-  const validSites   = filteredSites.filter(site =>
-    Number.isFinite(site.recycledPct) && Number.isFinite(site.gwp)
-  );
+  const chartCanvas = document.getElementById("scatterChart");
+  const validSites  = filteredSites.filter(s => Number.isFinite(s.recycledPct) && Number.isFinite(s.gwp));
 
   if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
+  if (!validSites.length) { chartStatusEl.textContent = t("noValidChartData"); return; }
 
-  if (!validSites.length) {
-    chartStatusEl.textContent = t("noValidChartData");
-    return;
-  }
-
-  const grouped       = new Map();
+  const grouped        = new Map();
   const categoryCounts = getCategoryCounts(validSites);
-
   validSites.forEach(site => {
-    const category = site.productAssigned;
-    if (!grouped.has(category)) grouped.set(category, []);
-    grouped.get(category).push({
+    if (!grouped.has(site.productAssigned)) grouped.set(site.productAssigned, []);
+    grouped.get(site.productAssigned).push({
       x: site.recycledPct, y: site.gwp,
       siteId: site.id, label: site.name,
       productAssigned: site.productAssigned,
-      codigo: site.raw.codigo_epd || "",
-      archivo: site.raw.archivo || ""
+      codigo: site.raw.codigo_epd || ""
     });
   });
 
   const datasets = [];
-
   Array.from(grouped.entries())
     .sort((a, b) => a[0].localeCompare(b[0], currentLang, { sensitivity: "base" }))
     .forEach(([category, data]) => {
-      const color         = getColorForCategory(category);
-      const count         = categoryCounts.get(category) || data.length;
-      const categoryLabel = formatCategoryWithCount(category, count);
-
+      const color = getColorForCategory(category);
+      const label = formatCategoryWithCount(category, categoryCounts.get(category) || data.length);
       datasets.push({
-        label: categoryLabel, data,
-        showLine: false,
+        label, data, showLine: false,
         borderColor: color, backgroundColor: color,
         pointRadius:      ctx => ctx.raw.siteId === selectedId ? 8 : 5,
         pointHoverRadius: 9,
@@ -647,44 +622,31 @@ function renderScatterPlot() {
         pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2,
         order: 2
       });
-
-      const trendLine = computeTrendLine(data);
-      if (trendLine) {
-        datasets.push({
-          label: `${categoryLabel} · ${t("trendLabel")}`,
-          data: trendLine, type: "line",
-          showLine: true, parsing: false,
-          borderColor: color, backgroundColor: color,
-          borderWidth: 2, borderDash: [6, 4],
-          pointRadius: 0, pointHoverRadius: 0,
-          fill: false, tension: 0, order: 1
-        });
-      }
+      const trend = computeTrendLine(data);
+      if (trend) datasets.push({
+        label: `${label} · ${t("trendLabel")}`, data: trend,
+        type: "line", showLine: true, parsing: false,
+        borderColor: color, backgroundColor: color,
+        borderWidth: 2, borderDash: [6, 4],
+        pointRadius: 0, pointHoverRadius: 0,
+        fill: false, tension: 0, order: 1
+      });
     });
 
   scatterChart = new Chart(chartCanvas, {
     type: "scatter",
     data: { datasets },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: false, parsing: false,
+      responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
       plugins: {
-        legend: {
-          labels: {
-            color: "#eaf1ff",
-            filter(item, chartData) {
-              return !!chartData.datasets[item.datasetIndex].label;
-            }
-          }
-        },
+        legend: { labels: { color: "#eaf1ff", filter: (item, d) => !!d.datasets[item.datasetIndex].label } },
         tooltip: {
-          backgroundColor: "rgba(10,16,29,0.95)",
-          borderColor: "rgba(102,179,255,0.35)", borderWidth: 1,
+          backgroundColor: "rgba(10,16,29,0.95)", borderColor: "rgba(102,179,255,0.35)", borderWidth: 1,
           titleColor: "#ffffff", bodyColor: "#eaf1ff",
           callbacks: {
-            label(context) {
-              const raw = context.raw;
-              if (!raw?.siteId) return context.dataset?.label || "";
+            label(ctx) {
+              const raw = ctx.raw;
+              if (!raw?.siteId) return ctx.dataset?.label || "";
               return [
                 raw.label,
                 `${t("assignedProduct")}: ${raw.productAssigned}`,
@@ -697,23 +659,18 @@ function renderScatterPlot() {
         }
       },
       scales: {
-        x: {
-          min: 0, max: 100,
+        x: { min: 0, max: 100,
           title: { display: true, text: t("recycledContentAxis"), color: "#eaf1ff" },
-          ticks: { color: "#9db0d1" },
-          grid:  { color: "rgba(157,176,209,0.15)" }
+          ticks: { color: "#9db0d1" }, grid: { color: "rgba(157,176,209,0.15)" }
         },
-        y: {
-          beginAtZero: true,
+        y: { beginAtZero: true,
           title: { display: true, text: t("gwpAxis"), color: "#eaf1ff" },
-          ticks: { color: "#9db0d1" },
-          grid:  { color: "rgba(157,176,209,0.15)" }
+          ticks: { color: "#9db0d1" }, grid: { color: "rgba(157,176,209,0.15)" }
         }
       },
       onClick(event, elements, chart) {
         if (!elements.length) return;
-        const first = elements[0];
-        const raw   = chart.data.datasets[first.datasetIndex].data[first.index];
+        const raw = chart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
         if (raw?.siteId) selectSite(raw.siteId, true, true);
       }
     }
@@ -722,85 +679,69 @@ function renderScatterPlot() {
   chartStatusEl.textContent = t("chartPoints")(validSites.length, filteredSites.length);
 }
 
-// ─── Boxplots ───────────────────────────────────────────────────────────────
+// ─── Boxplots ────────────────────────────────────────────────────────────────
 function getPlotlyBaseLayout(yTitle) {
   return {
     paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    margin: { l: 56, r: 12, t: 8, b: 92 },
-    autosize: true, showlegend: false,
-    font: { color: "#eaf1ff", family: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
+    margin: { l: 56, r: 12, t: 8, b: 92 }, autosize: true, showlegend: false,
+    font: { color: "#eaf1ff", family: 'Inter, system-ui, sans-serif' },
     xaxis: { title: "", tickangle: -24, automargin: true, color: "#9db0d1", gridcolor: "rgba(157,176,209,0.08)", zeroline: false },
     yaxis: { title: yTitle, automargin: true, color: "#9db0d1", gridcolor: "rgba(157,176,209,0.15)", zeroline: false }
   };
 }
 
 function renderSingleBoxplot(targetId, accessor, yTitle) {
-  const validSites = filteredSites.filter(site => Number.isFinite(accessor(site)));
+  const validSites = filteredSites.filter(s => Number.isFinite(accessor(s)));
   const targetEl   = document.getElementById(targetId);
-
-  if (!validSites.length) {
-    Plotly.purge(targetEl);
-    targetEl.innerHTML = "";
-    return;
-  }
+  if (!validSites.length) { Plotly.purge(targetEl); targetEl.innerHTML = ""; return; }
 
   const categoryCounts  = getCategoryCounts(validSites);
-  const categories      = Array.from(new Set(validSites.map(site => site.productAssigned)))
+  const categories      = Array.from(new Set(validSites.map(s => s.productAssigned)))
     .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
-  const categoryLabelMap = new Map(
-    categories.map(cat => [cat, formatCategoryWithCount(cat, categoryCounts.get(cat) || 0)])
-  );
+  const labelMap = new Map(categories.map(c => [c, formatCategoryWithCount(c, categoryCounts.get(c) || 0)]));
 
-  const traces = categories.map(category => {
-    const sitesInCategory = validSites.filter(s => s.productAssigned === category);
-    const color = getColorForCategory(category);
-    return {
-      type: "box", name: categoryLabelMap.get(category),
-      y: sitesInCategory.map(s => accessor(s)),
-      boxpoints: false,
-      line: { color, width: 1.8 },
-      fillcolor: "rgba(102,179,255,0.14)",
-      marker: { color },
-      hovertemplate:
-        `<b>${escapeHtml(categoryLabelMap.get(category))}</b><br>` +
-        `${escapeHtml(yTitle)}: %{y}<extra></extra>`
-    };
+  const traces = categories.map(cat => ({
+    type: "box", name: labelMap.get(cat),
+    y: validSites.filter(s => s.productAssigned === cat).map(s => accessor(s)),
+    boxpoints: false,
+    line:  { color: getColorForCategory(cat), width: 1.8 },
+    fillcolor: "rgba(102,179,255,0.14)",
+    marker: { color: getColorForCategory(cat) },
+    hovertemplate: `<b>${escapeHtml(labelMap.get(cat))}</b><br>${escapeHtml(yTitle)}: %{y}<extra></extra>`
+  }));
+
+  const sel = validSites.find(s => s.id === selectedId);
+  if (sel) traces.push({
+    type: "scatter", mode: "markers",
+    x: [labelMap.get(sel.productAssigned)], y: [accessor(sel)],
+    marker: { size: 12, color: "#ffffff", line: { color: "#111827", width: 2 } },
+    hovertemplate:
+      `<b>${escapeHtml(sel.name)}</b><br>` +
+      `${escapeHtml(t("selectedCategory"))}: ${escapeHtml(labelMap.get(sel.productAssigned))}<br>` +
+      `${escapeHtml(yTitle)}: ${accessor(sel)}<extra></extra>`
   });
 
-  const selectedSite = validSites.find(s => s.id === selectedId);
-  if (selectedSite) {
-    traces.push({
-      type: "scatter", mode: "markers",
-      x: [categoryLabelMap.get(selectedSite.productAssigned)],
-      y: [accessor(selectedSite)],
-      marker: { size: 12, color: "#ffffff", line: { color: "#111827", width: 2 } },
-      hovertemplate:
-        `<b>${escapeHtml(selectedSite.name)}</b><br>` +
-        `${escapeHtml(t("selectedCategory"))}: ${escapeHtml(categoryLabelMap.get(selectedSite.productAssigned))}<br>` +
-        `${escapeHtml(yTitle)}: ${accessor(selectedSite)}<extra></extra>`
-    });
-  }
-
-  Plotly.react(targetEl, traces, getPlotlyBaseLayout(yTitle), {
-    responsive: true, displayModeBar: false
-  });
+  Plotly.react(targetEl, traces, getPlotlyBaseLayout(yTitle), { responsive: true, displayModeBar: false });
 }
 
 function renderBoxplots() {
-  renderSingleBoxplot("boxplotGwp",      site => site.gwp,         t("gwpAxis"));
-  renderSingleBoxplot("boxplotRecycled", site => site.recycledPct, t("recycledContentAxis"));
+  renderSingleBoxplot("boxplotGwp",      s => s.gwp,         t("gwpAxis"));
+  renderSingleBoxplot("boxplotRecycled", s => s.recycledPct, t("recycledContentAxis"));
 }
 
-// ─── Filtros y selección ────────────────────────────────────────────────────
+// ─── Filtrar y redibujar ─────────────────────────────────────────────────────
 function applyFilter() {
-  const q               = searchInput.value.trim().toLowerCase();
-  const selectedProduct = productFilterEl.value.trim();
+  const q                 = searchInput.value.trim().toLowerCase();
+  const selectedContinent = continentFilterEl.value.trim();
+  const selectedCountry   = countryFilterEl.value.trim();
+  const selectedProduct   = productFilterEl.value.trim();
 
   filteredSites = allSites.filter(site => {
-    const matchesProduct = !selectedProduct || site.productAssigned === selectedProduct;
-    const haystack       = Object.values(site.raw).join(" ").toLowerCase();
-    const matchesSearch  = !q || haystack.includes(q);
-    return matchesProduct && matchesSearch;
+    if (selectedContinent && site.continent !== selectedContinent) return false;
+    if (selectedCountry && String(site.raw.pais_produccion || "").trim() !== selectedCountry) return false;
+    if (selectedProduct && site.productAssigned !== selectedProduct) return false;
+    if (q && !Object.values(site.raw).join(" ").toLowerCase().includes(q)) return false;
+    return true;
   });
 
   if (!filteredSites.some(s => s.id === selectedId)) {
@@ -808,8 +749,6 @@ function applyFilter() {
   }
 
   statusEl.textContent = t("loadedData")(filteredSites.length, allSites.length);
-
-  renderList();
   renderMarkers();
   renderScatterPlot();
   renderBoxplots();
@@ -817,86 +756,71 @@ function applyFilter() {
 
 function selectSite(id, centerMap, openPopup) {
   selectedId = id;
-  renderList();
   updateMarkerStyles();
   renderScatterPlot();
   renderBoxplots();
-
   if (!map) return;
-
   const site   = allSites.find(s => s.id === id);
   const marker = markerById.get(id);
-
-  if (site && centerMap)    map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
-  if (marker && openPopup)  marker.openPopup();
+  if (site && centerMap)   map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
+  if (marker && openPopup) marker.openPopup();
 }
 
-// ─── Carga de datos ─────────────────────────────────────────────────────────
+// ─── Carga de datos ──────────────────────────────────────────────────────────
 async function loadData() {
   try {
     const response = await fetch("./datos.csv", { cache: "no-store" });
     if (!response.ok) throw new Error(t("fileNotFound"));
 
-    const text = await response.text();
-    allSites   = parseCSV(text);
-
+    allSites = parseCSV(await response.text());
     if (!allSites.length) throw new Error(t("noValidRecords"));
 
-    populateProductFilter();
+    // Asignar continentes
+    allSites.forEach(site => { site.continent = getContinentForSite(site); });
 
+    populateAllFilters();
     filteredSites = [...allSites];
-    selectedId    = filteredSites.length ? filteredSites[0].id : null;
+    selectedId    = allSites[0].id;
 
     statusEl.textContent = t("loadedAllData")(allSites.length);
-    renderList();
     renderMarkers();
     renderScatterPlot();
     renderBoxplots();
 
-    setTimeout(() => {
-      map.invalidateSize();
-      window.dispatchEvent(new Event("resize"));
-    }, 80);
+    setTimeout(() => { map.invalidateSize(); window.dispatchEvent(new Event("resize")); }, 80);
   } catch (error) {
-    statusEl.textContent    = t("errorReadingCsv")(error.message);
+    statusEl.textContent      = t("errorReadingCsv")(error.message);
     chartStatusEl.textContent = t("chartBuildError");
-    allSites      = [];
-    filteredSites = [];
-    selectedId    = null;
-    renderList();
+    allSites = filteredSites = [];
+    selectedId = null;
     Plotly.purge("boxplotGwp");
     Plotly.purge("boxplotRecycled");
   }
 }
 
-// ─── Cambio de idioma ───────────────────────────────────────────────────────
-function rerenderLanguage() {
-  applyStaticLanguage();
-  populateProductFilter();
-
-  if (allSites.length) {
-    applyFilter();
-  } else {
-    statusEl.textContent      = t("loading");
-    chartStatusEl.textContent = t("preparingChart");
-  }
-}
-
-// ─── Inicialización ─────────────────────────────────────────────────────────
+// ─── Eventos ─────────────────────────────────────────────────────────────────
 searchInput.addEventListener("input", applyFilter);
 productFilterEl.addEventListener("change", applyFilter);
+countryFilterEl.addEventListener("change", applyFilter);
 
-langSwitchEl.value = currentLang;
-langSwitchEl.addEventListener("change", (e) => {
-  currentLang = e.target.value;
-  localStorage.setItem("epd_lang", currentLang);
-  rerenderLanguage();
+continentFilterEl.addEventListener("change", () => {
+  updateCountryFilter(continentFilterEl.value, "");
+  applyFilter();
 });
 
+langSwitchEl.value = currentLang;
+langSwitchEl.addEventListener("change", e => {
+  currentLang = e.target.value;
+  localStorage.setItem("epd_lang", currentLang);
+  applyStaticLanguage();
+  populateAllFilters();
+  if (allSites.length) applyFilter();
+  else { statusEl.textContent = t("loading"); chartStatusEl.textContent = t("preparingChart"); }
+});
+
+window.addEventListener("resize", () => { if (map) setTimeout(() => map.invalidateSize(), 50); });
+
+// ─── Arranque ─────────────────────────────────────────────────────────────────
 applyStaticLanguage();
 initMap();
 loadData();
-
-window.addEventListener("resize", () => {
-  if (map) setTimeout(() => map.invalidateSize(), 50);
-});
