@@ -92,8 +92,8 @@ const COUNTRY_TO_CONTINENT = {
 // ─── Traducciones ───────────────────────────────────────────────────────────
 const I18N = {
   es: {
-    pageTitle: "EPD geolocalizadas",
-    pageSubtitle: "Declaraciones ambientales de producto georreferenciadas · <strong>datos.csv</strong>",
+    pageTitle: "Steel EPDs for Offshore Wind",
+    pageSubtitle: "",
     back: "← Volver al índice",
     loading: "Cargando datos...",
     continentFilter: "Continente",
@@ -160,8 +160,8 @@ const I18N = {
     }
   },
   en: {
-    pageTitle: "Geolocated EPDs",
-    pageSubtitle: "Environmental Product Declarations georeferenced from <strong>datos.csv</strong>",
+    pageTitle: "Steel EPDs for Offshore Wind",
+    pageSubtitle: "",
     back: "← Back to index",
     loading: "Loading data...",
     continentFilter: "Continent",
@@ -863,17 +863,34 @@ function renderScatterPlot() {
 }
 
 // ─── Boxplots ───────────────────────────────────────────────────────────────
+function wrapLabel(text, maxLen = 18) {
+  if (text.length <= maxLen) return text;
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  for (const word of words) {
+    if ((current + ' ' + word).trim().length > maxLen && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = (current + ' ' + word).trim();
+    }
+  }
+  if (current) lines.push(current);
+  return lines.join('<br>');
+}
+
 function getPlotlyBaseLayout(yTitle) {
   return {
     paper_bgcolor: "rgba(0,0,0,0)",
     plot_bgcolor: "rgba(0,0,0,0)",
-    margin: { l: 56, r: 12, t: 8, b: 92 },
+    margin: { l: 56, r: 12, t: 8, b: 110 },
     autosize: true,
     showlegend: false,
     font: { color: "#eaf1ff", family: 'Inter, system-ui, sans-serif' },
     xaxis: {
       title: "",
-      tickangle: -24,
+      tickangle: 0,
       automargin: true,
       color: "#9db0d1",
       gridcolor: "rgba(157,176,209,0.08)",
@@ -902,7 +919,7 @@ function renderSingleBoxplot(targetId, accessor, yTitle) {
   const categoryCounts = getCategoryCounts(validSites);
   const categories = Array.from(new Set(validSites.map(s => s.productAssigned)))
     .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
-  const labelMap = new Map(categories.map(c => [c, formatCategoryWithCount(c, categoryCounts.get(c) || 0)]));
+  const labelMap = new Map(categories.map(c => [c, wrapLabel(formatCategoryWithCount(c, categoryCounts.get(c) || 0))]));
 
   const traces = categories.map(cat => ({
     type: "box",
