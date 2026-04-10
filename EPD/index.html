@@ -290,10 +290,12 @@
     .map-panel,
     .boxplot-panel {
       min-width: 0;
+      height: var(--top-row-height);
+      min-height: 0;
     }
 
     .map-shell {
-      height: var(--top-row-height);
+      height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -311,6 +313,8 @@
     .boxplot-panel {
       display: flex;
       flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .boxplot-grid {
@@ -318,7 +322,9 @@
       grid-template-columns: 1fr 1fr;
       gap: 14px;
       min-width: 0;
-      height: var(--top-row-height);
+      min-height: 0;
+      height: auto;
+      flex: 1;
     }
 
     .mini-plot {
@@ -372,35 +378,6 @@
     #scatterChart {
       width: 100%;
       height: 100%;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .metric {
-      background: linear-gradient(180deg, rgba(23,40,68,0.95), rgba(18,32,58,0.95));
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px;
-    }
-
-    .metric .k {
-      display: block;
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 6px;
-    }
-
-    .metric .v {
-      display: block;
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1.35;
-      word-break: break-word;
     }
 
     .leaflet-container {
@@ -479,8 +456,7 @@
       flex-wrap: wrap;
     }
 
-    .popup-link,
-    .detail-link {
+    .popup-link {
       display: inline-block;
       padding: 9px 13px;
       border-radius: 999px;
@@ -493,17 +469,9 @@
       transition: transform 0.15s ease, background 0.2s ease;
     }
 
-    .popup-link:hover,
-    .detail-link:hover {
+    .popup-link:hover {
       background: #cfe8ff;
       transform: translateY(-1px);
-    }
-
-    .detail-actions {
-      margin-top: 14px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     @media (min-width: 1700px) {
@@ -543,6 +511,11 @@
 
       .top-row {
         grid-template-columns: 1fr;
+      }
+
+      .map-panel,
+      .boxplot-panel {
+        height: auto;
       }
 
       #map {
@@ -685,10 +658,6 @@
             <canvas id="scatterChart"></canvas>
           </div>
         </section>
-
-        <section class="panel">
-          <div id="detail" class="empty">Selecciona una EPD de la lista, del mapa o del gráfico.</div>
-        </section>
       </section>
     </section>
   </main>
@@ -731,7 +700,6 @@
         recycledBoxSubtitle: "Distribución por producto asignado",
         scatterPanelTitle: "Reciclaje vs emisiones",
         preparingChart: "Preparando gráfico...",
-        detailEmpty: "Selecciona una EPD de la lista, del mapa o del gráfico.",
         noMatch: "No hay EPD que coincidan con el filtro actual.",
         noExtraData: "Sin datos complementarios",
         geolocatedEPD: "EPD geolocalizada",
@@ -750,6 +718,8 @@
         fileNotFound: "No se encontró datos.csv",
         emptyCsv: "CSV vacío o sin filas de datos",
         requiredColumnsMissing: missing => `Faltan columnas obligatorias: ${missing.join(", ")}`,
+        trendLabel: "Tendencia",
+        refs: n => `n=${n}`,
         metrics: {
           name: "Nombre",
           lat: "Latitud",
@@ -797,7 +767,6 @@
         recycledBoxSubtitle: "Distribution by assigned product",
         scatterPanelTitle: "Recycled content vs emissions",
         preparingChart: "Preparing chart...",
-        detailEmpty: "Select an EPD from the list, map, or chart.",
         noMatch: "No EPDs match the current filter.",
         noExtraData: "No additional data",
         geolocatedEPD: "Geolocated EPD",
@@ -816,6 +785,8 @@
         fileNotFound: "datos.csv was not found",
         emptyCsv: "Empty CSV or no data rows",
         requiredColumnsMissing: missing => `Missing required columns: ${missing.join(", ")}`,
+        trendLabel: "Trend",
+        refs: n => `n=${n}`,
         metrics: {
           name: "Name",
           lat: "Latitude",
@@ -865,7 +836,6 @@
     const statusEl = document.getElementById("status");
     const chartStatusEl = document.getElementById("chartStatus");
     const siteListEl = document.getElementById("siteList");
-    const detailEl = document.getElementById("detail");
     const searchInput = document.getElementById("searchInput");
     const productFilterEl = document.getElementById("productFilter");
     const langSwitchEl = document.getElementById("langSwitch");
@@ -899,7 +869,6 @@
       if (!allSites.length) {
         statusEl.textContent = t("loading");
         chartStatusEl.textContent = t("preparingChart");
-        detailEl.textContent = t("detailEmpty");
       }
     }
 
@@ -1022,6 +991,19 @@
       return categoryColorMap.get(key);
     }
 
+    function getCategoryCounts(sites) {
+      const counts = new Map();
+      sites.forEach(site => {
+        const key = site.productAssigned;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      });
+      return counts;
+    }
+
+    function formatCategoryWithCount(category, count) {
+      return `${category} (${t("refs")(count)})`;
+    }
+
     function getPdfSubdir(site) {
       const explicitFolder =
         String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
@@ -1090,14 +1072,6 @@
     function getPopupSubtitle(site) {
       const producto = String(site.raw.producto || "").trim();
       return producto || t("geolocatedEPD");
-    }
-
-    function getDisplayKeys(site) {
-      return Object.keys(site.raw).filter(key => {
-        if (RESERVED_KEYS.includes(key)) return false;
-        const value = site.raw[key];
-        return value !== undefined && value !== null && String(value).trim() !== "";
-      });
     }
 
     function parseCSV(text) {
@@ -1175,66 +1149,6 @@
         btn.addEventListener("click", () => selectSite(site.id, true, true));
         siteListEl.appendChild(btn);
       });
-    }
-
-    function renderDetail() {
-      const site = allSites.find(s => s.id === selectedId);
-
-      if (!site) {
-        detailEl.innerHTML = `<div class="empty">${escapeHtml(t("detailEmpty"))}</div>`;
-        return;
-      }
-
-      const displayKeys = getDisplayKeys(site);
-      const pdfHref = buildPdfHref(site);
-
-      const metricsHtml = displayKeys.length
-        ? `<div class="detail-grid">${
-            displayKeys.map(key => {
-              const value = site.raw[key];
-
-              if (key === "archivo" && pdfHref) {
-                return `
-                  <div class="metric">
-                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                    <span class="v"><a href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">${escapeHtml(t("openPdf"))}</a></span>
-                  </div>
-                `;
-              }
-
-              if (key === "pdf_url" && String(value).trim() !== "") {
-                return `
-                  <div class="metric">
-                    <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                    <span class="v"><a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer" style="color:#9fd0ff; text-decoration:none;">${escapeHtml(t("openPdf"))}</a></span>
-                  </div>
-                `;
-              }
-
-              return `
-                <div class="metric">
-                  <span class="k">${escapeHtml(labelFromKey(key))}</span>
-                  <span class="v">${escapeHtml(value)}</span>
-                </div>
-              `;
-            }).join("")
-          }</div>`
-        : "";
-
-      detailEl.innerHTML = `
-        <h3 style="margin:0 0 8px; font-size:1.35rem; display:flex; align-items:center; gap:10px;">
-          <span class="dot" style="background:${escapeHtml(getColorForCategory(site.productAssigned))}; width:14px; height:14px;"></span>
-          ${escapeHtml(site.name)}
-        </h3>
-        <div style="color:#9db0d1; line-height:1.55;">
-          ${escapeHtml(t("latitude"))} ${site.lat.toFixed(4)}, ${escapeHtml(t("longitude"))} ${site.lon.toFixed(4)} · ${escapeHtml(site.productAssigned)}
-        </div>
-        ${metricsHtml}
-        <div class="detail-actions">
-          ${pdfHref ? `<a class="detail-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("openPdf"))}</a>` : ""}
-          <a class="detail-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("viewLocation"))}</a>
-        </div>
-      `;
     }
 
     function buildPopupHtml(site) {
@@ -1352,7 +1266,6 @@
         marker.on("click", () => {
           selectedId = site.id;
           renderList();
-          renderDetail();
           updateMarkerStyles();
           renderScatterPlot();
           renderBoxplots();
@@ -1368,6 +1281,33 @@
       } else {
         map.fitBounds(bounds, { padding: [30, 30] });
       }
+    }
+
+    function computeTrendLine(points) {
+      if (!points || points.length < 2) return null;
+
+      const xs = points.map(p => p.x);
+      const ys = points.map(p => p.y);
+      const n = points.length;
+
+      const sumX = xs.reduce((a, b) => a + b, 0);
+      const sumY = ys.reduce((a, b) => a + b, 0);
+      const sumXY = points.reduce((acc, p) => acc + p.x * p.y, 0);
+      const sumXX = xs.reduce((acc, x) => acc + x * x, 0);
+
+      const denominator = (n * sumXX) - (sumX * sumX);
+      if (!Number.isFinite(denominator) || denominator === 0) return null;
+
+      const slope = ((n * sumXY) - (sumX * sumY)) / denominator;
+      const intercept = (sumY - slope * sumX) / n;
+
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+
+      return [
+        { x: minX, y: slope * minX + intercept },
+        { x: maxX, y: slope * maxX + intercept }
+      ];
     }
 
     function renderScatterPlot() {
@@ -1387,6 +1327,7 @@
       }
 
       const grouped = new Map();
+      const categoryCounts = getCategoryCounts(validSites);
 
       validSites.forEach(site => {
         const category = site.productAssigned;
@@ -1403,12 +1344,17 @@
         });
       });
 
-      const datasets = Array.from(grouped.entries())
+      const datasets = [];
+
+      Array.from(grouped.entries())
         .sort((a, b) => a[0].localeCompare(b[0], currentLang, { sensitivity: "base" }))
-        .map(([category, data]) => {
+        .forEach(([category, data]) => {
           const color = getColorForCategory(category);
-          return {
-            label: category,
+          const count = categoryCounts.get(category) || data.length;
+          const categoryLabel = formatCategoryWithCount(category, count);
+
+          datasets.push({
+            label: categoryLabel,
             data,
             showLine: false,
             borderColor: color,
@@ -1416,8 +1362,29 @@
             pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
             pointHoverRadius: 9,
             pointBorderColor: "#ffffff",
-            pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2
-          };
+            pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2,
+            order: 2
+          });
+
+          const trendLine = computeTrendLine(data);
+          if (trendLine) {
+            datasets.push({
+              label: `${categoryLabel} · ${t("trendLabel")}`,
+              data: trendLine,
+              type: "line",
+              showLine: true,
+              parsing: false,
+              borderColor: color,
+              backgroundColor: color,
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: false,
+              tension: 0,
+              order: 1
+            });
+          }
         });
 
       scatterChart = new Chart(chartCanvas, {
@@ -1431,7 +1398,11 @@
           plugins: {
             legend: {
               labels: {
-                color: "#eaf1ff"
+                color: "#eaf1ff",
+                filter(item, chartData) {
+                  const ds = chartData.datasets[item.datasetIndex];
+                  return !!ds.label;
+                }
               }
             },
             tooltip: {
@@ -1442,7 +1413,13 @@
               bodyColor: "#eaf1ff",
               callbacks: {
                 label(context) {
+                  const datasetLabel = context.dataset?.label || "";
                   const raw = context.raw;
+
+                  if (!raw?.siteId) {
+                    return datasetLabel;
+                  }
+
                   return [
                     raw.label,
                     `${t("assignedProduct")}: ${raw.productAssigned}`,
@@ -1503,7 +1480,7 @@
       return {
         paper_bgcolor: "rgba(0,0,0,0)",
         plot_bgcolor: "rgba(0,0,0,0)",
-        margin: { l: 56, r: 12, t: 8, b: 72 },
+        margin: { l: 56, r: 12, t: 8, b: 92 },
         autosize: true,
         showlegend: false,
         font: {
@@ -1538,8 +1515,13 @@
         return;
       }
 
+      const categoryCounts = getCategoryCounts(validSites);
       const categories = Array.from(new Set(validSites.map(site => site.productAssigned)))
         .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
+
+      const categoryLabelMap = new Map(
+        categories.map(category => [category, formatCategoryWithCount(category, categoryCounts.get(category) || 0)])
+      );
 
       const traces = categories.map(category => {
         const sitesInCategory = validSites.filter(site => site.productAssigned === category);
@@ -1547,7 +1529,7 @@
 
         return {
           type: "box",
-          name: category,
+          name: categoryLabelMap.get(category),
           y: sitesInCategory.map(site => accessor(site)),
           boxpoints: false,
           line: {
@@ -1559,7 +1541,7 @@
             color
           },
           hovertemplate:
-            `<b>${escapeHtml(category)}</b><br>` +
+            `<b>${escapeHtml(categoryLabelMap.get(category))}</b><br>` +
             `${escapeHtml(yTitle)}: %{y}<extra></extra>`
         };
       });
@@ -1570,7 +1552,7 @@
         traces.push({
           type: "scatter",
           mode: "markers",
-          x: [selectedSite.productAssigned],
+          x: [categoryLabelMap.get(selectedSite.productAssigned)],
           y: [accessor(selectedSite)],
           marker: {
             size: 12,
@@ -1582,7 +1564,7 @@
           },
           hovertemplate:
             `<b>${escapeHtml(selectedSite.name)}</b><br>` +
-            `${escapeHtml(t("selectedCategory"))}: ${escapeHtml(selectedSite.productAssigned)}<br>` +
+            `${escapeHtml(t("selectedCategory"))}: ${escapeHtml(categoryLabelMap.get(selectedSite.productAssigned))}<br>` +
             `${escapeHtml(yTitle)}: ${accessor(selectedSite)}<extra></extra>`
         });
       }
@@ -1616,7 +1598,6 @@
       statusEl.textContent = t("loadedData")(filteredSites.length, allSites.length);
 
       renderList();
-      renderDetail();
       renderMarkers();
       renderScatterPlot();
       renderBoxplots();
@@ -1625,7 +1606,6 @@
     function selectSite(id, centerMap, openPopup) {
       selectedId = id;
       renderList();
-      renderDetail();
       updateMarkerStyles();
       renderScatterPlot();
       renderBoxplots();
@@ -1663,7 +1643,6 @@
 
         statusEl.textContent = t("loadedAllData")(allSites.length);
         renderList();
-        renderDetail();
         renderMarkers();
         renderScatterPlot();
         renderBoxplots();
@@ -1679,7 +1658,6 @@
         filteredSites = [];
         selectedId = null;
         renderList();
-        renderDetail();
         Plotly.purge("boxplotGwp");
         Plotly.purge("boxplotRecycled");
       }
@@ -1694,7 +1672,6 @@
       } else {
         statusEl.textContent = t("loading");
         chartStatusEl.textContent = t("preparingChart");
-        detailEl.textContent = t("detailEmpty");
       }
     }
 
