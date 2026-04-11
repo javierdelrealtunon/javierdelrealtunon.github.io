@@ -36,9 +36,13 @@ const BASEMAPS = {
     layer: L.layerGroup([
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }),
-      L.tileLayer('https://tiles.emodnet-bathymetry.eu/2020/hillshading/{z}/{x}/{y}.png', {
+      L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms', {
+        layers: 'emodnet:mean_rainbowvis',
+        format: 'image/png',
+        transparent: true,
         attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Bathymetry</a>',
-        maxZoom: 11, opacity: 0.5 }),
+        opacity: 0.6,
+      }),
       L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
     ]),
