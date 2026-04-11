@@ -43,11 +43,26 @@ const map = L.map('map', {
 });
 
 // Base tile layer — dark style matching the UI
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter_all/{z}/{x}/{y}.png', {
+const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20,
-}).addTo(map);
+});
+
+const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 20,
+});
+
+cartoTiles.addTo(map);
+
+// If CARTO fails to load any tile, fall back to OSM
+cartoTiles.on('tileerror', function() {
+  if (map.hasLayer(cartoTiles)) {
+    map.removeLayer(cartoTiles);
+    osmTiles.addTo(map);
+  }
+});
 
 // ── CUSTOM MARKER ICON ────────────────────────
 function makeIcon(color) {
