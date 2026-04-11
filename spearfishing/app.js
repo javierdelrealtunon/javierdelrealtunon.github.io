@@ -95,13 +95,18 @@ function parseKML(xmlDoc, cfg) {
   const NS = 'http://www.opengis.net/kml/2.2';
 
   function getText(el, tagName) {
-    const found = el.getElementsByTagNameNS(NS, tagName);
-    if (found.length === 0) {
-      // fallback sin namespace
-      const fb = el.getElementsByTagName(tagName);
-      return fb.length ? fb[0].textContent.trim() : '';
+    const ns = el.getElementsByTagNameNS(NS, tagName);
+    if (ns.length) return ns[0].textContent.trim();
+    const plain = el.getElementsByTagName(tagName);
+    if (plain.length) return plain[0].textContent.trim();
+    // Google Earth uses <n> as shorthand for <name>
+    if (tagName === 'name') {
+      const nNS = el.getElementsByTagNameNS(NS, 'n');
+      if (nNS.length) return nNS[0].textContent.trim();
+      const nPlain = el.getElementsByTagName('n');
+      if (nPlain.length) return nPlain[0].textContent.trim();
     }
-    return found[0].textContent.trim();
+    return '';
   }
 
   function parseCoords(str) {
