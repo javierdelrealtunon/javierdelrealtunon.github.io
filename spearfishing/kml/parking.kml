@@ -1,630 +1,344 @@
-<?xml version='1.0' encoding='utf-8'?>
-<kml xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns="http://www.opengis.net/kml/2.2"><Document><name>Aparcamiento</name><kml:Placemark>
-					<kml:name>1</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-3.075593273446141</kml:longitude>
-						<kml:latitude>43.35261861711825</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>0.907172433507986</kml:heading>
-						<kml:tilt>19.52131067354557</kml:tilt>
-						<kml:range>610.0871488505288</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.077144234933531,43.35343301296329,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>2</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-3.079791095009058</kml:longitude>
-						<kml:latitude>43.35232049342338</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>10.15957330809876</kml:heading>
-						<kml:tilt>44.80614098124363</kml:tilt>
-						<kml:range>201.8245914253188</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.08009344592741,43.35220312964571,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.892202673348885</kml:longitude>
-						<kml:latitude>43.431913400205</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>0.2660770072929882</kml:heading>
-						<kml:tilt>20.16021921359014</kml:tilt>
-						<kml:range>473.7419684208114</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.893706293065121,43.43183971180061,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.892202673348885</kml:longitude>
-						<kml:latitude>43.431913400205</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>0.2660770072929882</kml:heading>
-						<kml:tilt>20.16021921359014</kml:tilt>
-						<kml:range>473.7419684208114</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.892178187512806,43.43245333780819,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.746949479612227</kml:longitude>
-						<kml:latitude>43.44814757296706</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>8.955256556783446</kml:heading>
-						<kml:tilt>17.79499407782735</kml:tilt>
-						<kml:range>384.6360257915426</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.748198815424761,43.4478313819437,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.715294301693896</kml:longitude>
-						<kml:latitude>43.42040853699265</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>8.96671673541745</kml:heading>
-						<kml:tilt>21.25390056528135</kml:tilt>
-						<kml:range>449.7878144550729</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.716922443576451,43.42064209156682,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.717152589635751</kml:longitude>
-						<kml:latitude>43.41999361854972</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>8.965439453469068</kml:heading>
-						<kml:tilt>21.25390056526846</kml:tilt>
-						<kml:range>449.7878135821953</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.718267393874882,43.42039200445689,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.717152589635751</kml:longitude>
-						<kml:latitude>43.41999361854972</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>8.965439453469068</kml:heading>
-						<kml:tilt>21.25390056526846</kml:tilt>
-						<kml:range>449.7878135821953</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.718763378343139,43.41993066808146,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.698264434911117</kml:longitude>
-						<kml:latitude>43.40986338108166</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>9.801825916954604</kml:heading>
-						<kml:tilt>22.62264826601407</kml:tilt>
-						<kml:range>392.7914709084989</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.699216033529331,43.41035319468929,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.700199611261892</kml:longitude>
-						<kml:latitude>43.41105830342694</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>9.800496054083537</kml:heading>
-						<kml:tilt>22.62343956366618</kml:tilt>
-						<kml:range>621.8089813874076</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.702441338144685,43.41171019815695,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.67466624252713</kml:longitude>
-						<kml:latitude>43.40943168190866</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>9.804043166636834</kml:heading>
-						<kml:tilt>35.64428138404574</kml:tilt>
-						<kml:range>665.1653156379106</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.676371433086623,43.40925865579619,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.67466624252713</kml:longitude>
-						<kml:latitude>43.40943168190866</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>9.804043166636834</kml:heading>
-						<kml:tilt>35.64428138404574</kml:tilt>
-						<kml:range>665.1653156379106</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.676071619312475,43.40891649413426,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.652131115773936</kml:longitude>
-						<kml:latitude>43.40862898466175</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>15.80027550161458</kml:heading>
-						<kml:tilt>22.26950695778441</kml:tilt>
-						<kml:range>827.6335386503154</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.655208505055129,43.40856308935784,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.649959893922755</kml:longitude>
-						<kml:latitude>43.4106674018692</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>15.79311447199195</kml:heading>
-						<kml:tilt>25.81082449453479</kml:tilt>
-						<kml:range>1152.323479088777</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.653485033475368,43.41073723384284,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<gx:TimeStamp><kml:when>2018-08-03</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-3.142438468646081</kml:longitude>
-						<kml:latitude>43.34995155280441</kml:latitude>
-						<kml:altitude>434.7523429769912</kml:altitude>
-						<kml:heading>-7.538906781838515</kml:heading>
-						<kml:tilt>14.29882823165406</kml:tilt>
-						<kml:roll>-1.041159637834331</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_cabs10</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.142857046744894,43.35067198263336,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-			<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.326599878746437</kml:longitude>
-						<kml:latitude>43.50920228820689</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>1.549639695168273</kml:heading>
-						<kml:tilt>25.99315360733282</kml:tilt>
-						<kml:range>330.4869548303888</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs2</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.326883897731076,43.50918135393487,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.302619583009719</kml:longitude>
-						<kml:latitude>43.4432649449704</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-53.17025622687712</kml:heading>
-						<kml:tilt>41.34531928465156</kml:tilt>
-						<kml:range>264.0260551381122</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs00</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.302328286225226,43.44262390295879,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.338310399074521</kml:longitude>
-						<kml:latitude>43.4590858716504</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>2.196048167267374</kml:heading>
-						<kml:tilt>40.28440107430677</kml:tilt>
-						<kml:range>297.6508675952699</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs4</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.339659391777214,43.45920865791,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.3020028021051</kml:longitude>
-						<kml:latitude>43.44759366398872</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>1.722644236677751</kml:heading>
-						<kml:tilt>48.97190789891278</kml:tilt>
-						<kml:range>231.1829247658813</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_ylw-pushpin10</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.30263082741023,43.4476775136303,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.256750216394057</kml:longitude>
-						<kml:latitude>43.42248846578038</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>14.61707565398147</kml:heading>
-						<kml:tilt>25.52262488847699</kml:tilt>
-						<kml:range>269.3932140829399</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs2</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.256508062345125,43.4224640664385,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.309772975951073</kml:longitude>
-						<kml:latitude>43.52347592985105</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-13.96336001866538</kml:heading>
-						<kml:tilt>19.38879706826147</kml:tilt>
-						<kml:range>509.8985628082162</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs9</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.310678589552253,43.52297476937025,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.31814886515493</kml:longitude>
-						<kml:latitude>43.50464776048511</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-52.28307705843072</kml:heading>
-						<kml:tilt>11.79245038009157</kml:tilt>
-						<kml:range>831.6056929456553</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs1</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.317538999793648,43.50361686642763,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.304875737990111</kml:longitude>
-						<kml:latitude>43.56007895665358</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-68.34426324972422</kml:heading>
-						<kml:tilt>33.36583700647213</kml:tilt>
-						<kml:range>308.0664963425802</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs8</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.304650061175524,43.56007262099607,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.282030014064494</kml:longitude>
-						<kml:latitude>43.55866082691869</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-61.3723521646666</kml:heading>
-						<kml:tilt>20.81924548923477</kml:tilt>
-						<kml:range>544.1334730660507</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs7</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.28270809525797,43.55780544387683,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.19327792654045</kml:longitude>
-						<kml:latitude>43.61111037921143</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-60.66739475009405</kml:heading>
-						<kml:tilt>28.97024196027621</kml:tilt>
-						<kml:range>591.8158843656331</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs3</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.192193135057638,43.61021685271587,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.189103685235619</kml:longitude>
-						<kml:latitude>43.61757070740537</kml:latitude>
-						<kml:altitude>306.3137252892923</kml:altitude>
-						<kml:heading>-4.307290856210876</kml:heading>
-						<kml:tilt>0.02168860792175099</kml:tilt>
-						<kml:roll>87.79246236075942</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_cabs3</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.188522634210653,43.61795721102929,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2018-08-19</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-8.120005970341321</kml:longitude>
-						<kml:latitude>43.63991463936462</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>-111.6592405343572</kml:heading>
-						<kml:tilt>21.09029489979683</kml:tilt>
-						<kml:range>713.5250171681071</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs5</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.11949384086855,43.63830942611696,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+<Placemark>
+					<name>1</name>
+					
+					
+					<Point>
+						
+						<coordinates>-3.077144234933531,43.35343301296329,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>2</name>
+					
+					
+					<Point>
+						
+						<coordinates>-3.08009344592741,43.35220312964571,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.893706293065121,43.43183971180061,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.892178187512806,43.43245333780819,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.748198815424761,43.4478313819437,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.716922443576451,43.42064209156682,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.718267393874882,43.42039200445689,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.718763378343139,43.41993066808146,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.699216033529331,43.41035319468929,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.702441338144685,43.41171019815695,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.676371433086623,43.40925865579619,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.676071619312475,43.40891649413426,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.655208505055129,43.40856308935784,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.653485033475368,43.41073723384284,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						
+						
+						<longitude>-3.142438468646081</longitude>
+						<latitude>43.34995155280441</latitude>
+						<altitude>434.7523429769912</altitude>
+						<heading>-7.538906781838515</heading>
+						<tilt>14.29882823165406</tilt>
+						<roll>-1.041159637834331</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-3.142857046744894,43.35067198263336,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.326883897731076,43.50918135393487,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.302328286225226,43.44262390295879,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.339659391777214,43.45920865791,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.30263082741023,43.4476775136303,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.256508062345125,43.4224640664385,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.310678589552253,43.52297476937025,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.317538999793648,43.50361686642763,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.304650061175524,43.56007262099607,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.28270809525797,43.55780544387683,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.192193135057638,43.61021685271587,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						
+						
+						<longitude>-8.189103685235619</longitude>
+						<latitude>43.61757070740537</latitude>
+						<altitude>306.3137252892923</altitude>
+						<heading>-4.307290856210876</heading>
+						<tilt>0.02168860792175099</tilt>
+						<roll>87.79246236075942</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-8.188522634210653,43.61795721102929,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-8.11949384086855,43.63830942611696,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.119086106917209,43.64080402427592,0 -8.119393608240124,43.64173893691775,0 -8.120034737714374,43.6418998573276,0 -8.120181652938749,43.64243697092373,0 -8.120328804604641,43.6431505813491,0 -8.120884827791045,43.64330834568642,0 -8.120874617992358,43.64391959459923,0 -8.120652453134639,43.64420170719217,0 -8.120610558952965,43.64492852286097,0 -8.120929243246488,43.64546445520099,0 -8.121551058152614,43.64596539010441,0 -8.121581888628377,43.64593389152785,0 -8.121975248847614,43.64576234977613,0 -8.121967136086081,43.64574761383464,0 -8.121888863782612,43.64506406710793,0 -8.121685216078323,43.6444892444035,0 -8.121679816693874,43.64445660222043,0 -8.121564616546602,43.64391313817707,0 -8.122438019596016,43.64404585876056,0 -8.124008628469323,43.64383255880103,0 -8.125470090984731,43.64138580764957,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<kml:longitude>-8.338380326089041</kml:longitude>
-						<kml:latitude>43.46339519847525</kml:latitude>
-						<kml:altitude>316.7445216607881</kml:altitude>
-						<kml:heading>-24.65576777631682</kml:heading>
-						<kml:tilt>28.03723414304151</kml:tilt>
-						<kml:roll>-2.237255887020027</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#m_ylw-pushpin</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.339458632833365,43.46419950618711,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<kml:longitude>-8.339753583979173</kml:longitude>
-						<kml:latitude>43.46456085176307</kml:latitude>
-						<kml:altitude>126.5654980421295</kml:altitude>
-						<kml:heading>-23.57349620408444</kml:heading>
-						<kml:tilt>49.70664494568791</kml:tilt>
-						<kml:roll>-1.378645362324604</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_ylw-pushpin11</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.340429741882641,43.46569592636396,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<kml:longitude>-8.280408329900608</kml:longitude>
-						<kml:latitude>43.46487877361651</kml:latitude>
-						<kml:altitude>241.7818209637069</kml:altitude>
-						<kml:heading>-11.47352786810429</kml:heading>
-						<kml:tilt>13.98692696399322</kml:tilt>
-						<kml:roll>-4.326910213953643</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_cabs</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.280881107355215,43.46573293482125,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<kml:longitude>-8.275500338280981</kml:longitude>
-						<kml:latitude>43.46090506492772</kml:latitude>
-						<kml:altitude>187.558017098836</kml:altitude>
-						<kml:heading>31.28674302396566</kml:heading>
-						<kml:tilt>19.70424561172814</kml:tilt>
-						<kml:roll>-3.099896067763303</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_cabs0</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-8.275208687314404,43.46142275003392,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-			</Document></kml>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						<longitude>-8.338380326089041</longitude>
+						<latitude>43.46339519847525</latitude>
+						<altitude>316.7445216607881</altitude>
+						<heading>-24.65576777631682</heading>
+						<tilt>28.03723414304151</tilt>
+						<roll>-2.237255887020027</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-8.339458632833365,43.46419950618711,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						<longitude>-8.339753583979173</longitude>
+						<latitude>43.46456085176307</latitude>
+						<altitude>126.5654980421295</altitude>
+						<heading>-23.57349620408444</heading>
+						<tilt>49.70664494568791</tilt>
+						<roll>-1.378645362324604</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-8.340429741882641,43.46569592636396,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						<longitude>-8.280408329900608</longitude>
+						<latitude>43.46487877361651</latitude>
+						<altitude>241.7818209637069</altitude>
+						<heading>-11.47352786810429</heading>
+						<tilt>13.98692696399322</tilt>
+						<roll>-4.326910213953643</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-8.280881107355215,43.46573293482125,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						<longitude>-8.275500338280981</longitude>
+						<latitude>43.46090506492772</latitude>
+						<altitude>187.558017098836</altitude>
+						<heading>31.28674302396566</heading>
+						<tilt>19.70424561172814</tilt>
+						<roll>-3.099896067763303</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-8.275208687314404,43.46142275003392,0</coordinates>
+					</Point>
+				</Placemark>
+</Document></kml>

@@ -1,432 +1,367 @@
-<?xml version='1.0' encoding='utf-8'?>
-<kml xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns="http://www.opengis.net/kml/2.2"><Document><name>Sitios de pesca</name><kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.678764764999886,43.41247288536343,0 -2.676871273699353,43.41304500744963,0 -2.67573230005965,43.41360241515593,0 -2.674509271610445,43.41320679724402,0 -2.673328034989777,43.41312357105389,0 -2.670462502115352,43.41361496446299,0 -2.666409785979789,43.41276917732542,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.747058397889575,43.44843540062605,0 -2.747046364451649,43.44851482078839,0 -2.745794434579139,43.45006952677713,0 -2.745854482637674,43.45191296959255,0 -2.751374666629368,43.45751845829773,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.676985084881711,43.41654697207367,0 -2.677194204182297,43.41660465410311,0 -2.680936888987522,43.41691481083757,0 -2.682864988347023,43.41557373634729,0 -2.680931849283158,43.41512662623849,0 -2.678954007189275,43.41517372653045,0 -2.676456597297077,43.41509958905965,0 -2.675896152965004,43.41634793589964,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.89482545725938,43.43509607387259,0 -2.895053028436783,43.43575990373369,0 -2.881390039970331,43.43792200495211,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-3.077362293650834,43.35484845223035,0 -3.075642006660795,43.35508151134191,0 -3.072815557573456,43.36331178917121,0 -3.044634932942261,43.35980420940044,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.714218969206861,43.4211903965926,0 -2.709244050717396,43.42211052044434,0 -2.70937437041519,43.4227068866492,0 -2.716538554676042,43.42127485975969,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.696047919526783,43.40976074239524,0 -2.696044135060732,43.40997002496801,0 -2.696744414886179,43.40998528967229,0 -2.696835055419858,43.41043504859044,0 -2.696784483437936,43.41120167659506,0 -2.697310779944861,43.41127989172964,0 -2.697597185961894,43.41115805473905,0 -2.698336899187187,43.41147101467237,0 -2.698456262621374,43.41129697253675,0 -2.698898758081307,43.41116597522076,0 -2.699589706850367,43.4119437442043,0 -2.700590934872298,43.41305601813828,0 -2.70056142770285,43.41401163804989,0 -2.700038713201887,43.41511062523232,0 -2.70009245177216,43.41578263483762,0 -2.701117896128369,43.41584223394454,0 -2.701562549998293,43.41560513243152,0 -2.701918781922762,43.41548710623194,0 -2.702856918414013,43.41628224343302,0 -2.703833356106864,43.41668080834976,0 -2.703864645352389,43.41723970023242,0 -2.704647989236357,43.41765282075095,0 -2.705246308266578,43.41781634743368,0 -2.706385764333788,43.41778125823985,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-2.652639731984924,43.41156341837734,0 -2.650376353292056,43.41385247725977,0 -2.650133308667979,43.41645176798421,0 -2.648041433831267,43.41748805233257,0 -2.646282839594074,43.41716023968704,0 -2.638550325851975,43.41398618806839,0 -2.635532556000705,43.4122401374912,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-			<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.724700765163067</kml:longitude>
-						<kml:latitude>43.42456886295005</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>28.57450853111313</kml:heading>
-						<kml:tilt>19.93404574882164</kml:tilt>
-						<kml:range>182.0880945697054</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs10</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.724047373145416,43.42450780479185,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
-							-2.735096228405995,43.42860339700256,0 -2.730056499419432,43.42730897107788,0 -2.722957572795873,43.42744325600128,0 -2.719872287230843,43.42723471086066,0 -2.718786979088227,43.42502652290616,0 -2.719165652213044,43.423834540657,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<kml:longitude>-2.728893355492537</kml:longitude>
-						<kml:latitude>43.42566516754841</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>28.55017579780406</kml:heading>
-						<kml:tilt>1.317681980311623</kml:tilt>
-						<kml:range>312.1243137346177</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#m_ylw-pushpin1</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.730150590964018,43.42574776906488,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:Camera>
-						<gx:TimeStamp><kml:when>2021-06-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-2.729500195403</kml:longitude>
-						<kml:latitude>43.42520611184685</kml:latitude>
-						<kml:altitude>161.0713654965797</kml:altitude>
-						<kml:heading>28.85731437699995</kml:heading>
-						<kml:tilt>8.11288024671447</kml:tilt>
-						<kml:roll>-1.942106312032836</kml:roll>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:Camera>
-					<kml:styleUrl>#msn_cabs10</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-2.729203202362359,43.42550380996535,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-3.299861720783339</kml:longitude>
-						<kml:latitude>43.40457951936141</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>90.23675184259893</kml:heading>
-						<kml:tilt>15.38464978705034</kml:tilt>
-						<kml:range>398.8143282127961</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs6</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.300225569269539,43.40534506681798,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-3.294696360595504</kml:longitude>
-						<kml:latitude>43.40439300681896</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>91.23208348523886</kml:heading>
-						<kml:tilt>0</kml:tilt>
-						<kml:range>296.083534046027</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_cabs6</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.295116746807685,43.40499079826859,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Marca de posición sin título</kml:name>
-					<kml:LookAt>
-						<gx:TimeStamp><kml:when>2021-03-23</kml:when>
-</gx:TimeStamp>
-						<gx:ViewerOptions>
-							<gx:option name="historicalimagery" />
-							<gx:option enabled="0" name="sunlight" />
-							<gx:option enabled="0" name="streetview" />
-						</gx:ViewerOptions>
-						<kml:longitude>-3.294708697403798</kml:longitude>
-						<kml:latitude>43.40453823703995</kml:latitude>
-						<kml:altitude>0</kml:altitude>
-						<kml:heading>91.23207501053332</kml:heading>
-						<kml:tilt>0</kml:tilt>
-						<kml:range>296.0835340469113</kml:range>
-						<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
-					</kml:LookAt>
-					<kml:styleUrl>#msn_ylw-pushpin5</kml:styleUrl>
-					<kml:Point>
-						<gx:drawOrder>1</gx:drawOrder>
-						<kml:coordinates>-3.294927637198902,43.40538468090263,0</kml:coordinates>
-					</kml:Point>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
-							-3.292332422115918,43.40660868887538,0 -3.296587834944291,43.40841833038,0 -3.301369330741442,43.4102596987599,0 -3.306277790942245,43.40975923135568,0 -3.310005045878817,43.40993053435908,0 -3.311488584415664,43.40955072688296,0 -3.311392423130549,43.40892820833164,0 -3.312358497692767,43.40802662364168,0 -3.31161876225706,43.40758296193488,0 -3.311024091638902,43.40681885715948,0 -3.311021021079086,43.40626496642026,0 -3.312164593550624,43.40614045573388,0 -3.312525110000307,43.40659780705295,0 -3.31296400370048,43.40674244890455,0 -3.315177894750075,43.40726317136534,0 -3.315717617087578,43.40629394113635,0 -3.314219224102089,43.40504772925656,0 -3.313156270297344,43.40406594485068,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-			<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin1</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.30527584634094,43.44637937174401,0 -8.306127499226424,43.44655956717739,0 -8.306682238639,43.44666415737433,0 -8.30761749823292,43.44693537216774,0 -8.308173628904644,43.44652866834318,0 -8.309026367581696,43.44617636267333,0 -8.311696785445912,43.44630078301496,0 -8.312758491107429,43.4459629591836,0 -8.313287886789851,43.4463763822349,0 -8.313533828505275,43.44660447318369,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin1</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.281277197377236,43.4636781835359,0 -8.282271408363973,43.46242996590704,0 -8.282716166737295,43.46223353462145,0 -8.284359062261768,43.46191072154612,0 -8.284601877086914,43.46192301855564,0 -8.284970043987419,43.46195844860772,0 -8.286272191759977,43.46206484528834,0 -8.286174830266122,43.4628445358029,0 -8.284132642481103,43.46372275632616,0 -8.283370833366721,43.46278289048541,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin1</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.281204399426279,43.46382697607803,0 -8.283717684313265,43.46424556105534,0 -8.285547290562629,43.46381018139437,0 -8.286963277607176,43.46298538276685,0 -8.28708192774635,43.46232245152864,0 -8.287974237371738,43.46187468993319,0 -8.289785615146174,43.46134517916298,0 -8.292057072959384,43.46118915332759,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin1</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.33929399803645,43.4762769701314,0 -8.343779275505126,43.47299805768225,0 -8.344945278941069,43.47037058557399,0 -8.344452951575674,43.46799210297226,0 -8.343396876231369,43.46691308650956,0 -8.344612556571393,43.46662811882231,0 -8.345201447948027,43.46622018390703,0 -8.346435105671503,43.46594739830098,0 -8.34674589235518,43.46531566999972,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.284068601266592,43.55954612870804,0 -8.285657711811314,43.56000228607788,0 -8.285720209606403,43.5600340133095,0 -8.285626298717528,43.56076295706031,0 -8.284774690765721,43.5614662790969,0 -8.283125740216615,43.56199043696729,0 -8.282137817934554,43.56176444905807,0 -8.281738994585019,43.56109884276043,0 -8.280901991212328,43.56020030988665,0 -8.280186057958227,43.55942621853609,0 -8.279108738878582,43.55926242287205,0 -8.278397455267733,43.55927261881509,0 -8.276460173593572,43.55924145426413,0 -8.275271080645435,43.55842054981748,0 -8.273317958499142,43.55736361120058,0 -8.271183220125959,43.55866720464086,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.303482198081042,43.5615653864615,0 -8.302484171053692,43.56158535750255,0 -8.302072843630588,43.5621769579454,0 -8.301298866041471,43.56266080548195,0 -8.300680099660447,43.56225953295466,0 -8.300709471110819,43.5622248073815,0 -8.300742576063588,43.56219785477806,0 -8.300789079797182,43.56216270029002,0 -8.301198815185879,43.56189180396265,0 -8.30121237309957,43.56188350557734,0 -8.301901641991464,43.56194066960845,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.333337743385403,43.51225509635681,0 -8.335537907356436,43.51087836989936,0 -8.33743471679832,43.50960410471259,0 -8.33997142873166,43.50975368767398,0 -8.341717970194244,43.50938569698374,0 -8.343079806208403,43.51096850665318,0 -8.339741809736513,43.51314920092464,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.30385345152486,43.56055614969754,0 -8.303515619128003,43.56201410485585,0 -8.303596631054919,43.56233587271499,0 -8.304205207594052,43.56237764858871,0 -8.30438499750691,43.56348291335095,0 -8.305502331101996,43.56500539554577,0 -8.305987236085013,43.56599290413249,0 -8.307417249277133,43.56677595566679,0 -8.306487402461888,43.56887803832426,0 -8.306005254477512,43.5696771270138,0 -8.304724038542956,43.57025440490798,0 -8.303885812902998,43.57058327696046,0 -8.304427461046863,43.57143768160348,0 -8.308457558043395,43.57009606534235,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.328126798799513,43.50973194888874,0 -8.32813160563575,43.50978740205989,0 -8.329042675127541,43.511146934225,0 -8.331204911901528,43.51085347429953,0 -8.332615865398697,43.51163342887424,0 -8.33345332657912,43.51229108037108,0 -8.333620256306162,43.51303501504617,0 -8.331332270998416,43.5135013248609,0 -8.329458593989061,43.51548751011578,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.296384469994694,43.43506227915384,0 -8.299851330748689,43.43718896117846,0 -8.299120417631228,43.43961919926682,0 -8.301416828275631,43.43959679404487,0 -8.302773323970371,43.44078808750503,0 -8.308659295704162,43.43957262128432,0 -8.308774850162294,43.43966321725795,0 -8.316641450100828,43.44293441588568,0 -8.318269212462569,43.4435486531612,0 -8.316503094278181,43.4461695093173,0 -8.314957417642008,43.44718796261824,0 -8.313598071305634,43.44666871846891,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.302934232712483,43.44734353952835,0 -8.303630238288166,43.44791100570313,0 -8.3043998954481,43.44809612085135,0 -8.309404307176306,43.4493450996581,0 -8.310447065109216,43.45007881586086,0 -8.310486169118077,43.45065508011832,0 -8.311213441760566,43.45091510802624,0 -8.312603141456906,43.45118936668249,0 -8.313986983542899,43.45304248041718,0 -8.313743828269143,43.45444410696632,0 -8.311878927041169,43.45547318358362,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.328936608353967,43.45353834097016,0 -8.330342950839501,43.45297377659164,0 -8.336627998084349,43.45936172422824,0 -8.338803181487787,43.4584824193572,0 -8.341015285893668,43.45814845033615,0 -8.341701218732437,43.45919355576127,0 -8.341055400783308,43.46033721512047,0 -8.341777211577163,43.46088483209247,0 -8.347204779485555,43.46159888875214,0 -8.348789882616277,43.46373896115679,0 -8.348383959567045,43.46420481203499,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.25934892229016,43.42035472831596,0 -8.259547423759402,43.41964174092928,0 -8.259776407011552,43.41914476160171,0 -8.261194607271371,43.41899834446295,0 -8.262751712670669,43.41945275045244,0 -8.263321002515823,43.41908281185118,0 -8.263862793466917,43.41860590188232,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.259031794152691,43.42158797074482,0 -8.259215751442051,43.42166066330704,0 -8.259774034049066,43.4212668508053,0 -8.260260789822583,43.42165884733684,0 -8.26129567765927,43.42231662126098,0 -8.261078608684384,43.42259820666153,0 -8.261521372836807,43.42312285757913,0 -8.261945855556421,43.42330487568525,0 -8.261605762024594,43.42382902691582,0 -8.261584780480751,43.42431826215166,0 -8.262269792973042,43.42429279755425,0 -8.262480398179155,43.42466801263861,0 -8.264447901084713,43.42526121906328,0 -8.266279836343783,43.42695938632549,0 -8.266284941834753,43.42771125786298,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.311023313798461,43.52488877134795,0 -8.310574417042835,43.52721246433841,0 -8.311376339196897,43.52816458728434,0 -8.312874334300497,43.5284713565563,0 -8.312928989196456,43.52845024138115,0 -8.315519398776326,43.52821120063258,0 -8.318212943631055,43.52680197495478,0 -8.317992394946049,43.52594596808175,0 -8.318910225383242,43.5256694874675,0 -8.319658855307935,43.525771180775,0 -8.321296552712953,43.52605499612196,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.320834760392179,43.50300640787688,0 -8.32160777184127,43.50243212223584,0 -8.322778032532232,43.50230535948568,0 -8.323017475550436,43.50322656298034,0 -8.323941014168547,43.50339387554316,0 -8.324261814609489,43.50385440482813,0 -8.324921508694288,43.50526257167683,0 -8.326164460762568,43.50498287012685,0 -8.331681507504202,43.50674797524884,0 -8.331360778364955,43.50863467093394,0 -8.329819414222184,43.50970210774508,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.302608627969384,43.56109858893387,0 -8.301518438404003,43.56132269647382,0 -8.300802984009723,43.56186770644258,0 -8.300458910483023,43.56235015534966,0 -8.299699858107669,43.56252558309757,0 -8.299662347080885,43.56306083311019,0 -8.299734291279222,43.56341957637393,0 -8.30020147765228,43.56332729703418,0 -8.300160209732988,43.56299859848283,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.19121041682113,43.61162903392715,0 -8.190531450686276,43.61258922089264,0 -8.190423812819036,43.61325196828061,0 -8.191356949806606,43.6140956116958,0 -8.19237207891379,43.61409254684668,0 -8.193383520963744,43.61479212165412,0 -8.194987276464895,43.61499353966778,0 -8.195834547454552,43.61358377933966,0 -8.197517264583949,43.613142113538,0 -8.198942703398144,43.61194202291943,0 -8.199006122078851,43.61097809452842,0 -8.199630305257465,43.61011190747016,0 -8.198249112718393,43.6096496454761,0 -8.197382470587915,43.60896194315286,0 -8.196509965496139,43.60876186852175,0 -8.196011478688796,43.60828697904623,0 -8.195283702522824,43.60854512251719,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin4</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.189868983721651,43.61461287724354,0 -8.189413814385469,43.61588502955176,0 -8.190334408372721,43.61764618095489,0 -8.190416214624253,43.61821589369528,0 -8.190354831120013,43.61876270645208,0 -8.190170345271227,43.61898075265368,0 -8.189888716464701,43.61907240757213,0 -8.189937868216209,43.61947302030968,0 -8.190052187821102,43.6201141432943,0 -8.189667382835216,43.62064873536587,0 -8.189049780455239,43.62083952264032,0 -8.188465252015067,43.62198677707539,0 -8.186632417795632,43.62227260161993,0 -8.184454735299553,43.62244034500867,0 -8.184395964545331,43.62239602471854,0 -8.18369896906303,43.62242048645032,0 -8.181652618063199,43.62338483087272,0 -8.18030915463901,43.62332874947078,0 -8.179461293010924,43.62271755327523,0 -8.180022236281888,43.61929765616789,0 -8.179964315753715,43.61845700600762,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-				<kml:Placemark>
-					<kml:name>Ruta sin título</kml:name>
-					<kml:styleUrl>#msn_ylw-pushpin1</kml:styleUrl>
-					<kml:LineString>
-						<kml:tessellate>1</kml:tessellate>
-						<kml:coordinates>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
 							-8.275211079326942,43.46281208638423,0 -8.275654091627606,43.46238514062635,0 -8.275663070901309,43.46237184904587,0 -8.276148329234447,43.46157178399983,0 -8.27611201853326,43.4611066501264,0 -8.276426856603084,43.46077397644489,0 -8.276996543333105,43.46016255640788,0 -8.27822294565688,43.45958572692168,0 -8.278975917424606,43.4592576167915,0 -8.282743582914852,43.45926349611813,0 -8.283753111825769,43.45977049795099,0 -8.283938968539088,43.45996153571753,0 
-						</kml:coordinates>
-					</kml:LineString>
-				</kml:Placemark>
-			</Document></kml>
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.724047373145416,43.42450780479185,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
+							-2.735096228405995,43.42860339700256,0 -2.730056499419432,43.42730897107788,0 -2.722957572795873,43.42744325600128,0 -2.719872287230843,43.42723471086066,0 -2.718786979088227,43.42502652290616,0 -2.719165652213044,43.423834540657,0 
+						</coordinates>
+					</LineString>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-2.730150590964018,43.42574776906488,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					<Camera>
+						
+						
+						<longitude>-2.729500195403</longitude>
+						<latitude>43.42520611184685</latitude>
+						<altitude>161.0713654965797</altitude>
+						<heading>28.85731437699995</heading>
+						<tilt>8.11288024671447</tilt>
+						<roll>-1.942106312032836</roll>
+						
+					</Camera>
+					
+					<Point>
+						
+						<coordinates>-2.729203202362359,43.42550380996535,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-3.300225569269539,43.40534506681798,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-3.295116746807685,43.40499079826859,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Marca de posición sin título</name>
+					
+					
+					<Point>
+						
+						<coordinates>-3.294927637198902,43.40538468090263,0</coordinates>
+					</Point>
+				</Placemark>
+<Placemark>
+					<name>Ruta sin título</name>
+					
+					<LineString>
+						<tessellate>1</tessellate>
+						<coordinates>
+							-3.292332422115918,43.40660868887538,0 -3.296587834944291,43.40841833038,0 -3.301369330741442,43.4102596987599,0 -3.306277790942245,43.40975923135568,0 -3.310005045878817,43.40993053435908,0 -3.311488584415664,43.40955072688296,0 -3.311392423130549,43.40892820833164,0 -3.312358497692767,43.40802662364168,0 -3.31161876225706,43.40758296193488,0 -3.311024091638902,43.40681885715948,0 -3.311021021079086,43.40626496642026,0 -3.312164593550624,43.40614045573388,0 -3.312525110000307,43.40659780705295,0 -3.31296400370048,43.40674244890455,0 -3.315177894750075,43.40726317136534,0 -3.315717617087578,43.40629394113635,0 -3.314219224102089,43.40504772925656,0 -3.313156270297344,43.40406594485068,0 
+						</coordinates>
+					</LineString>
+				</Placemark>
+</Document></kml>
