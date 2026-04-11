@@ -43,7 +43,7 @@ const map = L.map('map', {
 });
 
 // Base tile layer — dark style matching the UI
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter_all/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20,
