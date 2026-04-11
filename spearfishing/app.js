@@ -37,7 +37,7 @@ const BASEMAPS = {
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }),
       L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms', {
-        layers: 'emodnet:mean_rainbowvis',
+        layers: 'emodnet:mean_multicolour',
         format: 'image/png',
         transparent: true,
         attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Bathymetry</a>',
