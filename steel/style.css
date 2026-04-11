@@ -13,7 +13,7 @@
   --radius-xl: 22px;
   --radius-lg: 18px;
   --top-row-height: 540px;
-  --map-col-width: 560px;
+  --map-col-width: 660px;
 }
 
 * { box-sizing: border-box; }
@@ -203,7 +203,7 @@ body.map-fullscreen-open { overflow: hidden; }
 }
 
 .epd-list-panel { padding: 0 !important; overflow: hidden; }
-.epd-list-wrap { height: 260px; overflow-y: auto; overflow-x: auto; }
+.epd-list-wrap { height: 280px; overflow-y: auto; overflow-x: hidden; }
 .epd-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .epd-th {
   position: sticky; top: 0; padding: 8px 10px; text-align: left;
@@ -223,7 +223,7 @@ body.map-fullscreen-open { overflow: hidden; }
 .epd-row--selected .epd-td { color: var(--accent); }
 
 /* ── Gráfico de dispersión ──────────────────────────────────────────────── */
-.chart-wrap { position: relative; width: 100%; height: 320px; min-height: 220px; padding: 4px 2px 0; }
+.chart-wrap { position: relative; width: 100%; height: 280px; min-height: 220px; padding: 4px 2px 0; }
 #scatterChart { width: 100%; height: 100%; }
 
 /* ── Leaflet overrides ──────────────────────────────────────────────────── */
@@ -254,7 +254,7 @@ body.map-fullscreen-open { overflow: hidden; }
 @media (min-width: 1700px) { .popup-shell { width: min(30vw, 340px); } }
 
 @media (max-width: 1480px) {
-  :root { --map-col-width: 500px; --top-row-height: 500px; }
+  :root { --map-col-width: 580px; --top-row-height: 500px; }
 }
 
 @media (max-width: 1200px) {
