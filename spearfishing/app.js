@@ -30,6 +30,16 @@ const BASEMAPS = {
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri', maxZoom: 20 }),
   },
+  nautical: {
+    label: 'Náutico',
+    thumb: 'https://tiles.openseamap.org/seamark/6/31/24.png',
+    layer: L.layerGroup([
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }),
+      L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20, opacity: 1 }),
+    ]),
+  },
 };
 
 let activeBasemap = 'light';
@@ -50,8 +60,10 @@ const BasemapControl = L.Control.extend({
       lbl.textContent = bm.label;
       L.DomEvent.on(btn, 'click', () => {
         if (key === activeBasemap) return;
-        map.removeLayer(BASEMAPS[activeBasemap].layer);
-        BASEMAPS[key].layer.addTo(map);
+        const prev = BASEMAPS[activeBasemap].layer;
+        if (prev.getLayers) { prev.eachLayer(l => map.removeLayer(l)); } else { map.removeLayer(prev); }
+        const next = BASEMAPS[key].layer;
+        if (next.getLayers) { next.eachLayer(l => l.addTo(map)); } else { next.addTo(map); }
         Object.values(leafletLayers).forEach(l => l && l.bringToFront && l.bringToFront());
         activeBasemap = key;
         container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
