@@ -1,199 +1,79 @@
-/* ─────────────────────────────────────────────
-   app.js — Spearfishing map
-   Layers loaded from KML files via Leaflet Omnivore.
-   Add your KML files to the same folder and update
-   the paths in the LAYER CONFIG section below.
-───────────────────────────────────────────── */
+/* app.js — Spearfishing map */
 
 // ── LAYER CONFIG ──────────────────────────────
-// Update these paths when you add your KML files.
 const LAYER_CONFIG = {
-  sitios: {
-    file:  'kml/sitios.kml',
-    color: '#5baaff',
-    label: 'Sitio de pesca',
-    icon:  '🤿',
-  },
-  parking: {
-    file:  'kml/parking.kml',
-    color: '#62f0cf',
-    label: 'Aparcamiento',
-    icon:  '🅿️',
-  },
-  fotos: {
-    file:  'kml/fotos.kml',
-    color: '#f0b962',
-    label: 'Foto',
-    icon:  '📷',
-  },
-  entrada: {
-    file:  'kml/entrada.kml',
-    color: '#f06262',
-    label: 'Punto de entrada',
-    icon:  '🚩',
-  },
+  sitios:  { file: 'kml/sitios.kml',  color: '#5baaff', label: 'Sitio de pesca',  icon: '🤿' },
+  parking: { file: 'kml/parking.kml', color: '#62f0cf', label: 'Aparcamiento',     icon: '🅿️' },
+  entrada: { file: 'kml/entrada.kml', color: '#f06262', label: 'Punto de entrada', icon: '🚩' },
 };
 
 // ── MAP INIT ──────────────────────────────────
-const map = L.map('map', {
-  center: [43.4, -3.0],   // Default: Cantabrian coast — will auto-fit once KMLs load
-  zoom: 10,
-  zoomControl: true,
-  attributionControl: true,
-});
+const map = L.map('map', { center: [43.4, -3.0], zoom: 10 });
 
-// Base tile layer — dark style matching the UI
-// ── BASEMAP DEFINITIONS ───────────────────────
+// ── BASEMAPS ──────────────────────────────────
 const BASEMAPS = {
   light: {
     label: 'Claro',
     thumb: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/6/24/31',
     layer: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd', maxZoom: 20,
-    }),
+      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }),
   },
   osm: {
     label: 'Mapa',
     thumb: 'https://tile.openstreetmap.org/6/31/24.png',
     layer: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      subdomains: 'abc', maxZoom: 20,
-    }),
+      attribution: '&copy; OpenStreetMap', subdomains: 'abc', maxZoom: 20 }),
   },
   ortho: {
     label: 'Satélite',
     thumb: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/6/24/31',
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
-      maxZoom: 20,
-    }),
+      attribution: '&copy; Esri', maxZoom: 20 }),
   },
 };
 
 let activeBasemap = 'light';
 BASEMAPS.light.layer.addTo(map);
 
-// ── CUSTOM LEAFLET CONTROL ─────────────────────
 const BasemapControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
     const container = L.DomUtil.create('div', 'basemap-control leaflet-bar');
     L.DomEvent.disableClickPropagation(container);
     L.DomEvent.disableScrollPropagation(container);
-
     Object.entries(BASEMAPS).forEach(([key, bm]) => {
       const btn = L.DomUtil.create('button', key === activeBasemap ? 'active' : '', container);
-      btn.dataset.key = key;
-
       const thumb = L.DomUtil.create('span', 'bm-thumb', btn);
       const img = L.DomUtil.create('img', '', thumb);
-      img.src = bm.thumb;
-      img.alt = bm.label;
-
-      const label = L.DomUtil.create('span', 'bm-label', btn);
-      label.textContent = bm.label;
-
+      img.src = bm.thumb; img.alt = bm.label;
+      const lbl = L.DomUtil.create('span', 'bm-label', btn);
+      lbl.textContent = bm.label;
       L.DomEvent.on(btn, 'click', () => {
         if (key === activeBasemap) return;
         map.removeLayer(BASEMAPS[activeBasemap].layer);
         BASEMAPS[key].layer.addTo(map);
-        // Keep KML layers on top
         Object.values(leafletLayers).forEach(l => l && l.bringToFront && l.bringToFront());
         activeBasemap = key;
         container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
     });
-
     return container;
   },
 });
-
 new BasemapControl().addTo(map);
 
-// ── CUSTOM KML PARSER ─────────────────────────
-// querySelector fails with XML namespaces — use getElementsByTagName instead
-
-function tag(el, name) {
-  return el.getElementsByTagName(name);
-}
-function tagText(el, name) {
-  const els = el.getElementsByTagName(name);
-  return els.length ? els[0].textContent.trim() : '';
-}
-
-function parseCoords(text) {
-  return text.trim().split(/\s+/).map(c => {
-    const parts = c.split(',').map(Number);
-    return parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])
-      ? [parts[1], parts[0]]   // [lat, lng]
-      : null;
-  }).filter(Boolean);
+// ── MARKER ICON ───────────────────────────────
+function makeIcon(color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
+    <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21S26 22.75 26 13C26 5.82 20.18 0 13 0z"
+      fill="${color}" fill-opacity="0.92"/>
+    <circle cx="13" cy="13" r="5" fill="white" fill-opacity="0.9"/>
+  </svg>`;
+  return L.divIcon({ html: svg, className: '', iconSize: [26,34], iconAnchor: [13,34], popupAnchor: [0,-36] });
 }
 
-function parseKML(kmlText, cfg) {
-  const parser = new DOMParser();
-  const kml    = parser.parseFromString(kmlText, 'text/xml');
-  const layer  = L.layerGroup();
-
-  const placemarks = Array.from(kml.getElementsByTagName('Placemark'));
-  console.log(`[kml] ${cfg.label}: ${placemarks.length} placemarks`);
-
-  placemarks.forEach(pm => {
-    const name = tagText(pm, 'name');
-    const desc = tagText(pm, 'description');
-
-    const popup = name
-      ? `<strong style="font-size:.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${desc}</span>` : ''}`
-      : null;
-
-    // ── Point ──
-    const pointEls = tag(pm, 'Point');
-    if (pointEls.length) {
-      const coordText = tagText(pointEls[0], 'coordinates');
-      const coords    = parseCoords(coordText);
-      if (coords.length) {
-        const [lat, lng] = coords[0];
-        const marker = L.marker([lat, lng], { icon: makeIcon(cfg.color) });
-        if (popup) marker.bindPopup(popup, { maxWidth: 260 });
-        marker.on('click', () => showInfo(cfg, name, desc));
-        layer.addLayer(marker);
-      }
-      return;
-    }
-
-    // ── LineString ──
-    const lineEls = tag(pm, 'LineString');
-    if (lineEls.length) {
-      const coords = parseCoords(tagText(lineEls[0], 'coordinates'));
-      if (coords.length >= 2) {
-        const line = L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.85 });
-        if (popup) line.bindPopup(popup, { maxWidth: 260 });
-        line.on('click', () => showInfo(cfg, name, desc));
-        layer.addLayer(line);
-      }
-      return;
-    }
-
-    // ── Polygon ──
-    const polyEls = tag(pm, 'Polygon');
-    if (polyEls.length) {
-      const outerEl = tag(polyEls[0], 'outerBoundaryIs');
-      const coordsEl = outerEl.length ? outerEl[0] : polyEls[0];
-      const coords = parseCoords(tagText(coordsEl, 'coordinates'));
-      if (coords.length >= 3) {
-        const poly = L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 });
-        if (popup) poly.bindPopup(popup, { maxWidth: 260 });
-        poly.on('click', () => showInfo(cfg, name, desc));
-        layer.addLayer(poly);
-      }
-    }
-  });
-
-  return layer;
-}
-
+// ── SIDEBAR INFO ──────────────────────────────
 function showInfo(cfg, name, desc) {
   document.getElementById('info-empty').style.display = 'none';
   const content = document.getElementById('info-content');
@@ -201,74 +81,141 @@ function showInfo(cfg, name, desc) {
   content.style.animation = 'none';
   void content.offsetWidth;
   content.style.animation = '';
-  document.getElementById('info-tag').innerHTML  = `<span style="color:${cfg.color}">${cfg.icon}</span> ${cfg.label}`;
+  document.getElementById('info-tag').innerHTML = `<span style="color:${cfg.color}">${cfg.icon}</span> ${cfg.label}`;
   document.getElementById('info-name').textContent = name || '(sin nombre)';
   const tmp = document.createElement('div');
   tmp.innerHTML = desc;
   document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
 }
 
-// ── LAYER MANAGEMENT ──────────────────────────
-const leafletLayers = {};
-const bounds = L.latLngBounds();
-let loadedCount = 0;
-const totalLayers = Object.keys(LAYER_CONFIG).length;
+// ── KML PARSER ───────────────────────────────
+function parseKML(xmlDoc, cfg) {
+  const layer = L.layerGroup();
+  const bounds = [];
+  const NS = 'http://www.opengis.net/kml/2.2';
 
-async function loadLayer(key, cfg) {
-  console.log(`[kml] Cargando ${cfg.file}…`);
-  try {
-    const res = await fetch(cfg.file);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const layer = parseKML(text, cfg);
-    leafletLayers[key] = layer;
-    layer.addTo(map);
-
-    // Extend bounds
-    layer.eachLayer(l => {
-      if (l.getLatLng)  bounds.extend(l.getLatLng());
-      if (l.getBounds)  bounds.extend(l.getBounds());
-    });
-
-    loadedCount++;
-    if (loadedCount === totalLayers && bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [40, 40] });
+  function getText(el, tagName) {
+    const found = el.getElementsByTagNameNS(NS, tagName);
+    if (found.length === 0) {
+      // fallback sin namespace
+      const fb = el.getElementsByTagName(tagName);
+      return fb.length ? fb[0].textContent.trim() : '';
     }
-    console.log(`[kml] ✓ ${cfg.file} cargado`);
-  } catch (err) {
-    console.error(`[kml] Error en ${cfg.file}:`, err);
-    loadedCount++;
+    return found[0].textContent.trim();
   }
+
+  function parseCoords(str) {
+    return str.trim().split(/\s+/).map(c => {
+      const p = c.split(',').map(Number);
+      return (p.length >= 2 && !isNaN(p[0]) && !isNaN(p[1])) ? [p[1], p[0]] : null;
+    }).filter(Boolean);
+  }
+
+  // Try both namespaced and non-namespaced Placemark
+  let placemarks = Array.from(xmlDoc.getElementsByTagNameNS(NS, 'Placemark'));
+  if (placemarks.length === 0) placemarks = Array.from(xmlDoc.getElementsByTagName('Placemark'));
+
+  placemarks.forEach(pm => {
+    const name = getText(pm, 'name');
+    const desc = getText(pm, 'description');
+    const popup = name
+      ? `<strong style="font-size:.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${desc}</span>` : ''}`
+      : null;
+
+    // Point
+    let pts = Array.from(pm.getElementsByTagNameNS(NS, 'Point'));
+    if (!pts.length) pts = Array.from(pm.getElementsByTagName('Point'));
+    if (pts.length) {
+      const coords = parseCoords(getText(pts[0], 'coordinates'));
+      if (coords.length) {
+        const [lat, lng] = coords[0];
+        const m = L.marker([lat, lng], { icon: makeIcon(cfg.color) });
+        if (popup) m.bindPopup(popup, { maxWidth: 260 });
+        m.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(m);
+        bounds.push([lat, lng]);
+      }
+      return;
+    }
+
+    // LineString
+    let lss = Array.from(pm.getElementsByTagNameNS(NS, 'LineString'));
+    if (!lss.length) lss = Array.from(pm.getElementsByTagName('LineString'));
+    if (lss.length) {
+      const coords = parseCoords(getText(lss[0], 'coordinates'));
+      if (coords.length >= 2) {
+        const l = L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.85 });
+        if (popup) l.bindPopup(popup, { maxWidth: 260 });
+        l.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(l);
+        coords.forEach(c => bounds.push(c));
+      }
+      return;
+    }
+
+    // Polygon
+    let pgs = Array.from(pm.getElementsByTagNameNS(NS, 'Polygon'));
+    if (!pgs.length) pgs = Array.from(pm.getElementsByTagName('Polygon'));
+    if (pgs.length) {
+      const coords = parseCoords(getText(pgs[0], 'coordinates'));
+      if (coords.length >= 3) {
+        const p = L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 });
+        if (popup) p.bindPopup(popup, { maxWidth: 260 });
+        p.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(p);
+        coords.forEach(c => bounds.push(c));
+      }
+    }
+  });
+
+  return { layer, bounds };
 }
 
-// Load all layers
-Object.entries(LAYER_CONFIG).forEach(([key, cfg]) => loadLayer(key, cfg));
+// ── LOAD KML FILES ────────────────────────────
+const leafletLayers = {};
+const allBounds = [];
+const keys = Object.keys(LAYER_CONFIG);
+let loaded = 0;
 
-// ── LAYER TOGGLE CHECKBOXES ───────────────────
-document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(checkbox => {
-  checkbox.addEventListener('change', function () {
-    const key   = this.dataset.layer;
-    const layer = leafletLayers[key];
+keys.forEach(key => {
+  const cfg = LAYER_CONFIG[key];
+  fetch(cfg.file)
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status} — ${cfg.file}`);
+      return r.text();
+    })
+    .then(text => {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'application/xml');
+      const parseErr = xmlDoc.querySelector('parsererror');
+      if (parseErr) throw new Error('XML inválido: ' + parseErr.textContent.slice(0, 80));
+      const { layer, bounds } = parseKML(xmlDoc, cfg);
+      leafletLayers[key] = layer;
+      layer.addTo(map);
+      bounds.forEach(b => allBounds.push(b));
+    })
+    .catch(err => {
+      console.error(`[kml] ${cfg.file}:`, err.message);
+    })
+    .finally(() => {
+      loaded++;
+      if (loaded === keys.length && allBounds.length) {
+        map.fitBounds(L.latLngBounds(allBounds), { padding: [40, 40] });
+      }
+    });
+});
+
+// ── LAYER TOGGLES ─────────────────────────────
+document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    const layer = leafletLayers[this.dataset.layer];
     if (!layer) return;
-    if (this.checked) {
-      map.addLayer(layer);
-    } else {
-      map.removeLayer(layer);
-    }
+    this.checked ? map.addLayer(layer) : map.removeLayer(layer);
   });
 });
 
-// ── MOBILE SIDEBAR TOGGLE ─────────────────────
-const sidebar       = document.getElementById('sidebar');
-const toggleBtn     = document.getElementById('sidebar-toggle');
-
-toggleBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-});
-
-// Close sidebar on map click (mobile)
-map.on('click', () => {
-  if (window.innerWidth <= 680) {
-    sidebar.classList.remove('open');
-  }
-});
+// ── MOBILE SIDEBAR ────────────────────────────
+const sidebar   = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('sidebar-toggle');
+toggleBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+map.on('click', () => { if (window.innerWidth <= 680) sidebar.classList.remove('open'); });
