@@ -156,8 +156,8 @@ function loadLayer(key, cfg) {
       }
     }
   })
-  .on('error', function () {
-    console.warn(`[spearfishing] No se pudo cargar: ${cfg.file}`);
+  .on('error', function (e) {
+    console.error(`[kml] Error cargando ${cfg.file}:`, e);
     loadedCount++;
   })
   .addTo(map);
@@ -166,7 +166,10 @@ function loadLayer(key, cfg) {
 }
 
 // Load all layers
-Object.entries(LAYER_CONFIG).forEach(([key, cfg]) => loadLayer(key, cfg));
+Object.entries(LAYER_CONFIG).forEach(([key, cfg]) => {
+  console.log(`[kml] Cargando ${cfg.file}…`);
+  loadLayer(key, cfg);
+});
 
 // ── LAYER TOGGLE CHECKBOXES ───────────────────
 document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(checkbox => {
