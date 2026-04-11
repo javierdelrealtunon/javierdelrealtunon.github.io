@@ -231,9 +231,7 @@ keys.forEach(key => {
     })
     .finally(() => {
       loaded++;
-      if (loaded === keys.length && allBounds.length) {
-        map.fitBounds(L.latLngBounds(allBounds), { padding: [40, 40] });
-      }
+      // fitBounds desactivado — el mapa se mantiene centrado en la Ría de Ferrol
     });
 });
 
