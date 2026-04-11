@@ -8,7 +8,7 @@ const LAYER_CONFIG = {
 };
 
 // ── MAP INIT ──────────────────────────────────
-const map = L.map('map', { center: [43.4, -3.0], zoom: 10 });
+const map = L.map('map', { center: [43.4633, -8.2389], zoom: 13 });
 
 // ── BASEMAPS ──────────────────────────────────
 const BASEMAPS = {
@@ -43,14 +43,22 @@ const BASEMAPS = {
         attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Bathymetry</a>',
         opacity: 0.6,
       }),
+      L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms', {
+        layers: 'contours',
+        format: 'image/png',
+        transparent: true,
+        attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Contours</a>',
+        opacity: 0.9,
+      }),
       L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
     ]),
   },
 };
 
-let activeBasemap = 'light';
-BASEMAPS.light.layer.addTo(map);
+let activeBasemap = 'nautical';
+const _nb = BASEMAPS.nautical.layer;
+_nb.eachLayer(l => l.addTo(map));
 
 const BasemapControl = L.Control.extend({
   options: { position: 'bottomright' },
