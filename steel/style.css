@@ -201,7 +201,22 @@ h1 {
   min-width: 0;
 }
 
-/* ── Fila inferior: lista EPD + scatter ─────────────────────────────────── */
+/* ── Fila superior: mapa + boxplots ─────────────────────────────────────── */
+.top-row {
+  display: grid;
+  grid-template-columns: var(--map-col-width) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.map-panel,
+.boxplot-panel {
+  min-width: 0;
+  height: var(--top-row-height);
+  min-height: 0;
+}
+
+
 .bottom-row {
   display: grid;
   grid-template-columns: var(--map-col-width) minmax(0, 1fr);
