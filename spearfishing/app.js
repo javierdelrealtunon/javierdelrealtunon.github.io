@@ -112,20 +112,74 @@ const BasemapControl = L.Control.extend({
 
 new BasemapControl().addTo(map);
 
-// ── CUSTOM MARKER ICON ────────────────────────
-function makeIcon(color) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
-    <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21S26 22.75 26 13C26 5.82 20.18 0 13 0z"
-      fill="${color}" fill-opacity="0.92"/>
-    <circle cx="13" cy="13" r="5" fill="white" fill-opacity="0.9"/>
-  </svg>`;
-  return L.divIcon({
-    html: svg,
-    className: '',
-    iconSize: [26, 34],
-    iconAnchor: [13, 34],
-    popupAnchor: [0, -36],
+// ── CUSTOM KML PARSER ─────────────────────────
+// No external dependencies — uses fetch + browser DOMParser
+
+function parseKML(kmlText, cfg) {
+  const parser = new DOMParser();
+  const kml    = parser.parseFromString(kmlText, 'text/xml');
+  const layer  = L.layerGroup();
+
+  const placemarks = Array.from(kml.getElementsByTagName('Placemark'));
+
+  placemarks.forEach(pm => {
+    const name = pm.querySelector('name')?.textContent?.trim() || '';
+    const desc = pm.querySelector('description')?.textContent?.trim() || '';
+
+    // ── Point ──
+    const pointEl = pm.querySelector('Point coordinates');
+    if (pointEl) {
+      const [lng, lat] = pointEl.textContent.trim().split(',').map(Number);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const marker = L.marker([lat, lng], { icon: makeIcon(cfg.color) });
+        if (name) {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = desc;
+          const cleanDesc = tmp.textContent?.trim() || '';
+          marker.bindPopup(
+            `<strong style="font-size:0.95rem">${name}</strong>${cleanDesc ? `<br><span style="color:#7a9bbf;font-size:0.82rem">${cleanDesc}</span>` : ''}`,
+            { maxWidth: 260 }
+          );
+        }
+        marker.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(marker);
+      }
+    }
+
+    // ── LineString / Polygon ──
+    ['LineString coordinates', 'Polygon outerBoundaryIs LinearRing coordinates'].forEach(sel => {
+      const el = pm.querySelector(sel);
+      if (!el) return;
+      const coords = el.textContent.trim().split(/\s+/).map(c => {
+        const [lng, lat] = c.split(',').map(Number);
+        return isNaN(lat) ? null : [lat, lng];
+      }).filter(Boolean);
+      if (coords.length < 2) return;
+      const isPolygon = sel.includes('Polygon');
+      const shape = isPolygon
+        ? L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 })
+        : L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.8 });
+      if (name) shape.bindPopup(`<strong>${name}</strong>`, { maxWidth: 260 });
+      shape.on('click', () => showInfo(cfg, name, desc));
+      layer.addLayer(shape);
+    });
   });
+
+  return layer;
+}
+
+function showInfo(cfg, name, desc) {
+  document.getElementById('info-empty').style.display = 'none';
+  const content = document.getElementById('info-content');
+  content.style.display = 'block';
+  content.style.animation = 'none';
+  void content.offsetWidth;
+  content.style.animation = '';
+  document.getElementById('info-tag').innerHTML  = `<span style="color:${cfg.color}">${cfg.icon}</span> ${cfg.label}`;
+  document.getElementById('info-name').textContent = name || '(sin nombre)';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = desc;
+  document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
 }
 
 // ── LAYER MANAGEMENT ──────────────────────────
@@ -134,78 +188,35 @@ const bounds = L.latLngBounds();
 let loadedCount = 0;
 const totalLayers = Object.keys(LAYER_CONFIG).length;
 
-function onFeatureClick(e, cfg) {
-  const props = e.layer.feature?.properties || {};
-  const name  = props.name        || props.Name        || '(sin nombre)';
-  const desc  = props.description || props.Description || '';
+async function loadLayer(key, cfg) {
+  console.log(`[kml] Cargando ${cfg.file}…`);
+  try {
+    const res = await fetch(cfg.file);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const layer = parseKML(text, cfg);
+    leafletLayers[key] = layer;
+    layer.addTo(map);
 
-  // Update sidebar info panel
-  document.getElementById('info-empty').style.display   = 'none';
-  const content = document.getElementById('info-content');
-  content.style.display = 'block';
-  content.style.animation = 'none';
-  void content.offsetWidth; // reflow to restart animation
-  content.style.animation = '';
+    // Extend bounds
+    layer.eachLayer(l => {
+      if (l.getLatLng)  bounds.extend(l.getLatLng());
+      if (l.getBounds)  bounds.extend(l.getBounds());
+    });
 
-  document.getElementById('info-tag').innerHTML  = `<span style="color:${cfg.color}">${cfg.icon}</span> ${cfg.label}`;
-  document.getElementById('info-name').textContent = name;
-
-  // Strip HTML tags from description if present
-  const tmp = document.createElement('div');
-  tmp.innerHTML = desc;
-  document.getElementById('info-desc').textContent = tmp.textContent || '';
-}
-
-function loadLayer(key, cfg) {
-  const layer = omnivore.kml(cfg.file, null, L.geoJson(null, {
-    pointToLayer(feature, latlng) {
-      return L.marker(latlng, { icon: makeIcon(cfg.color) });
-    },
-    style() {
-      return { color: cfg.color, weight: 2, opacity: 0.85, fillOpacity: 0.25 };
-    },
-    onEachFeature(feature, featureLayer) {
-      const props = feature.properties || {};
-      const name  = props.name || props.Name || '';
-      const desc  = props.description || props.Description || '';
-
-      if (name) {
-        featureLayer.bindPopup(
-          `<strong style="font-size:0.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:0.82rem">${desc}</span>` : ''}`,
-          { maxWidth: 260 }
-        );
-      }
-
-      featureLayer.on('click', (e) => onFeatureClick(e, cfg));
-    },
-  }))
-  .on('ready', function () {
-    // Extend global bounds
-    if (layer.getBounds && layer.getBounds().isValid()) {
-      bounds.extend(layer.getBounds());
-    }
     loadedCount++;
-    if (loadedCount === totalLayers) {
-      // Fit map to all loaded features
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [40, 40] });
-      }
+    if (loadedCount === totalLayers && bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [40, 40] });
     }
-  })
-  .on('error', function (e) {
-    console.error(`[kml] Error cargando ${cfg.file}:`, e);
+    console.log(`[kml] ✓ ${cfg.file} cargado`);
+  } catch (err) {
+    console.error(`[kml] Error en ${cfg.file}:`, err);
     loadedCount++;
-  })
-  .addTo(map);
-
-  leafletLayers[key] = layer;
+  }
 }
 
 // Load all layers
-Object.entries(LAYER_CONFIG).forEach(([key, cfg]) => {
-  console.log(`[kml] Cargando ${cfg.file}…`);
-  loadLayer(key, cfg);
-});
+Object.entries(LAYER_CONFIG).forEach(([key, cfg]) => loadLayer(key, cfg));
 
 // ── LAYER TOGGLE CHECKBOXES ───────────────────
 document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(checkbox => {
