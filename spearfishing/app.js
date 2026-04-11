@@ -43,11 +43,11 @@ const BASEMAPS = {
         attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Bathymetry</a>',
         opacity: 0.6,
       }),
-      L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms', {
-        layers: 'contours',
+      L.tileLayer.wms('https://proxyapps.ieo.es/server/services/VisorBase/Isobatas/MapServer/WMSServer', {
+        layers: '0',
         format: 'image/png',
         transparent: true,
-        attribution: '&copy; <a href="https://emodnet.ec.europa.eu/">EMODnet Contours</a>',
+        attribution: '&copy; <a href="https://www.ieo.csic.es/">IEO</a>',
         opacity: 0.9,
       }),
       L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
