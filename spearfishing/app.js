@@ -45,36 +45,72 @@ const map = L.map('map', {
 // Base tile layer — dark style matching the UI
 // ── BASEMAP DEFINITIONS ───────────────────────
 const BASEMAPS = {
-  light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd', maxZoom: 20,
-  }),
-  osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    subdomains: 'abc', maxZoom: 20,
-  }),
-  ortho: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
-    maxZoom: 20,
-  }),
+  light: {
+    label: 'Claro',
+    thumb: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/6/24/31',
+    layer: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 20,
+    }),
+  },
+  osm: {
+    label: 'Mapa',
+    thumb: 'https://tile.openstreetmap.org/6/31/24.png',
+    layer: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      subdomains: 'abc', maxZoom: 20,
+    }),
+  },
+  ortho: {
+    label: 'Satélite',
+    thumb: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/6/24/31',
+    layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+      maxZoom: 20,
+    }),
+  },
 };
 
-// Start with light basemap
 let activeBasemap = 'light';
-BASEMAPS.light.addTo(map);
+BASEMAPS.light.layer.addTo(map);
 
-// Basemap switcher buttons
-document.querySelectorAll('.basemap-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
-    const key = this.dataset.basemap;
-    if (key === activeBasemap) return;
-    map.removeLayer(BASEMAPS[activeBasemap]);
-    BASEMAPS[key].addTo(map);
-    activeBasemap = key;
-    document.querySelectorAll('.basemap-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-  });
+// ── CUSTOM LEAFLET CONTROL ─────────────────────
+const BasemapControl = L.Control.extend({
+  options: { position: 'bottomright' },
+  onAdd() {
+    const container = L.DomUtil.create('div', 'basemap-control leaflet-bar');
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.disableScrollPropagation(container);
+
+    Object.entries(BASEMAPS).forEach(([key, bm]) => {
+      const btn = L.DomUtil.create('button', key === activeBasemap ? 'active' : '', container);
+      btn.dataset.key = key;
+
+      const thumb = L.DomUtil.create('span', 'bm-thumb', btn);
+      const img = L.DomUtil.create('img', '', thumb);
+      img.src = bm.thumb;
+      img.alt = bm.label;
+
+      const label = L.DomUtil.create('span', 'bm-label', btn);
+      label.textContent = bm.label;
+
+      L.DomEvent.on(btn, 'click', () => {
+        if (key === activeBasemap) return;
+        map.removeLayer(BASEMAPS[activeBasemap].layer);
+        BASEMAPS[key].layer.addTo(map);
+        // Keep KML layers on top
+        Object.values(leafletLayers).forEach(l => l && l.bringToFront && l.bringToFront());
+        activeBasemap = key;
+        container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    return container;
+  },
 });
+
+new BasemapControl().addTo(map);
 
 // ── CUSTOM MARKER ICON ────────────────────────
 function makeIcon(color) {
