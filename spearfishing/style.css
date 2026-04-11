@@ -118,6 +118,67 @@ h1 em {
 }
 
 /* ─────────────────────────────────────────────
+   Basemap switcher
+───────────────────────────────────────────── */
+.basemap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.basemap-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.basemap-btn:hover {
+  border-color: var(--border-h);
+  background: rgba(91,170,255,0.05);
+}
+.basemap-btn.active {
+  border-color: var(--accent);
+  background: rgba(91,170,255,0.1);
+}
+
+.basemap-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+}
+.basemap-thumb--light {
+  background-color: #e8e0d8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='38'%3E%3Crect width='60' height='38' fill='%23e8e0d8'/%3E%3Crect x='8' y='14' width='44' height='2' rx='1' fill='%23c8bfb4'/%3E%3Crect x='4' y='20' width='32' height='2' rx='1' fill='%23c8bfb4'/%3E%3Crect x='0' y='26' width='60' height='3' rx='1' fill='%23d4ccc2'/%3E%3C/svg%3E");
+}
+.basemap-thumb--osm {
+  background-color: #aad3df;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='38'%3E%3Crect width='60' height='38' fill='%23aad3df'/%3E%3Crect x='0' y='18' width='60' height='20' fill='%23b5d29e'/%3E%3Crect x='10' y='10' width='40' height='3' rx='1' fill='%23fff' opacity='.6'/%3E%3C/svg%3E");
+}
+.basemap-thumb--ortho {
+  background-color: #2d4a2d;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='38'%3E%3Crect width='60' height='38' fill='%232d4a2d'/%3E%3Crect x='0' y='20' width='60' height='18' fill='%231a3320'/%3E%3Crect x='30' y='0' width='30' height='20' fill='%23243d24'/%3E%3Crect x='0' y='0' width='30' height='20' fill='%23355235'/%3E%3C/svg%3E");
+}
+
+.basemap-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.basemap-btn.active .basemap-label {
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────
    Layer toggles
 ───────────────────────────────────────────── */
 .layers-section {

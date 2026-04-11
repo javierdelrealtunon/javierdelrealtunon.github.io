@@ -43,25 +43,37 @@ const map = L.map('map', {
 });
 
 // Base tile layer — dark style matching the UI
-const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 20,
-});
+// ── BASEMAP DEFINITIONS ───────────────────────
+const BASEMAPS = {
+  light: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd', maxZoom: 20,
+  }),
+  osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    subdomains: 'abc', maxZoom: 20,
+  }),
+  ortho: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+    maxZoom: 20,
+  }),
+};
 
-const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom: 20,
-});
+// Start with light basemap
+let activeBasemap = 'light';
+BASEMAPS.light.addTo(map);
 
-cartoTiles.addTo(map);
-
-// If CARTO fails to load any tile, fall back to OSM
-cartoTiles.on('tileerror', function() {
-  if (map.hasLayer(cartoTiles)) {
-    map.removeLayer(cartoTiles);
-    osmTiles.addTo(map);
-  }
+// Basemap switcher buttons
+document.querySelectorAll('.basemap-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    const key = this.dataset.basemap;
+    if (key === activeBasemap) return;
+    map.removeLayer(BASEMAPS[activeBasemap]);
+    BASEMAPS[key].addTo(map);
+    activeBasemap = key;
+    document.querySelectorAll('.basemap-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
 });
 
 // ── CUSTOM MARKER ICON ────────────────────────
