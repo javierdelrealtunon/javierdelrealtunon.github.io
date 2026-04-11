@@ -113,7 +113,24 @@ const BasemapControl = L.Control.extend({
 new BasemapControl().addTo(map);
 
 // ── CUSTOM KML PARSER ─────────────────────────
-// No external dependencies — uses fetch + browser DOMParser
+// querySelector fails with XML namespaces — use getElementsByTagName instead
+
+function tag(el, name) {
+  return el.getElementsByTagName(name);
+}
+function tagText(el, name) {
+  const els = el.getElementsByTagName(name);
+  return els.length ? els[0].textContent.trim() : '';
+}
+
+function parseCoords(text) {
+  return text.trim().split(/\s+/).map(c => {
+    const parts = c.split(',').map(Number);
+    return parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])
+      ? [parts[1], parts[0]]   // [lat, lng]
+      : null;
+  }).filter(Boolean);
+}
 
 function parseKML(kmlText, cfg) {
   const parser = new DOMParser();
@@ -121,48 +138,57 @@ function parseKML(kmlText, cfg) {
   const layer  = L.layerGroup();
 
   const placemarks = Array.from(kml.getElementsByTagName('Placemark'));
+  console.log(`[kml] ${cfg.label}: ${placemarks.length} placemarks`);
 
   placemarks.forEach(pm => {
-    const name = pm.querySelector('name')?.textContent?.trim() || '';
-    const desc = pm.querySelector('description')?.textContent?.trim() || '';
+    const name = tagText(pm, 'name');
+    const desc = tagText(pm, 'description');
+
+    const popup = name
+      ? `<strong style="font-size:.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${desc}</span>` : ''}`
+      : null;
 
     // ── Point ──
-    const pointEl = pm.querySelector('Point coordinates');
-    if (pointEl) {
-      const [lng, lat] = pointEl.textContent.trim().split(',').map(Number);
-      if (!isNaN(lat) && !isNaN(lng)) {
+    const pointEls = tag(pm, 'Point');
+    if (pointEls.length) {
+      const coordText = tagText(pointEls[0], 'coordinates');
+      const coords    = parseCoords(coordText);
+      if (coords.length) {
+        const [lat, lng] = coords[0];
         const marker = L.marker([lat, lng], { icon: makeIcon(cfg.color) });
-        if (name) {
-          const tmp = document.createElement('div');
-          tmp.innerHTML = desc;
-          const cleanDesc = tmp.textContent?.trim() || '';
-          marker.bindPopup(
-            `<strong style="font-size:0.95rem">${name}</strong>${cleanDesc ? `<br><span style="color:#7a9bbf;font-size:0.82rem">${cleanDesc}</span>` : ''}`,
-            { maxWidth: 260 }
-          );
-        }
+        if (popup) marker.bindPopup(popup, { maxWidth: 260 });
         marker.on('click', () => showInfo(cfg, name, desc));
         layer.addLayer(marker);
       }
+      return;
     }
 
-    // ── LineString / Polygon ──
-    ['LineString coordinates', 'Polygon outerBoundaryIs LinearRing coordinates'].forEach(sel => {
-      const el = pm.querySelector(sel);
-      if (!el) return;
-      const coords = el.textContent.trim().split(/\s+/).map(c => {
-        const [lng, lat] = c.split(',').map(Number);
-        return isNaN(lat) ? null : [lat, lng];
-      }).filter(Boolean);
-      if (coords.length < 2) return;
-      const isPolygon = sel.includes('Polygon');
-      const shape = isPolygon
-        ? L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 })
-        : L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.8 });
-      if (name) shape.bindPopup(`<strong>${name}</strong>`, { maxWidth: 260 });
-      shape.on('click', () => showInfo(cfg, name, desc));
-      layer.addLayer(shape);
-    });
+    // ── LineString ──
+    const lineEls = tag(pm, 'LineString');
+    if (lineEls.length) {
+      const coords = parseCoords(tagText(lineEls[0], 'coordinates'));
+      if (coords.length >= 2) {
+        const line = L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.85 });
+        if (popup) line.bindPopup(popup, { maxWidth: 260 });
+        line.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(line);
+      }
+      return;
+    }
+
+    // ── Polygon ──
+    const polyEls = tag(pm, 'Polygon');
+    if (polyEls.length) {
+      const outerEl = tag(polyEls[0], 'outerBoundaryIs');
+      const coordsEl = outerEl.length ? outerEl[0] : polyEls[0];
+      const coords = parseCoords(tagText(coordsEl, 'coordinates'));
+      if (coords.length >= 3) {
+        const poly = L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 });
+        if (popup) poly.bindPopup(popup, { maxWidth: 260 });
+        poly.on('click', () => showInfo(cfg, name, desc));
+        layer.addLayer(poly);
+      }
+    }
   });
 
   return layer;
