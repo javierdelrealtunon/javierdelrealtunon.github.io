@@ -29,31 +29,11 @@ const BASEMAPS = {
     thumb: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/6/24/31',
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri', maxZoom: 20 }),
-  },
-  nautical: {
-    label: 'Náutico',
-    thumb: 'https://tiles.openseamap.org/seamark/6/31/24.png',
-    layer: L.layerGroup([
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20 }),
-
-      L.tileLayer.wms('https://proxyapps.ieo.es/server/services/VisorBase/Isobatas/MapServer/WMSServer', {
-        layers: '0',
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.1',
-        attribution: '&copy; <a href="https://www.ieo.csic.es/">IEO</a>',
-        opacity: 0.9,
-      }),
-      L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
-    ]),
-  },
+  }
 };
 
-let activeBasemap = 'nautical';
-const _nb = BASEMAPS.nautical.layer;
-_nb.eachLayer(l => l.addTo(map));
+let activeBasemap = 'light';
+BASEMAPS.light.layer.addTo(map);
 
 const BasemapControl = L.Control.extend({
   options: { position: 'bottomright' },
@@ -84,6 +64,37 @@ const BasemapControl = L.Control.extend({
   },
 });
 new BasemapControl().addTo(map);
+
+// ── NAUTICAL TOGGLE CONTROL ───────────────────
+const NauticalControl = L.Control.extend({
+  options: { position: 'bottomright' },
+  onAdd() {
+    const btn = L.DomUtil.create('button', 'nautical-toggle-btn');
+    btn.innerHTML = '⚓ Náutico';
+    btn.title = 'Activar/desactivar capa náutica';
+    L.DomEvent.disableClickPropagation(btn);
+    L.DomEvent.on(btn, 'click', () => {
+      const active = btn.classList.toggle('active');
+      active ? NAUTICAL_OVERLAY.addTo(map) : map.removeLayer(NAUTICAL_OVERLAY);
+    });
+    return btn;
+  },
+});
+new NauticalControl().addTo(map);
+
+// ── NAUTICAL OVERLAY ─────────────────────────
+const NAUTICAL_OVERLAY = L.layerGroup([
+  L.tileLayer.wms('https://proxyapps.ieo.es/server/services/VisorBase/Isobatas/MapServer/WMSServer', {
+    layers: '0',
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1',
+    attribution: '&copy; <a href="https://www.ieo.csic.es/">IEO</a>',
+    opacity: 0.9,
+  }),
+  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
+]);
 
 // ── MARKER ICON ───────────────────────────────
 function makeIcon(color) {
@@ -233,6 +244,10 @@ keys.forEach(key => {
 // ── LAYER TOGGLES ─────────────────────────────
 document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
   cb.addEventListener('change', function() {
+    if (this.dataset.layer === 'nautico') {
+      this.checked ? NAUTICAL_OVERLAY.addTo(map) : map.removeLayer(NAUTICAL_OVERLAY);
+      return;
+    }
     const layer = leafletLayers[this.dataset.layer];
     if (!layer) return;
     this.checked ? map.addLayer(layer) : map.removeLayer(layer);

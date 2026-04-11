@@ -387,6 +387,37 @@ h1 em {
 }
 
 /* ─────────────────────────────────────────────
+   Nautical toggle button (in-map)
+───────────────────────────────────────────── */
+.nautical-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-h);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.nautical-toggle-btn:hover {
+  background: rgba(20,38,62,0.98);
+  color: var(--text);
+}
+.nautical-toggle-btn.active {
+  background: rgba(91,170,255,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────
    Mobile sidebar toggle
 ───────────────────────────────────────────── */
 .sidebar-toggle {
