@@ -47,6 +47,7 @@ const BASEMAPS = {
         layers: '0',
         format: 'image/png',
         transparent: true,
+        version: '1.1.1',
         attribution: '&copy; <a href="https://www.ieo.csic.es/">IEO</a>',
         opacity: 0.9,
       }),
