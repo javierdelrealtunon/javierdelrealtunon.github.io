@@ -1,0 +1,382 @@
+/* ─────────────────────────────────────────────
+   Variables & Reset
+───────────────────────────────────────────── */
+:root {
+  --bg:        #07111e;
+  --surface:   #0d1c2e;
+  --surface-2: #0a1626;
+  --border:    rgba(100,181,255,0.12);
+  --border-h:  rgba(100,181,255,0.32);
+  --text:      #ddeeff;
+  --muted:     #7a9bbf;
+  --accent:    #5baaff;
+  --accent-2:  #62f0cf;
+  --sidebar-w: 320px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ─────────────────────────────────────────────
+   Layout
+───────────────────────────────────────────── */
+body {
+  display: flex;
+}
+
+/* ─────────────────────────────────────────────
+   Sidebar
+───────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 200;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Subtle inner glow */
+  box-shadow: inset -1px 0 0 var(--border), 4px 0 24px rgba(0,0,0,0.3);
+}
+
+.sidebar-header {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Back link */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  margin-bottom: 18px;
+  opacity: 0.7;
+  transition: opacity 0.15s, color 0.15s;
+}
+.back-link:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* Eyebrow */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+/* Title */
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.85rem;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ─────────────────────────────────────────────
+   Layer toggles
+───────────────────────────────────────────── */
+.layers-section {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  opacity: 0.7;
+}
+
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.layer-item:hover {
+  background: rgba(91,170,255,0.06);
+}
+
+.layer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.layer-name {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Hide native checkbox */
+.layer-item input[type="checkbox"] {
+  display: none;
+}
+
+/* Toggle switch */
+.toggle-track {
+  width: 34px;
+  height: 18px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 9px;
+  position: relative;
+  border: 1px solid var(--border-h);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.2s, background 0.2s;
+}
+.layer-item input:checked ~ .toggle-track {
+  background: rgba(91,170,255,0.18);
+  border-color: var(--accent);
+}
+.layer-item input:checked ~ .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+
+/* Dimmed state when layer is off */
+.layer-item:has(input:not(:checked)) .layer-name {
+  opacity: 0.4;
+}
+.layer-item:has(input:not(:checked)) .layer-dot {
+  opacity: 0.25;
+}
+
+/* ─────────────────────────────────────────────
+   Info panel
+───────────────────────────────────────────── */
+.info-panel {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+  line-height: 1.65;
+  opacity: 0.5;
+  padding: 24px 0;
+}
+
+.info-content {
+  animation: fadeUp 0.25s ease forwards;
+}
+
+.info-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+}
+
+.info-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.info-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+/* ─────────────────────────────────────────────
+   Map
+───────────────────────────────────────────── */
+#map {
+  flex: 1;
+  height: 100vh;
+}
+
+/* Override Leaflet UI to match theme */
+.leaflet-control-zoom a {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  font-weight: 400;
+}
+.leaflet-control-zoom a:hover {
+  background: var(--surface-2) !important;
+  color: var(--accent) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(7,17,30,0.75) !important;
+  color: var(--muted) !important;
+  font-size: 0.65rem !important;
+  backdrop-filter: blur(6px);
+}
+.leaflet-control-attribution a {
+  color: var(--accent) !important;
+}
+.leaflet-popup-content-wrapper {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-h) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 14px 18px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+  color: var(--text) !important;
+}
+.leaflet-popup-tip {
+  background: var(--surface) !important;
+}
+.leaflet-popup-close-button {
+  color: var(--muted) !important;
+  font-size: 1.1rem !important;
+  padding: 8px 10px !important;
+}
+
+/* ─────────────────────────────────────────────
+   Mobile sidebar toggle
+───────────────────────────────────────────── */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 300;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-h);
+  color: var(--text);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: background 0.15s;
+}
+.sidebar-toggle:hover {
+  background: var(--surface-2);
+}
+
+/* ─────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────
+   Responsive
+───────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-toggle {
+    display: flex;
+  }
+  #map {
+    width: 100vw;
+  }
+}
