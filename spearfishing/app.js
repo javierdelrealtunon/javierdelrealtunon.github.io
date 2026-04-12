@@ -99,16 +99,14 @@ new NauticalControl().addTo(map);
 
 // Capa ENC propósito 4 (1:22.000 – 1:90.000) — escala adecuada para zoom 12-15
 const ENC_LAYER = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4', {
-  // Candidatos para 'layers' — prueba en orden si no funciona:
-  //   '0'           ← primer intento (más probable en MapServer)
-  //   'carta'
-  //   'ENC'
-  //   'carta_p4'
   layers: 'ENC_ES4',
   styles: '',
   format: 'image/png',
   transparent: true,
   version: '1.3.0',
+  // CLAVE: el WMS del IHM no soporta EPSG:3857 (Web Mercator).
+  // Con crs:EPSG4326 Leaflet pide las teselas en coordenadas geográficas.
+  crs: L.CRS.EPSG4326,
   attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
   opacity: 0.85,
 });
