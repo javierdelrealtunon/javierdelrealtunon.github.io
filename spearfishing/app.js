@@ -83,39 +83,25 @@ const NauticalControl = L.Control.extend({
 new NauticalControl().addTo(map);
 
 // ── NAUTICAL OVERLAY ─────────────────────────
-// Capas ENC del IHM por propósito — activas según rango de zoom.
-// El WMS no soporta EPSG:3857, por eso se fuerza crs: L.CRS.EPSG4326.
-//
-//  Propósito 2  1:350.000–1:500.000  zoom  6–9    capa ENC_ES2
-//  Propósito 3  1:90.000–1:350.000   zoom  9–12   capa ENC_ES3
-//  Propósito 4  1:22.000–1:90.000    zoom 12–15   capa ENC_ES4
-//  Propósito 5  1:4.000–1:22.000     zoom 15+     capa ENC_ES5
+// WMTS cacheado del IHM — tiles pre-renderizados, EPSG:3857, zoom 0-21.
+// Mucho más rápido que WMS: el navegador cachea los tiles entre sesiones.
+// Fuente: https://ideihm.covam.es/ihmcache/wmts  capa: RasterENC
 
-const WMS_OPTS = {
-  styles: '',
-  format: 'image/png',
-  transparent: true,
-  version: '1.3.0',
-  crs: L.CRS.EPSG4326,
-  attribution: '&copy; <a href="https://ideihm.covam.es">IHM</a>',
-  opacity: 0.85,
-};
-
-const ENC_P2 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp2',
-  { ...WMS_OPTS, layers: 'ENC_ES2', minZoom: 5,  maxZoom: 10 });
-const ENC_P3 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp3',
-  { ...WMS_OPTS, layers: 'ENC_ES3', minZoom: 9,  maxZoom: 13 });
-const ENC_P4 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4',
-  { ...WMS_OPTS, layers: 'ENC_ES4', minZoom: 12, maxZoom: 16 });
-const ENC_P5 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp5',
-  { ...WMS_OPTS, layers: 'ENC_ES5', minZoom: 15, maxZoom: 20 });
+const ENC_LAYER = L.tileLayer(
+  'https://ideihm.covam.es/ihmcache/wmts/1.0.0/RasterENC/default/googlemapscompatible/{z}/{y}/{x}.png',
+  {
+    attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
+    opacity: 0.85,
+    maxZoom: 21,
+  }
+);
 
 // OpenSeaMap — señalización marítima superpuesta
 const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20,
 });
 
-const NAUTICAL_OVERLAY = L.layerGroup([ENC_P2, ENC_P3, ENC_P4, ENC_P5, SEAMARKS_LAYER]);
+const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
 NAUTICAL_OVERLAY.addTo(map);
 
 // ── MARKER ICON ───────────────────────────────
