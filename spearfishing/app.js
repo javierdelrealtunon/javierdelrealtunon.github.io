@@ -22,7 +22,7 @@ const BASEMAPS = {
     label: 'Mapa',
     thumb: 'https://tile.openstreetmap.org/6/31/24.png',
     layer: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap', subdomains: 'abc', maxZoom: 20 }),
+      attribution: '&copy; OpenStreetMap', subdomains: 'abc', maxZoom: 20, maxNativeZoom: 19 }),
   },
   ortho: {
     label: 'Satélite',
