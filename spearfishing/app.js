@@ -102,11 +102,11 @@ const WMS_OPTS = {
 };
 
 const ENC_P2 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp2',
-  { ...WMS_OPTS, layers: 'ENC_ES2', minZoom: 6,  maxZoom: 9  });
+  { ...WMS_OPTS, layers: 'ENC_ES2', minZoom: 5,  maxZoom: 10 });
 const ENC_P3 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp3',
-  { ...WMS_OPTS, layers: 'ENC_ES3', minZoom: 9,  maxZoom: 12 });
+  { ...WMS_OPTS, layers: 'ENC_ES3', minZoom: 9,  maxZoom: 13 });
 const ENC_P4 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4',
-  { ...WMS_OPTS, layers: 'ENC_ES4', minZoom: 12, maxZoom: 15 });
+  { ...WMS_OPTS, layers: 'ENC_ES4', minZoom: 12, maxZoom: 16 });
 const ENC_P5 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp5',
   { ...WMS_OPTS, layers: 'ENC_ES5', minZoom: 15, maxZoom: 20 });
 
