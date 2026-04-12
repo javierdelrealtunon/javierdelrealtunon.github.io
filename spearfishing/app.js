@@ -69,7 +69,7 @@ new BasemapControl().addTo(map);
 const NauticalControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
-    const btn = L.DomUtil.create('button', 'nautical-toggle-btn');
+    const btn = L.DomUtil.create('button', 'nautical-toggle-btn active');
     btn.innerHTML = '⚓ Náutico';
     btn.title = 'Activar/desactivar capa náutica';
     L.DomEvent.disableClickPropagation(btn);
@@ -128,6 +128,7 @@ const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}
 });
 
 const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
+NAUTICAL_OVERLAY.addTo(map);
 
 // ── MARKER ICON ───────────────────────────────
 function makeIcon(color) {
