@@ -83,17 +83,40 @@ const NauticalControl = L.Control.extend({
 new NauticalControl().addTo(map);
 
 // ── NAUTICAL OVERLAY ─────────────────────────
+//
+// FUENTES DE DATOS:
+//
+// 1. WMS Cartografía Náutica Electrónica (ENC) — IHM / Instituto Hidrográfico de la Marina
+//    URL: https://ideihm.covam.es/encwms/wms
+//    Incluye isobatas (curvas de nivel batimétrico) de alta resolución según el
+//    propósito de navegación activo (propósito 4 ó 5 en zonas costeras de detalle).
+//    Basado en SevenCs ChartServer 5. Simbología S52. No válido para navegación.
+//    Ref: https://ideihm.covam.es/portal/servicios-web/
+//
+// 2. OpenSeaMap — señalización marítima superpuesta (boyas, faros, etc.)
+//    URL: https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png
+//
+// NOTA: Se eliminó la capa IEO Isobatas (proxyapps.ieo.es) que dejó de responder.
+//       La capa ENC del IHM ofrece isobatas de mayor detalle y cobertura oficial.
+
 const NAUTICAL_OVERLAY = L.layerGroup([
-  L.tileLayer.wms('https://proxyapps.ieo.es/server/services/VisorBase/Isobatas/MapServer/WMSServer', {
-    layers: '0',
+
+  // Capa 1: Carta Náutica Electrónica oficial IHM (isobatas de detalle incluidas)
+  L.tileLayer.wms('https://ideihm.covam.es/encwms/wms', {
+    layers: 'cells',          // capa única que combina todas las celdas ENC
     format: 'image/png',
     transparent: true,
-    version: '1.1.1',
-    attribution: '&copy; <a href="https://www.ieo.csic.es/">IEO</a>',
-    opacity: 0.9,
+    version: '1.3.0',
+    attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
+    opacity: 0.85,
+    // El servidor selecciona automáticamente el propósito de navegación
+    // (detalle / propósito 4-5) según el zoom del mapa
   }),
+
+  // Capa 2: OpenSeaMap — señalización y marcas náuticas
   L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
+
 ]);
 
 // ── MARKER ICON ───────────────────────────────
