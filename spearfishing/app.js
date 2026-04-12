@@ -1,7 +1,7 @@
 /* app.js — Spearfishing map */
 
 // ── API GOOGLE SHEET ───────────────────────────
-const SHEET_API = 'https://script.google.com/macros/s/AKfycbwrFOknPD2sHmXy96Z32qecLe215qcJXiedHttJ4zmijdydVS5YC9Uf3dqQV5LT5C27iQ/exec';
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbwkg7auUv8i7lqKMKi5WDITCvWDSq85mZD3ac6O8OEjzDAXzAP0wsYZ038z2ghZS1SgPw/exec';
 
 // ── CONFIG DE TIPOS ───────────────────────────
 const TIPOS = {
@@ -322,22 +322,29 @@ addForm.addEventListener('submit', e => {
     foto_url: '',
   };
 
-  fetch(SHEET_API, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(data),
-  })
-  .then(() => {
-    modal.classList.remove('open');
-    addForm.reset();
-    gpsStatus.textContent = '';
-    submitBtn.textContent = 'Guardar sitio';
-    submitBtn.disabled = false;
-    // Recargar marcadores tras 2s (tiempo para que el script procese)
-    setTimeout(loadSheetMarkers, 2000);
-    alert('✓ Sitio guardado correctamente');
-  })
+  const params = new URLSearchParams({
+    action:   'write',
+    nombre:   data.nombre,
+    tipo:     data.tipo,
+    lat:      data.lat,
+    lng:      data.lng,
+    notas:    data.notas,
+    autor:    data.autor,
+    foto_url: '',
+  });
+
+  fetch(`${SHEET_API}?${params}`)
+    .then(r => r.json())
+    .then(result => {
+      if (!result.ok) throw new Error('respuesta not ok');
+      modal.classList.remove('open');
+      addForm.reset();
+      gpsStatus.textContent = '';
+      submitBtn.textContent = 'Guardar sitio';
+      submitBtn.disabled = false;
+      setTimeout(loadSheetMarkers, 2000);
+      alert('✓ Sitio guardado correctamente');
+    })
   .catch(err => {
     console.error('[save]', err);
     submitBtn.textContent = 'Guardar sitio';
