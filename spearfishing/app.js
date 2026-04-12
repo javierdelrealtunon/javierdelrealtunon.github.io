@@ -84,40 +84,52 @@ new NauticalControl().addTo(map);
 
 // ── NAUTICAL OVERLAY ─────────────────────────
 //
-// FUENTES DE DATOS:
+// DIAGNÓSTICO — si las isobatas no aparecen, haz esto:
 //
-// 1. WMS Cartografía Náutica Electrónica (ENC) — IHM / Instituto Hidrográfico de la Marina
-//    URL: https://ideihm.covam.es/encwms/wms
-//    Incluye isobatas (curvas de nivel batimétrico) de alta resolución según el
-//    propósito de navegación activo (propósito 4 ó 5 en zonas costeras de detalle).
-//    Basado en SevenCs ChartServer 5. Simbología S52. No válido para navegación.
-//    Ref: https://ideihm.covam.es/portal/servicios-web/
+//  1. Abre esta URL en el navegador y busca las etiquetas <Name> dentro de <Layer>:
+//     https://ideihm.covam.es/wms/cartaENCp4?service=WMS&request=GetCapabilities
 //
-// 2. OpenSeaMap — señalización marítima superpuesta (boyas, faros, etc.)
-//    URL: https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png
+//  2. Con F12 > Network, activa la capa náutica y busca la petición a cartaENCp4.
+//     Si la respuesta contiene "InvalidParameterValue" o "LayerNotDefined" →
+//     el nombre de capa es incorrecto; cámbialo en layers: '???' abajo.
 //
-// NOTA: Se eliminó la capa IEO Isobatas (proxyapps.ieo.es) que dejó de responder.
-//       La capa ENC del IHM ofrece isobatas de mayor detalle y cobertura oficial.
+//  3. Alternativa rápida: usa el servicio encwms (ChartServer 5 del IHM) con:
+//     URL: https://ideihm.covam.es/encwms/wms
+//     layers: 'ENC'  (o '0', 'cells', 'chart')
 
-const NAUTICAL_OVERLAY = L.layerGroup([
+// Capa ENC propósito 4 (1:22.000 – 1:90.000) — escala adecuada para zoom 12-15
+const ENC_LAYER = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4', {
+  // Candidatos para 'layers' — prueba en orden si no funciona:
+  //   '0'           ← primer intento (más probable en MapServer)
+  //   'carta'
+  //   'ENC'
+  //   'carta_p4'
+  layers: 'ENC_ES4',
+  styles: '',
+  format: 'image/png',
+  transparent: true,
+  version: '1.3.0',
+  attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
+  opacity: 0.85,
+});
 
-  // Capa 1: Carta Náutica Electrónica oficial IHM (isobatas de detalle incluidas)
-  L.tileLayer.wms('https://ideihm.covam.es/encwms/wms', {
-    layers: 'cells',          // capa única que combina todas las celdas ENC
-    format: 'image/png',
-    transparent: true,
-    version: '1.3.0',
-    attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
-    opacity: 0.85,
-    // El servidor selecciona automáticamente el propósito de navegación
-    // (detalle / propósito 4-5) según el zoom del mapa
-  }),
+// Diagnóstico automático en consola del navegador
+ENC_LAYER.on('tileload', () => {
+  console.log('[IHM ENC] ✓ Tile batimétrico cargado — WMS funcionando correctamente');
+});
+ENC_LAYER.on('tileerror', (e) => {
+  console.error('[IHM ENC] ✗ Error en tile WMS:', e.tile?.src?.slice(0, 120));
+  console.warn('[IHM ENC] Para diagnosticar, abre en el navegador:');
+  console.warn('  https://ideihm.covam.es/wms/cartaENCp4?service=WMS&request=GetCapabilities');
+  console.warn('  Busca las etiquetas <Name> dentro de <Layer> y actualiza layers: \'...\' en app.js');
+});
 
-  // Capa 2: OpenSeaMap — señalización y marcas náuticas
-  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20 }),
+// OpenSeaMap — señalización marítima superpuesta
+const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20,
+});
 
-]);
+const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
 
 // ── MARKER ICON ───────────────────────────────
 function makeIcon(color) {
@@ -155,7 +167,6 @@ function parseKML(xmlDoc, cfg) {
     if (ns.length) return ns[0].textContent.trim();
     const plain = el.getElementsByTagName(tagName);
     if (plain.length) return plain[0].textContent.trim();
-    // Google Earth uses <n> as shorthand for <name>
     if (tagName === 'name') {
       const nNS = el.getElementsByTagNameNS(NS, 'n');
       if (nNS.length) return nNS[0].textContent.trim();
@@ -172,7 +183,6 @@ function parseKML(xmlDoc, cfg) {
     }).filter(Boolean);
   }
 
-  // Try both namespaced and non-namespaced Placemark
   let placemarks = Array.from(xmlDoc.getElementsByTagNameNS(NS, 'Placemark'));
   if (placemarks.length === 0) placemarks = Array.from(xmlDoc.getElementsByTagName('Placemark'));
 
@@ -183,7 +193,6 @@ function parseKML(xmlDoc, cfg) {
       ? `<strong style="font-size:.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${desc}</span>` : ''}`
       : null;
 
-    // Point
     let pts = Array.from(pm.getElementsByTagNameNS(NS, 'Point'));
     if (!pts.length) pts = Array.from(pm.getElementsByTagName('Point'));
     if (pts.length) {
@@ -199,7 +208,6 @@ function parseKML(xmlDoc, cfg) {
       return;
     }
 
-    // LineString
     let lss = Array.from(pm.getElementsByTagNameNS(NS, 'LineString'));
     if (!lss.length) lss = Array.from(pm.getElementsByTagName('LineString'));
     if (lss.length) {
@@ -214,7 +222,6 @@ function parseKML(xmlDoc, cfg) {
       return;
     }
 
-    // Polygon
     let pgs = Array.from(pm.getElementsByTagNameNS(NS, 'Polygon'));
     if (!pgs.length) pgs = Array.from(pm.getElementsByTagName('Polygon'));
     if (pgs.length) {
@@ -260,7 +267,6 @@ keys.forEach(key => {
     })
     .finally(() => {
       loaded++;
-      // fitBounds desactivado — el mapa se mantiene centrado en la Ría de Ferrol
     });
 });
 
