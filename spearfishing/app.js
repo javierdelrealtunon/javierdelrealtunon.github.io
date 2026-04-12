@@ -83,51 +83,39 @@ const NauticalControl = L.Control.extend({
 new NauticalControl().addTo(map);
 
 // ── NAUTICAL OVERLAY ─────────────────────────
+// Capas ENC del IHM por propósito — activas según rango de zoom.
+// El WMS no soporta EPSG:3857, por eso se fuerza crs: L.CRS.EPSG4326.
 //
-// DIAGNÓSTICO — si las isobatas no aparecen, haz esto:
-//
-//  1. Abre esta URL en el navegador y busca las etiquetas <Name> dentro de <Layer>:
-//     https://ideihm.covam.es/wms/cartaENCp4?service=WMS&request=GetCapabilities
-//
-//  2. Con F12 > Network, activa la capa náutica y busca la petición a cartaENCp4.
-//     Si la respuesta contiene "InvalidParameterValue" o "LayerNotDefined" →
-//     el nombre de capa es incorrecto; cámbialo en layers: '???' abajo.
-//
-//  3. Alternativa rápida: usa el servicio encwms (ChartServer 5 del IHM) con:
-//     URL: https://ideihm.covam.es/encwms/wms
-//     layers: 'ENC'  (o '0', 'cells', 'chart')
+//  Propósito 2  1:350.000–1:500.000  zoom  6–9    capa ENC_ES2
+//  Propósito 3  1:90.000–1:350.000   zoom  9–12   capa ENC_ES3
+//  Propósito 4  1:22.000–1:90.000    zoom 12–15   capa ENC_ES4
+//  Propósito 5  1:4.000–1:22.000     zoom 15+     capa ENC_ES5
 
-// Capa ENC propósito 4 (1:22.000 – 1:90.000) — escala adecuada para zoom 12-15
-const ENC_LAYER = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4', {
-  layers: 'ENC_ES4',
+const WMS_OPTS = {
   styles: '',
   format: 'image/png',
   transparent: true,
   version: '1.3.0',
-  // CLAVE: el WMS del IHM no soporta EPSG:3857 (Web Mercator).
-  // Con crs:EPSG4326 Leaflet pide las teselas en coordenadas geográficas.
   crs: L.CRS.EPSG4326,
-  attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
+  attribution: '&copy; <a href="https://ideihm.covam.es">IHM</a>',
   opacity: 0.85,
-});
+};
 
-// Diagnóstico automático en consola del navegador
-ENC_LAYER.on('tileload', () => {
-  console.log('[IHM ENC] ✓ Tile batimétrico cargado — WMS funcionando correctamente');
-});
-ENC_LAYER.on('tileerror', (e) => {
-  console.error('[IHM ENC] ✗ Error en tile WMS:', e.tile?.src?.slice(0, 120));
-  console.warn('[IHM ENC] Para diagnosticar, abre en el navegador:');
-  console.warn('  https://ideihm.covam.es/wms/cartaENCp4?service=WMS&request=GetCapabilities');
-  console.warn('  Busca las etiquetas <Name> dentro de <Layer> y actualiza layers: \'...\' en app.js');
-});
+const ENC_P2 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp2',
+  { ...WMS_OPTS, layers: 'ENC_ES2', minZoom: 6,  maxZoom: 9  });
+const ENC_P3 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp3',
+  { ...WMS_OPTS, layers: 'ENC_ES3', minZoom: 9,  maxZoom: 12 });
+const ENC_P4 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp4',
+  { ...WMS_OPTS, layers: 'ENC_ES4', minZoom: 12, maxZoom: 15 });
+const ENC_P5 = L.tileLayer.wms('https://ideihm.covam.es/wms/cartaENCp5',
+  { ...WMS_OPTS, layers: 'ENC_ES5', minZoom: 15, maxZoom: 20 });
 
 // OpenSeaMap — señalización marítima superpuesta
 const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20,
 });
 
-const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
+const NAUTICAL_OVERLAY = L.layerGroup([ENC_P2, ENC_P3, ENC_P4, ENC_P5, SEAMARKS_LAYER]);
 NAUTICAL_OVERLAY.addTo(map);
 
 // ── MARKER ICON ───────────────────────────────
