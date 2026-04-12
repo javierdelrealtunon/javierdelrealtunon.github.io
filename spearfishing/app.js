@@ -197,7 +197,7 @@ function parseKML(xmlDoc, cfg) {
     if (pgs.length) {
       const coords = parseCoords(getText(pgs[0], 'coordinates'));
       if (coords.length >= 3) {
-        const p = L.polygon(coords, { color: cfg.color, weight: 2, fillOpacity: 0.15 });
+        const p = L.polygon(coords, { color: cfg.color, weight: 2, opacity: 0.9, fillColor: cfg.color, fillOpacity: 0.25 });
         if (popup) p.bindPopup(popup, { maxWidth: 260 });
         p.on('click', () => showInfo(cfg, name, desc));
         layer.addLayer(p);
