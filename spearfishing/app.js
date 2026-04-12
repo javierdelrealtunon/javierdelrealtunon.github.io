@@ -1,7 +1,7 @@
 /* app.js — Spearfishing map */
 
 // ── API GOOGLE SHEET ───────────────────────────
-const SHEET_API = 'https://script.google.com/macros/s/AKfycbx3X-3Io3jJ4KnUa7iqXldw9U95Bb-IQhcK1mt2sU-f_zDn25OgT56cZmbBwPnk5HJyGg/exec';
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbzLA4Vwx8P92lj7nsKXRrRUqwqZqzkmCgZWRYgVxvIn6CGotME2CiFQ0TjZkICma7jm_Q/exec';
 
 // ── CONFIG DE TIPOS ───────────────────────────
 const TIPOS = {
