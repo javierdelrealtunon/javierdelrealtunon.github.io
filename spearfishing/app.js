@@ -1,6 +1,16 @@
 /* app.js — Spearfishing map */
 
-// ── LAYER CONFIG ──────────────────────────────
+// ── API GOOGLE SHEET ───────────────────────────
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbwrFOknPD2sHmXy96Z32qecLe215qcJXiedHttJ4zmijdydVS5YC9Uf3dqQV5LT5C27iQ/exec';
+
+// ── CONFIG DE TIPOS ───────────────────────────
+const TIPOS = {
+  'Sitio de pesca':   { color: '#5baaff', icon: '🤿' },
+  'Aparcamiento':     { color: '#62f0cf', icon: '🅿️' },
+  'Punto de entrada': { color: '#f06262', icon: '🚩' },
+};
+
+// ── LAYER CONFIG KML ──────────────────────────
 const LAYER_CONFIG = {
   sitios:  { file: 'kml/sitios.kml',  color: '#5baaff', label: 'Sitio de pesca',  icon: '🤿' },
   parking: { file: 'kml/parking.kml', color: '#62f0cf', label: 'Aparcamiento',     icon: '🅿️' },
@@ -65,7 +75,7 @@ const BasemapControl = L.Control.extend({
 });
 new BasemapControl().addTo(map);
 
-// ── NAUTICAL TOGGLE CONTROL ───────────────────
+// ── NAUTICAL TOGGLE ───────────────────────────
 const NauticalControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
@@ -82,25 +92,14 @@ const NauticalControl = L.Control.extend({
 });
 new NauticalControl().addTo(map);
 
-// ── NAUTICAL OVERLAY ─────────────────────────
-// WMTS cacheado del IHM — tiles pre-renderizados, EPSG:3857, zoom 0-21.
-// Mucho más rápido que WMS: el navegador cachea los tiles entre sesiones.
-// Fuente: https://ideihm.covam.es/ihmcache/wmts  capa: RasterENC
-
+// ── NAUTICAL OVERLAY ──────────────────────────
 const ENC_LAYER = L.tileLayer(
   'https://ideihm.covam.es/ihmcache/wmts/1.0.0/RasterENC/default/googlemapscompatible/{z}/{y}/{x}.png',
-  {
-    attribution: '&copy; <a href="https://ideihm.covam.es">IHM — Instituto Hidrográfico de la Marina</a>',
-    opacity: 0.85,
-    maxZoom: 21,
-  }
+  { attribution: '&copy; <a href="https://ideihm.covam.es">IHM</a>', opacity: 0.85, maxZoom: 21 }
 );
-
-// OpenSeaMap — señalización marítima superpuesta
 const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20,
 });
-
 const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
 NAUTICAL_OVERLAY.addTo(map);
 
@@ -221,26 +220,130 @@ let loaded = 0;
 keys.forEach(key => {
   const cfg = LAYER_CONFIG[key];
   fetch(cfg.file)
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status} — ${cfg.file}`);
-      return r.text();
-    })
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
     .then(text => {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, 'application/xml');
       const parseErr = xmlDoc.querySelector('parsererror');
-      if (parseErr) throw new Error('XML inválido: ' + parseErr.textContent.slice(0, 80));
+      if (parseErr) throw new Error('XML inválido');
       const { layer, bounds } = parseKML(xmlDoc, cfg);
       leafletLayers[key] = layer;
       layer.addTo(map);
       bounds.forEach(b => allBounds.push(b));
     })
-    .catch(err => {
-      console.error(`[kml] ${cfg.file}:`, err.message);
+    .catch(err => console.error(`[kml] ${cfg.file}:`, err.message))
+    .finally(() => loaded++);
+});
+
+// ── CARGAR SITIOS DE LA SHEET ─────────────────
+const sheetLayer = L.layerGroup().addTo(map);
+
+function loadSheetMarkers() {
+  fetch(SHEET_API)
+    .then(r => r.json())
+    .then(rows => {
+      sheetLayer.clearLayers();
+      rows.forEach(row => {
+        const lat = parseFloat(row.lat);
+        const lng = parseFloat(row.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+        const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
+        const m = L.marker([lat, lng], { icon: makeIcon(tipo.color) });
+        const popupHTML = `
+          <strong style="font-size:.95rem">${row.nombre || '(sin nombre)'}</strong><br>
+          <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${row.tipo || ''}</span>
+          ${row.notas ? `<br><span style="font-size:.82rem">${row.notas}</span>` : ''}
+          ${row.autor ? `<br><span style="font-size:.75rem;color:#999">por ${row.autor}</span>` : ''}
+          ${row.foto_url ? `<br><a href="${row.foto_url}" target="_blank" style="font-size:.8rem">📷 Ver foto</a>` : ''}
+        `;
+        m.bindPopup(popupHTML, { maxWidth: 260 });
+        sheetLayer.addLayer(m);
+      });
     })
-    .finally(() => {
-      loaded++;
-    });
+    .catch(err => console.warn('[sheet]', err.message));
+}
+
+loadSheetMarkers();
+
+// ── FORMULARIO AÑADIR SITIO ───────────────────
+const modal = document.getElementById('add-modal');
+const fabBtn = document.getElementById('fab-add');
+const formClose = document.getElementById('form-close');
+const addForm = document.getElementById('add-form');
+const gpsBtn = document.getElementById('btn-gps');
+const latInput = document.getElementById('form-lat');
+const lngInput = document.getElementById('form-lng');
+const gpsStatus = document.getElementById('gps-status');
+
+fabBtn.addEventListener('click', () => {
+  modal.classList.add('open');
+  // Intentar GPS automáticamente al abrir
+  obtenerGPS();
+});
+
+formClose.addEventListener('click', () => modal.classList.remove('open'));
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+
+gpsBtn.addEventListener('click', obtenerGPS);
+
+function obtenerGPS() {
+  if (!navigator.geolocation) {
+    gpsStatus.textContent = 'GPS no disponible en este dispositivo';
+    return;
+  }
+  gpsStatus.textContent = '📡 Obteniendo posición...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      latInput.value = pos.coords.latitude.toFixed(6);
+      lngInput.value = pos.coords.longitude.toFixed(6);
+      gpsStatus.textContent = `✓ Posición obtenida (±${Math.round(pos.coords.accuracy)}m)`;
+    },
+    err => {
+      gpsStatus.textContent = '⚠ No se pudo obtener el GPS. Introduce las coordenadas manualmente.';
+      console.warn('[gps]', err.message);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+addForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const submitBtn = addForm.querySelector('button[type="submit"]');
+  submitBtn.textContent = 'Guardando...';
+  submitBtn.disabled = true;
+
+  const data = {
+    nombre:   document.getElementById('form-nombre').value.trim(),
+    tipo:     document.getElementById('form-tipo').value,
+    lat:      latInput.value,
+    lng:      lngInput.value,
+    notas:    document.getElementById('form-notas').value.trim(),
+    autor:    document.getElementById('form-autor').value.trim(),
+    foto_url: '',
+  };
+
+  fetch(SHEET_API, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(data),
+  })
+  .then(() => {
+    modal.classList.remove('open');
+    addForm.reset();
+    gpsStatus.textContent = '';
+    submitBtn.textContent = 'Guardar sitio';
+    submitBtn.disabled = false;
+    // Recargar marcadores tras 2s (tiempo para que el script procese)
+    setTimeout(loadSheetMarkers, 2000);
+    alert('✓ Sitio guardado correctamente');
+  })
+  .catch(err => {
+    console.error('[save]', err);
+    submitBtn.textContent = 'Guardar sitio';
+    submitBtn.disabled = false;
+    alert('Error al guardar. Comprueba tu conexión.');
+  });
 });
 
 // ── LAYER TOGGLES ─────────────────────────────
