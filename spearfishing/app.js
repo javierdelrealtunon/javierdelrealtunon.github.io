@@ -12,9 +12,7 @@ const TIPOS = {
 
 // ── LAYER CONFIG KML ──────────────────────────
 const LAYER_CONFIG = {
-  sitios:  { file: 'kml/sitios.kml',  color: '#5baaff', label: 'Sitio de pesca',  icon: '🤿' },
-  parking: { file: 'kml/parking.kml', color: '#62f0cf', label: 'Aparcamiento',     icon: '🅿️' },
-  entrada: { file: 'kml/entrada.kml', color: '#f06262', label: 'Punto de entrada', icon: '🚩' },
+  sitios: { file: 'kml/sitios.kml', color: '#5baaff', label: 'Sitio de pesca', icon: '🤿' },
 };
 
 // ── MAP INIT ──────────────────────────────────
