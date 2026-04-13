@@ -379,13 +379,13 @@
   <div class="gs-config">
     <div class="gs-icon">📊</div>
     <p>
-      <strong>Conectar con Google Sheets</strong>
-      Publica tu hoja como CSV y pega la URL para sincronizar los datos automáticamente.
+      <strong>Fuente de datos · Google Sheets</strong>
+      <span id="gs-status" style="font-size:0.75rem">↻ Sincronizando…</span>
     </p>
     <div class="gs-input-row">
-      <input type="text" id="gs-url" placeholder="https://docs.google.com/spreadsheets/d/…/export?format=csv" />
-      <button class="btn" onclick="loadFromSheets()">Cargar</button>
-      <button class="btn btn-ghost" onclick="loadDefaultData()">Demo</button>
+      <input type="text" id="gs-url" placeholder="URL de la hoja (gviz/tq?tqx=out:csv…)" />
+      <button class="btn" onclick="loadFromSheets()">Recargar</button>
+      <button class="btn btn-ghost" onclick="loadDefaultData()">Local</button>
     </div>
   </div>
 </div>
@@ -579,39 +579,89 @@ let sortCol = -1;
 let sortAsc = true;
 let charts = {};
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => loadDefaultData());
+// ─── GOOGLE SHEETS CONFIG ────────────────────────────────────────────────────
+const SHEET_ID  = '19QFDP_oa8FHAQWEn3j6t8gysZvGbOrTrLSTtAExCBFk';
+const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GW_impact`;
 
-function loadDefaultData() {
-  processData(DEFAULT_DATA);
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('gs-url');
+  if (input) input.value = SHEET_CSV;
+  autoLoadSheets();
+});
+
+function autoLoadSheets() {
+  setStatus('syncing', 'Sincronizando con Google Sheets…');
+  fetch(SHEET_CSV)
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    .then(csv => {
+      const mapped = parseSheetCSV(csv);
+      if (!mapped.length) throw new Error('Sin datos');
+      processData(mapped);
+      setStatus('ok', `Datos cargados desde Google Sheets · ${mapped.length} entradas`);
+    })
+    .catch(e => {
+      console.warn('Google Sheets no disponible, usando datos locales:', e);
+      processData(DEFAULT_DATA);
+      setStatus('warn', 'Usando datos locales (la hoja no responde)');
+    });
 }
 
 function loadFromSheets() {
   const url = document.getElementById('gs-url').value.trim();
   if (!url) { alert('Introduce la URL de Google Sheets exportada como CSV.'); return; }
+  setStatus('syncing', 'Cargando…');
   fetch(url)
     .then(r => r.text())
     .then(csv => {
-      const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
-      const mapped = result.data.map(row => ({
-        mw:        row['Power rating (MW)'] || row['MW'] || '—',
-        units:     row['Units'] || row['Unidades'] || '—',
-        foundation:row['Offshore foundation design'] || row['Foundation'] || '—',
-        type:      row['Type'] || row['Tipo'] || '—',
-        cf:        row['CF (%)'] || row['CF'] || 'NR',
-        lt:        row['LT (year)'] || row['LT'] || 'NR',
-        epbt:      row['EPBT (year)'] || row['EPBT'] || 'NR',
-        gwp:       row['GW impact \n(gCO₂eq/kWh)'] || row['GWP'] || 'NR',
-        gwp_h:     row['Harmonised GW impact\n(gCO₂eq/kWh)'] || row['Harmonised'] || 'NR',
-        method:    row['LCIA method'] || '—',
-        year:      row['Year'] || '—',
-        ref:       row['Ref.'] || '—',
-        note:      row['Note'] || '',
-        archivo:   row['Archivo'] || '',
-      }));
+      const mapped = parseSheetCSV(csv);
       processData(mapped);
+      setStatus('ok', `Cargado · ${mapped.length} entradas`);
     })
-    .catch(e => alert('Error al cargar el CSV. Verifica que la URL sea pública y en formato CSV.\n' + e));
+    .catch(e => { setStatus('error', 'Error al cargar. Verifica que la hoja sea pública.'); console.error(e); });
+}
+
+function loadDefaultData() {
+  processData(DEFAULT_DATA);
+  setStatus('warn', 'Mostrando datos locales de ejemplo');
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('gs-status');
+  if (!el) return;
+  const colors = { ok: '#62f0cf', warn: '#ffc06b', error: '#ff6b6b', syncing: '#5baaff' };
+  const icons  = { ok: '✓', warn: '⚠', error: '✕', syncing: '↻' };
+  el.style.color = colors[type] || '#7a9bbf';
+  el.textContent = `${icons[type] || ''} ${msg}`;
+}
+
+function parseSheetCSV(csv) {
+  const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
+  return result.data.map(row => {
+    const get = (...keys) => {
+      for (const k of keys) {
+        const v = row[k];
+        if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
+      }
+      return '—';
+    };
+    return {
+      mw:        get('Power rating (MW)', 'MW'),
+      units:     get('Units', 'Unidades'),
+      foundation:get('Offshore foundation design', 'Foundation'),
+      type:      get('Type', 'Tipo'),
+      cf:        get('CF (%)', 'CF'),
+      lt:        get('LT (year)', 'LT'),
+      epbt:      get('EPBT (year)', 'EPBT'),
+      gwp:       get('GW impact \n(gCO₂eq/kWh)', 'GW impact (gCO₂eq/kWh)', 'GW impact\n(gCO₂eq/kWh)', 'GWP'),
+      gwp_h:     get('Harmonised GW impact\n(gCO₂eq/kWh)', 'Harmonised GW impact (gCO₂eq/kWh)', 'Harmonised'),
+      method:    get('LCIA method'),
+      year:      get('Year', 'Año'),
+      ref:       get('Ref.', 'Ref'),
+      note:      get('Note', 'Nota') === '—' ? '' : get('Note', 'Nota'),
+      archivo:   get('Archivo', 'File') === '—' ? '' : get('Archivo', 'File'),
+    };
+  });
 }
 
 // ─── PROCESS ─────────────────────────────────────────────────────────────────
