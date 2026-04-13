@@ -3,17 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CO₂ en Eólica Marina | Javier del Real Tuñón</title>
+  <title>Índice de webs | Javier del Real Tuñón</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
       --bg:       #07111e;
       --surface:  #0d1c2e;
-      --surface2: #112236;
       --border:   rgba(100,181,255,0.12);
       --border-h: rgba(100,181,255,0.38);
       --text:     #ddeeff;
@@ -21,11 +18,10 @@
       --accent:   #5baaff;
       --accent-2: #62f0cf;
       --line:     rgba(100,181,255,0.08);
-      --red:      #ff6b6b;
-      --amber:    #ffc06b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     html { scroll-behavior: smooth; }
 
     body {
@@ -33,973 +29,361 @@
       color: var(--text);
       background: var(--bg);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* ─── NAV ─── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(7,17,30,0.88);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
+    /* ── Background atmosphere ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 0%, rgba(60,120,220,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 90% 80%, rgba(30,180,160,0.07) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
     }
-    nav a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color .2s; }
-    nav a:hover { color: var(--accent); }
-    .nav-brand { font-size: 0.9rem; font-weight: 500; color: var(--text); }
-    .nav-trail { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
-    .nav-trail span { color: var(--border-h); }
 
-    /* ─── HERO ─── */
-    .hero {
-      padding: 5rem 2rem 3rem;
-      max-width: 960px; margin: 0 auto;
+    /* ── Layout ── */
+    .wrap {
       position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 28px 72px;
     }
-    .hero-tag {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      font-size: 0.72rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--accent-2); margin-bottom: 1.5rem;
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 52px;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.6s ease forwards;
     }
-    .hero-tag::before {
-      content: ''; display: block; width: 24px; height: 1px; background: var(--accent-2);
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
+
+    .eyebrow::before {
+      content: '';
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--muted);
+      opacity: 0.5;
+    }
+
     h1 {
       font-family: 'DM Serif Display', serif;
-      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
       line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-bottom: 1.25rem;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 16px;
     }
-    h1 em { font-style: italic; color: var(--accent); }
-    .hero-sub {
-      font-size: 1.05rem; color: var(--muted); line-height: 1.7;
-      max-width: 680px; margin-bottom: 2rem;
-    }
-    .hero-meta {
-      display: flex; gap: 2rem; flex-wrap: wrap;
-      font-size: 0.78rem; color: var(--muted);
-    }
-    .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
-    .hero-meta strong { color: var(--text); }
 
-    /* ─── GOOGLE SHEETS BANNER ─── */
-    .gs-banner {
-      max-width: 960px; margin: 0 auto 2rem;
-      padding: 0 2rem;
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
     }
-    .gs-config {
-      background: var(--surface);
+
+    .lead {
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.75;
+      max-width: 520px;
+      font-weight: 300;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* ── Cards list ── */
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      border-radius: 18px;
+      background: var(--border);
     }
-    .gs-config .gs-icon {
-      width: 36px; height: 36px; flex-shrink: 0;
-      background: rgba(98,240,207,0.1);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--surface);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .card:first-child { border-radius: 17px 17px 0 0; }
+    .card:last-child  { border-radius: 0 0 17px 17px; }
+
+    .card:nth-child(1) { animation-delay: 0.15s; }
+    .card:nth-child(2) { animation-delay: 0.25s; }
+    .card:nth-child(3) { animation-delay: 0.35s; }
+    .card:nth-child(4) { animation-delay: 0.45s; }
+    .card:nth-child(5) { animation-delay: 0.55s; }
+
+    .card:hover {
+      background: rgba(20, 38, 62, 0.98);
+    }
+
+    .card:hover .card-arrow {
+      transform: translateX(4px);
+      color: var(--accent);
+    }
+
+    .card:hover .card-title {
+      color: var(--accent);
+    }
+
+    /* ── Card icon ── */
+    .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(91,170,255,0.08);
+      border: 1px solid rgba(91,170,255,0.15);
+      flex-shrink: 0;
       font-size: 1.1rem;
     }
-    .gs-config p { font-size: 0.8rem; color: var(--muted); flex: 1; min-width: 200px; }
-    .gs-config p strong { color: var(--text); display: block; margin-bottom: 2px; }
-    .gs-input-row { display: flex; gap: 0.5rem; flex: 2; min-width: 280px; }
-    .gs-input-row input {
+
+    /* ── Card body ── */
+    .card-body {
       flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
       color: var(--text);
-      font-family: inherit; font-size: 0.78rem;
-      padding: 0.5rem 0.75rem;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .gs-input-row input:focus { border-color: var(--accent); }
-    .gs-input-row input::placeholder { color: var(--muted); }
-    .btn {
-      background: var(--accent);
-      color: #07111e;
-      border: none; cursor: pointer;
-      font-family: inherit; font-size: 0.78rem; font-weight: 600;
-      padding: 0.5rem 1rem; border-radius: 6px;
-      transition: opacity .2s;
-      white-space: nowrap;
-    }
-    .btn:hover { opacity: .85; }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-    .btn-ghost:hover { border-color: var(--border-h); color: var(--text); }
-
-    /* ─── MAIN CONTAINER ─── */
-    main { max-width: 960px; margin: 0 auto; padding: 0 2rem 6rem; }
-
-    /* ─── SECTION HEADINGS ─── */
-    .section-label {
-      font-size: 0.7rem; letter-spacing: .14em; text-transform: uppercase;
-      color: var(--accent); font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-    .section-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.6rem; margin-bottom: 1.5rem;
-    }
-    section { margin-bottom: 4rem; }
-
-    /* ─── STATS GRID ─── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 3rem;
-    }
-    .stat-card {
-      background: var(--surface);
-      padding: 1.5rem;
-      transition: background .2s;
-    }
-    .stat-card:hover { background: var(--surface2); }
-    .stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: .04em; margin-bottom: 0.5rem; }
-    .stat-value {
-      font-size: 1.9rem; font-weight: 600;
-      color: var(--text); line-height: 1;
-      margin-bottom: 0.25rem;
-    }
-    .stat-unit { font-size: 0.72rem; color: var(--muted); }
-    .stat-badge {
-      display: inline-block;
-      font-size: 0.68rem; padding: 0.2rem 0.5rem;
-      border-radius: 4px; margin-top: 0.5rem;
-    }
-    .badge-green { background: rgba(98,240,207,0.12); color: var(--accent-2); }
-    .badge-blue  { background: rgba(91,170,255,0.12); color: var(--accent); }
-    .badge-amber { background: rgba(255,192,107,0.12); color: var(--amber); }
-    .badge-red   { background: rgba(255,107,107,0.12); color: var(--red); }
-
-    /* ─── FILTER TABS ─── */
-    .filter-row {
-      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    .filter-tab {
-      padding: 0.35rem 0.85rem;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-family: inherit; font-size: 0.78rem;
-      cursor: pointer; transition: all .2s;
-    }
-    .filter-tab:hover { border-color: var(--border-h); color: var(--text); }
-    .filter-tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #07111e; font-weight: 600;
-    }
-    .filter-tab.active-float {
-      background: var(--accent-2);
-      border-color: var(--accent-2);
-      color: #07111e; font-weight: 600;
-    }
-    .filter-tab.active-fixed {
-      background: var(--amber);
-      border-color: var(--amber);
-      color: #07111e; font-weight: 600;
+      transition: color 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
 
-    /* ─── CHART GRID ─── */
-    .chart-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
+    /* ── Tooltip ── */
+    .tooltip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
     }
-    @media (max-width: 680px) { .chart-grid { grid-template-columns: 1fr; } }
-    .chart-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      transition: border-color .25s;
-    }
-    .chart-card:hover { border-color: var(--border-h); }
-    .chart-card.wide { grid-column: 1 / -1; }
-    .chart-title {
-      font-size: 0.8rem; font-weight: 500; color: var(--text);
-      margin-bottom: 0.3rem;
-    }
-    .chart-sub { font-size: 0.7rem; color: var(--muted); margin-bottom: 1.25rem; }
-    .chart-wrap { position: relative; height: 260px; }
-    .chart-wrap-tall { position: relative; height: 320px; }
 
-    /* ─── TABLE ─── */
-    .table-controls {
-      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .search-box {
-      flex: 1; min-width: 180px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: inherit; font-size: 0.8rem;
-      padding: 0.5rem 0.75rem 0.5rem 2.2rem;
-      outline: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a9bbf' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 0.6rem center;
-      transition: border-color .2s;
-    }
-    .search-box:focus { border-color: var(--accent); }
-    .search-box::placeholder { color: var(--muted); }
-    .table-count { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
-
-    .table-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .table-scroll { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    thead { background: var(--surface2); }
-    th {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      font-size: 0.68rem; font-weight: 500;
-      letter-spacing: .06em; text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap; cursor: pointer;
-      transition: color .2s; user-select: none;
-    }
-    th:hover { color: var(--accent); }
-    th.sorted { color: var(--accent); }
-    th .sort-arrow { margin-left: 4px; opacity: .5; }
-    td {
-      padding: 0.7rem 1rem;
-      border-bottom: 1px solid var(--line);
-      color: var(--text);
-      vertical-align: middle;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(100,181,255,0.03); }
-    .type-badge {
-      display: inline-block;
-      font-size: 0.65rem; font-weight: 500; padding: 0.2rem 0.5rem;
-      border-radius: 4px; white-space: nowrap;
-    }
-    .type-float { background: rgba(98,240,207,0.1); color: var(--accent-2); border: 1px solid rgba(98,240,207,0.2); }
-    .type-fixed { background: rgba(255,192,107,0.1); color: var(--amber); border: 1px solid rgba(255,192,107,0.2); }
-    .val-num { font-variant-numeric: tabular-nums; font-weight: 500; color: var(--accent); }
-    .val-nr { color: var(--muted); font-style: italic; }
-    .ref-text { color: var(--muted); font-size: 0.7rem; max-width: 260px; line-height: 1.4; }
-
-    /* ─── METHODOLOGY NOTE ─── */
-    .method-note {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--accent-2);
-      border-radius: 0 10px 10px 0;
-      padding: 1.25rem 1.5rem;
-      font-size: 0.82rem; color: var(--muted);
-      line-height: 1.7;
-    }
-    .method-note strong { color: var(--text); }
-
-    /* ─── LOADING ─── */
-    .loading {
-      text-align: center; padding: 3rem;
-      color: var(--muted); font-size: 0.9rem;
-    }
-    .spinner {
-      width: 24px; height: 24px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 13px;
+      height: 13px;
       border-radius: 50%;
-      animation: spin .7s linear infinite;
-      margin: 0 auto 1rem;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      font-size: 0.55rem;
+      font-weight: 700;
+      cursor: default;
+      flex-shrink: 0;
+      opacity: 0.55;
+      transition: opacity 0.15s;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
-      text-align: center;
-      font-size: 0.75rem; color: var(--muted);
+    .tooltip-wrap:hover .tooltip-icon {
+      opacity: 1;
     }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
 
-    /* ─── DIVIDER ─── */
-    .divider { height: 1px; background: var(--line); margin: 3rem 0; }
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      width: 280px;
+      background: #0a1828;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      font-weight: 400;
+      border: 1px solid var(--border-h);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      z-index: 20;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+      pointer-events: none;
+    }
+
+    .tooltip-wrap:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Card arrow ── */
+    .card-arrow {
+      color: var(--muted);
+      font-size: 1rem;
+      transition: transform 0.18s ease, color 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer note ── */
+    .note {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      opacity: 0.7;
+      font-weight: 300;
+    }
+
+    .note code {
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
+  <main class="wrap">
 
-<!-- ─── NAV ─── -->
-<nav>
-  <a href="../index.html" class="nav-brand">Javier del Real Tuñón</a>
-  <div class="nav-trail">
-    <a href="../index.html">Inicio</a>
-    <span>›</span>
-    <span style="color:var(--text)">CO₂ Eólica Marina</span>
-  </div>
-</nav>
+    <header class="header">
+      <div class="eyebrow">Repositorio GitHub Pages</div>
+      <h1>Webs y <em>herramientas</em></h1>
+      <p class="lead">
+        Acceso centralizado a mapas, visores y utilidades publicadas en el repositorio.
+        Cada enlace apunta a un subdirectorio independiente.
+      </p>
+    </header>
 
-<!-- ─── HERO ─── -->
-<header class="hero">
-  <div class="hero-tag">Estado del Arte · LCA Benchmark</div>
-  <h1>Emisiones de CO₂ en<br><em>Eólica Marina</em></h1>
-  <p class="hero-sub">
-    Revisión sistemática de estudios de Análisis de Ciclo de Vida (LCA) sobre el impacto de calentamiento global 
-    de parques eólicos marinos. Los datos agregan evaluaciones de tecnologías <em>bottom-fixed</em> y <em>floating</em> 
-    publicadas entre 2009 y 2026.
-  </p>
-  <div class="hero-meta">
-    <span><strong id="n-studies">31</strong> estudios indexados</span>
-    <span><strong>gCO₂eq/kWh</strong> unidad normalizada</span>
-    <span><strong>2009–2026</strong> rango temporal</span>
-  </div>
-</header>
+    <section>
+      <div class="section-label">Disponible ahora</div>
+      <div class="cards">
 
-<!-- ─── GOOGLE SHEETS CONFIG ─── -->
-<div class="gs-banner">
-  <div class="gs-config">
-    <div class="gs-icon">📊</div>
-    <p>
-      <strong>Fuente de datos · Google Sheets</strong>
-      <span id="gs-status" style="font-size:0.75rem">↻ Sincronizando…</span>
+        <a class="card" href="./spearfishing/">
+          <div class="card-icon">🤿</div>
+          <div class="card-body">
+            <div class="card-title">
+              Mapa de spots de pesca submarina
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Mapa interactivo con localizaciones de interés para la pesca submarina: puntos de inmersión, especies habituales y condiciones del entorno.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="./meteo/">
+          <div class="card-icon">🌊</div>
+          <div class="card-body">
+            <div class="card-title">
+              Mapa metoceánico
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Visualización de localizaciones metoceánicas sobre mapa, con selección de puntos y lectura de datos desde un archivo CSV alojado en el repositorio.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="./steel/">
+          <div class="card-icon">🌿</div>
+          <div class="card-body">
+            <div class="card-title">
+              Sostenibilidad de materiales para eólica marina: acero (A1-A3)
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Visor de materiales clave para eólica marina, con marcadores georreferenciados por centro de producción y ficha descriptiva de cada declaración ambiental.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="./hormigon/">
+          <div class="card-icon">🏗️</div>
+          <div class="card-body">
+            <div class="card-title">
+              Sostenibilidad de materiales para eólica marina: hormigón (A1-A3)
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Visor de declaraciones ambientales de producto para hormigón, con marcadores georreferenciados por centro de producción y ficha descriptiva de cada declaración ambiental.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="./state-of-the-art-co2/">
+          <div class="card-icon">🌬️</div>
+          <div class="card-body">
+            <div class="card-title">
+              Estado del arte: emisiones de CO₂ en eólica marina
+              <span class="tooltip-wrap">
+                <span class="tooltip-icon">i</span>
+                <span class="tooltip-text">Benchmark de estudios LCA sobre el impacto de calentamiento global (gCO₂eq/kWh) en parques eólicos marinos. Incluye tecnologías floating y bottom-fixed, con datos armonizados, gráficas interactivas y tabla filtrable. Fuente: hoja de cálculo en Google Drive.</span>
+              </span>
+            </div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+
+      </div>
+    </section>
+
+    <p class="note">
+      Para añadir nuevas webs, crea un subdirectorio con su propio
+      <code>index.html</code> y enlázalo desde esta página.
     </p>
-    <div class="gs-input-row">
-      <input type="text" id="gs-url" placeholder="URL de la hoja (gviz/tq?tqx=out:csv…)" />
-      <button class="btn" onclick="loadFromSheets()">Recargar</button>
-      <button class="btn btn-ghost" onclick="loadDefaultData()">Local</button>
-    </div>
-  </div>
-</div>
 
-<!-- ─── MAIN ─── -->
-<main>
-
-  <!-- STATS -->
-  <section>
-    <div class="section-label">Métricas clave</div>
-    <div class="section-title">Resumen del benchmark</div>
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Impacto mínimo</div>
-        <div class="stat-value" id="stat-min">—</div>
-        <div class="stat-unit">gCO₂eq/kWh (arm.)</div>
-        <span class="stat-badge badge-green" id="stat-min-ref">—</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Impacto mediano</div>
-        <div class="stat-value" id="stat-med">—</div>
-        <div class="stat-unit">gCO₂eq/kWh (arm.)</div>
-        <span class="stat-badge badge-blue">p50 del conjunto</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Impacto máximo</div>
-        <div class="stat-value" id="stat-max">—</div>
-        <div class="stat-unit">gCO₂eq/kWh (arm.)</div>
-        <span class="stat-badge badge-amber" id="stat-max-ref">—</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Media floating</div>
-        <div class="stat-value" id="stat-float">—</div>
-        <div class="stat-unit">gCO₂eq/kWh</div>
-        <span class="stat-badge badge-green">Flotante</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Media bottom-fixed</div>
-        <div class="stat-value" id="stat-fixed">—</div>
-        <div class="stat-unit">gCO₂eq/kWh</div>
-        <span class="stat-badge badge-amber">Fijo</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Estudios indexados</div>
-        <div class="stat-value" id="stat-count">—</div>
-        <div class="stat-unit">entradas con datos numéricos</div>
-        <span class="stat-badge badge-blue">2009–2026</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- FILTROS -->
-  <div class="filter-row" id="filter-row">
-    <span style="font-size:.75rem;color:var(--muted);margin-right:.25rem">Filtrar:</span>
-    <button class="filter-tab active" data-filter="all" onclick="applyFilter('all', this)">Todos</button>
-    <button class="filter-tab" data-filter="Floating" onclick="applyFilter('Floating', this)">Flotante</button>
-    <button class="filter-tab" data-filter="Bottom-fixed" onclick="applyFilter('Bottom-fixed', this)">Fijo al fondo</button>
-  </div>
-
-  <!-- CHARTS -->
-  <section>
-    <div class="section-label">Visualización</div>
-    <div class="section-title">Distribución de impactos</div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title">Impacto por tipo de cimentación</div>
-        <div class="chart-sub">Media del impacto armonizado (gCO₂eq/kWh) por diseño de fundación</div>
-        <div class="chart-wrap"><canvas id="chart-foundation"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Evolución temporal</div>
-        <div class="chart-sub">Impacto armonizado por año de publicación del estudio</div>
-        <div class="chart-wrap"><canvas id="chart-year"></canvas></div>
-      </div>
-      <div class="chart-card wide">
-        <div class="chart-title">Distribución completa · Floating vs Bottom-fixed</div>
-        <div class="chart-sub">Cada punto representa una entrada del benchmark; eje X = potencia (MW), eje Y = gCO₂eq/kWh armonizado</div>
-        <div class="chart-wrap-tall"><canvas id="chart-scatter"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TABLE -->
-  <section>
-    <div class="section-label">Datos completos</div>
-    <div class="section-title">Tabla de estudios LCA</div>
-
-    <div class="table-controls">
-      <input type="text" class="search-box" id="search-input" placeholder="Buscar por referencia, tecnología…" oninput="filterTable()">
-      <span class="table-count" id="row-count"></span>
-    </div>
-    <div class="table-wrap">
-      <div class="table-scroll">
-        <table id="data-table">
-          <thead>
-            <tr>
-              <th onclick="sortTable(0)">Potencia (MW)<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(1)">Und.<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(2)">Diseño de cimentación<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(3)">Tipo<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(4)">FC (%)<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(5)">VU (años)<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(6)">EPBT (años)<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(7)">Impacto GW<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(8)">Impacto arm.<span class="sort-arrow">↕</span></th>
-              <th onclick="sortTable(9)">Año<span class="sort-arrow">↕</span></th>
-              <th>Referencia</th>
-              <th>PDF</th>
-            </tr>
-          </thead>
-          <tbody id="table-body">
-            <tr><td colspan="12"><div class="loading"><div class="spinner"></div>Cargando datos…</div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- METHOD NOTE -->
-  <section>
-    <div class="section-label">Metodología</div>
-    <div class="section-title">Nota sobre armonización</div>
-    <div class="method-note">
-      <strong>Impacto armonizado (gCO₂eq/kWh).</strong> Los valores brutos de los estudios se han normalizado 
-      aplicando un factor de capacidad (FC) de referencia del 38 % y una vida útil (VU) de 20 años, siguiendo 
-      la metodología de armonización del NREL (<em>Lifecycle GHG Emissions Harmonization</em>). 
-      Cuando el estudio original ya reporta con FC y VU en ese rango, el ajuste es mínimo. 
-      Los valores marcados como <span class="val-nr">NR</span> (not reported) no se incluyen en los estadísticos 
-      sino que se muestran para completitud del catálogo.
-      <br><br>
-      <strong>Fuente de datos.</strong> Hoja de cálculo <em>benchmark_LCA</em> mantenida en Google Drive. 
-      Para actualizar los datos, publica la hoja como CSV 
-      (<em>Archivo → Compartir → Publicar en la web → CSV</em>) y pega la URL en el campo superior.
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <p>
-    <a href="../index.html">← Volver al índice</a> &nbsp;·&nbsp;
-    Javier del Real Tuñón &nbsp;·&nbsp;
-    Datos: benchmark LCA eólica marina 2009–2026
-  </p>
-</footer>
-
-<script>
-// ─── DEFAULT DATA (from benchmark_LCA.xlsx — datos exactos) ─────────────────
-const DEFAULT_DATA = [
-  { mw:"15", units:"3", foundation:"Barge (SATH)", type:"Floating", cf:"38", lt:"25", epbt:"NR", gwp:"37.9", gwp_h:"43.09", method:"Ecoinvent EN-15804", year:"2026", ref:"ANGELOS", note:"Con site construction", archivo:"" },
-  { mw:"15", units:"3", foundation:"Barge (SATH)", type:"Floating", cf:"38", lt:"25", epbt:"NR", gwp:"33.5", gwp_h:"38.08", method:"Ecoinvent EN-15804", year:"2026", ref:"ANGELOS", note:"Sin site construction", archivo:"" },
-  { mw:"8", units:"75", foundation:"Spar buoy", type:"Floating", cf:"50", lt:"25", epbt:"NR", gwp:"30.17", gwp_h:"26.07", method:"LCA, cradle-to-grave", year:"2019", ref:"Bang, J.-I., Ma, C., Tarantino, E., Vela, A., & Yamane, D. (2019). Life cycle assessment of greenhouse gas emissions for floating offshore wind energy in California. University of California, Santa Barbara.", note:"", archivo:"" },
-  { mw:"4", units:"—", foundation:"Bottom-fixed, G", type:"Bottom-fixed", cf:"59", lt:"20", epbt:"0.9", gwp:"10.9", gwp_h:"9.98", method:"ReCiPe", year:"2016", ref:"Bonou, A., Laurent, A., & Olsen, S. I. (2016). Life cycle assessment of onshore and offshore wind energy-from theory to application. Applied Energy, 180.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Bottom-fixed, DD", type:"Bottom-fixed", cf:"59", lt:"20", epbt:"0.8", gwp:"7.8", gwp_h:"7.14", method:"ReCiPe", year:"2016", ref:"Bonou, A., Laurent, A., & Olsen, S. I. (2016). Life cycle assessment of onshore and offshore wind energy-from theory to application. Applied Energy, 180.", note:"", archivo:"" },
-  { mw:"14.7", units:"190", foundation:"Semi-submersible steel", type:"Floating", cf:"34.35", lt:"30", epbt:"NR", gwp:"31", gwp_h:"32.49", method:"LCA, cradle-to-grave; EPD (version 2018)", year:"2023", ref:"Brussa, G., Grosso, M., & Rigamonti, L. (2023). Life cycle assessment of a floating offshore wind farm in Italy. Sustainable Production and Consumption, 39, 134–144.", note:"", archivo:"1-s2.0-S235255092300101X-main.pdf" },
-  { mw:"6", units:"5", foundation:"Spar buoy", type:"Floating", cf:"49.4", lt:"25", epbt:"NR", gwp:"45.2", gwp_h:"39.53", method:"LCA, cradle-to-grave; recycling partially considered", year:"2022", ref:"Garcia Teruel, A., Rinaldi, G., Thies, P. R., Johanning, L., & Jeffrey, H. (2022). Life cycle assessment of floating offshore wind farms: An evaluation of operation and maintenance. Applied Energy, 307, 118067.", note:"", archivo:"" },
-  { mw:"9.5", units:"5", foundation:"Semi-submersible steel", type:"Floating", cf:"39.6", lt:"25", epbt:"NR", gwp:"39.4", gwp_h:"42.98", method:"LCA, cradle-to-grave; recycling partially considered", year:"2022", ref:"Garcia Teruel, A., Rinaldi, G., Thies, P. R., Johanning, L., & Jeffrey, H. (2022). Life cycle assessment of floating offshore wind farms: An evaluation of operation and maintenance. Applied Energy, 307, 118067.", note:"", archivo:"" },
-  { mw:"15", units:"1", foundation:"Semi-submersible steel", type:"Floating", cf:"43", lt:"20", epbt:"NR", gwp:"32.6", gwp_h:"40.94", method:"LCA, cradle-to-grave", year:"2022", ref:"Kollia, M. (2022). Life cycle assesment of floating offshore wind farms (Master's thesis, Oslo Metropolitan University).", note:"", archivo:"" },
-  { mw:"15", units:"1", foundation:"Spar buoy concrete", type:"Floating", cf:"43", lt:"20", epbt:"NR", gwp:"24.3", gwp_h:"30.52", method:"LCA, cradle-to-grave", year:"2022", ref:"Kollia, M. (2022). Life cycle assesment of floating offshore wind farms (Master's thesis, Oslo Metropolitan University).", note:"", archivo:"" },
-  { mw:"14", units:"—", foundation:"Monopile", type:"Bottom-fixed", cf:"45.34", lt:"20", epbt:"NR", gwp:"26.15", gwp_h:"31.14", method:"ReCiPe 2016 v1.03 midpoint (H)", year:"2024", ref:"Lotfizadeh, O. (2024). Life Cycle Assessment of Offshore Wind Farms – A Comparative Study of Floating Vs. Fixed Offshore Wind Turbines. Master's thesis, University of South-Eastern Norway.", note:"", archivo:"" },
-  { mw:"8*", units:"—", foundation:"Concrete SPAR-type (ballast-stabilized)", type:"Floating", cf:"54", lt:"20", epbt:"NR", gwp:"36.78", gwp_h:"36.78", method:"ReCiPe 2016 v1.03 midpoint (H)", year:"2024", ref:"Lotfizadeh, O. (2024). Life Cycle Assessment of Offshore Wind Farms – A Comparative Study of Floating Vs. Fixed Offshore Wind Turbines. Master's thesis, University of South-Eastern Norway.", note:"", archivo:"" },
-  { mw:"8", units:"11", foundation:"SPAR (Hywind Tampen)", type:"Floating", cf:"54", lt:"20", epbt:"NR", gwp:"36.78", gwp_h:"36.78", method:"ReCiPe 2016 v1.03 midpoint (H)", year:"2024", ref:"Lotfizadeh, O., Barahmand, Z., & Amlashi, H. (2024). Life Cycle Assessment of Floating Offshore Wind Farms: The Case of Hywind Tampen in Norway. Proceedings of SIMS EUROSIM 2024. DOI: 10.3384/ecp212.005", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Bottom-fixed, DD", type:"Bottom-fixed", cf:"46", lt:"20", epbt:"1.6", gwp:"18.9", gwp_h:"22.19", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Sway (Tension Leg Spar)", type:"Floating", cf:"46", lt:"20", epbt:"1.8", gwp:"20.9", gwp_h:"24.53", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"TLB (Tension Leg Barge)", type:"Floating", cf:"46", lt:"20", epbt:"1.6", gwp:"18", gwp_h:"21.13", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"TLP (Tension Leg Platform)", type:"Floating", cf:"46", lt:"20", epbt:"1.7", gwp:"19.2", gwp_h:"22.54", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Spar buoy", type:"Floating", cf:"46", lt:"20", epbt:"2.2", gwp:"25.3", gwp_h:"29.70", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Semi-submersible platform", type:"Floating", cf:"46", lt:"20", epbt:"2.7", gwp:"31.4", gwp_h:"36.86", method:"Only GWP", year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.", note:"", archivo:"" },
-  { mw:"NE", units:"—", foundation:"Steel hull", type:"Floating", cf:"50", lt:"50", epbt:"NE", gwp:"NR", gwp_h:"NR", method:"OneClickLCA + Ecoinvent; GWP en CO₂e/T", year:"2025", ref:"Shakori, R., & Chaudhuri, A. (2025). Life cycle analysis of floating offshore wind turbine concepts. Springer.", note:"Métrica en CO₂e/tonelada, no en gCO₂eq/kWh", archivo:"978-3-031-69626-8_144.pdf" },
-  { mw:"NE", units:"—", foundation:"Concrete hull", type:"Floating", cf:"50", lt:"50", epbt:"NE", gwp:"NR", gwp_h:"NR", method:"OneClickLCA + Ecoinvent; GWP en CO₂e/T", year:"2025", ref:"Shakori, R., & Chaudhuri, A. (2025). Life cycle analysis of floating offshore wind turbine concepts. Springer.", note:"Métrica en CO₂e/tonelada, no en gCO₂eq/kWh", archivo:"978-3-031-69626-8_144.pdf" },
-  { mw:"4", units:"—", foundation:"Bottom-fixed (Monopile)", type:"Bottom-fixed", cf:"52", lt:"20", epbt:"0.88", gwp:"10", gwp_h:"10.38", method:"EPD", year:"—", ref:"Siemens AG. (n.d.). Environmental Product Declaration: Offshore Wind Power Plant Employing SWT-4.0-130 and SWT-6.0-154.", note:"", archivo:"" },
-  { mw:"6", units:"—", foundation:"Bottom-fixed (Monopile)", type:"Bottom-fixed", cf:"50", lt:"25", epbt:"0.79", gwp:"7", gwp_h:"6.05", method:"EPD", year:"—", ref:"Siemens AG. (n.d.). Environmental Product Declaration: Offshore Wind Power Plant Employing SWT-4.0-130 and SWT-6.0-154.", note:"", archivo:"" },
-  { mw:"8", units:"—", foundation:"Bottom-fixed (Driven)", type:"Bottom-fixed", cf:"61", lt:"25", epbt:"0.62", gwp:"6", gwp_h:"4.25", method:"EPD", year:"—", ref:"Siemens-Gamesa. (n.d.). Environmental Product Declaration: Offshore Wind Power Plant Employing SWT-8.0-167 DD.", note:"", archivo:"" },
-  { mw:"15", units:"94", foundation:"Semi-submersible steel", type:"Floating", cf:"52.3", lt:"20", epbt:"NR", gwp:"26.3", gwp_h:"27.15", method:"LCA, cradle-to-grave", year:"2023", ref:"Struthers, I. A., Avanessova, N., Gray, A., Noonan, M., Thomson, R. C., & Harrison, G. P. (2023). Life cycle assessment of four floating wind farms around Scotland using a site-specific operation and maintenance model with SOVs. Energies, 16(23), 7739.", note:"", archivo:"" },
-  { mw:"5", units:"6", foundation:"Jacket foundation", type:"Bottom-fixed", cf:"44", lt:"20", epbt:"NR", gwp:"32", gwp_h:"39.27", method:"LCA, cradle-to-grave", year:"2011", ref:"Wagner, H.-J., Baack, C., Eickelkamp, T., Epe, A., Lohmann, J., & Troy, S. (2011). Life cycle assessment of the offshore wind farm alpha ventus. Energy, 36(5), 2459–2464.", note:"Alpha Ventus", archivo:"" },
-  { mw:"5", units:"40", foundation:"Spar buoy", type:"Floating", cf:"53", lt:"20", epbt:"NR", gwp:"11.52", gwp_h:"11.74", method:"LCA, cradle-to-grave", year:"2009", ref:"Weinzettel, J., Reenaas, M., Solli, C., & Hertwich, E. G. (2009). Life cycle assessment of a floating offshore wind turbine. Renewable Energy, 34(3), 742–747.", note:"", archivo:"" },
-  { mw:"5", units:"—", foundation:"Sway", type:"Floating", cf:"53", lt:"20", epbt:"0.43", gwp:"11.5", gwp_h:"11.72", method:"CML 2 baseline 2000 v2.03", year:"2009", ref:"Weinzettel, J., Reenaas, M., Solli, C., & Hertwich, E. G. (2009). Life cycle assessment of a floating offshore wind turbine. Renewable Energy, 34(3).", note:"", archivo:"" },
-  { mw:"3.6", units:"27", foundation:"Monopile", type:"Bottom-fixed", cf:"NR", lt:"25", epbt:"NR", gwp:"25", gwp_h:"NR", method:"LCA, cradle-to-grave", year:"2018", ref:"Yang, J., Chang, Y., Zhang, L., Hao, Y., Yan, Q., & Wang, C. (2018). The life-cycle energy and environmental emissions of a typical offshore wind farm in China. Journal of Cleaner Production, 180, 316–324.", note:"China", archivo:"" },
-  { mw:"2", units:"1", foundation:"Barge-type", type:"Floating", cf:"NR", lt:"20", epbt:"NR", gwp:"18.6", gwp_h:"NR", method:"LCA, cradle-to-cradle", year:"2021", ref:"Yildiz, N., Hemida, H., & Baniotopoulos, C. (2021). Life cycle assessment of a barge-type floating wind turbine and comparison with other types of wind turbines. Energies, 14(18), 5656.", note:"", archivo:"" },
-  { mw:"15", units:"NR", foundation:"Semi-submersible", type:"Floating", cf:"NR", lt:"NR", epbt:"NR", gwp:"18.63–29.01", gwp_h:"NR", method:"NR", year:"2026", ref:"Guo, X., Liu, Y., & Ren, D. (2026). Life cycle carbon emissions assessment of floating offshore wind power in China. Sustainable Energy Technologies and Assessments, 86, 104879.", note:"Not available", archivo:"" },
-];
-
-// ─── STATE ──────────────────────────────────────────────────────────────────
-let allData = [];
-let filteredData = [];
-let currentFilter = 'all';
-let sortCol = -1;
-let sortAsc = true;
-let charts = {};
-
-// ─── GOOGLE SHEETS CONFIG ────────────────────────────────────────────────────
-const SHEET_ID  = '19QFDP_oa8FHAQWEn3j6t8gysZvGbOrTrLSTtAExCBFk';
-const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GW_impact`;
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('gs-url');
-  if (input) input.value = SHEET_CSV;
-  autoLoadSheets();
-});
-
-function autoLoadSheets() {
-  setStatus('syncing', 'Sincronizando con Google Sheets…');
-  fetch(SHEET_CSV)
-    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-    .then(csv => {
-      const mapped = parseSheetCSV(csv);
-      if (!mapped.length) throw new Error('Sin datos');
-      processData(mapped);
-      setStatus('ok', `Datos cargados desde Google Sheets · ${mapped.length} entradas`);
-    })
-    .catch(e => {
-      console.warn('Google Sheets no disponible, usando datos locales:', e);
-      processData(DEFAULT_DATA);
-      setStatus('warn', 'Usando datos locales (la hoja no responde)');
-    });
-}
-
-function loadFromSheets() {
-  const url = document.getElementById('gs-url').value.trim();
-  if (!url) { alert('Introduce la URL de Google Sheets exportada como CSV.'); return; }
-  setStatus('syncing', 'Cargando…');
-  fetch(url)
-    .then(r => r.text())
-    .then(csv => {
-      const mapped = parseSheetCSV(csv);
-      processData(mapped);
-      setStatus('ok', `Cargado · ${mapped.length} entradas`);
-    })
-    .catch(e => { setStatus('error', 'Error al cargar. Verifica que la hoja sea pública.'); console.error(e); });
-}
-
-function loadDefaultData() {
-  processData(DEFAULT_DATA);
-  setStatus('warn', 'Mostrando datos locales de ejemplo');
-}
-
-function setStatus(type, msg) {
-  const el = document.getElementById('gs-status');
-  if (!el) return;
-  const colors = { ok: '#62f0cf', warn: '#ffc06b', error: '#ff6b6b', syncing: '#5baaff' };
-  const icons  = { ok: '✓', warn: '⚠', error: '✕', syncing: '↻' };
-  el.style.color = colors[type] || '#7a9bbf';
-  el.textContent = `${icons[type] || ''} ${msg}`;
-}
-
-function parseSheetCSV(csv) {
-  const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
-  if (!result.data.length) return [];
-
-  // Fuzzy column finder: matches if the key appears as a substring (case-insensitive, ignoring whitespace/newlines)
-  const cols = Object.keys(result.data[0]);
-  const norm = s => String(s).toLowerCase().replace(/[\s\n\r]+/g, ' ').trim();
-
-  function findCol(...hints) {
-    for (const hint of hints) {
-      const h = norm(hint);
-      // exact match first
-      const exact = cols.find(c => norm(c) === h);
-      if (exact) return exact;
-      // partial match
-      const partial = cols.find(c => norm(c).includes(h) || h.includes(norm(c)));
-      if (partial) return partial;
-    }
-    return null;
-  }
-
-  const colMW    = findCol('power rating', 'mw');
-  const colUnits = findCol('units', 'unidades');
-  const colFnd   = findCol('offshore foundation design', 'foundation design', 'foundation');
-  const colType  = findCol('type', 'tipo');
-  const colCF    = findCol('cf (%)', 'cf(%)', 'cf');
-  const colLT    = findCol('lt (year)', 'lt');
-  const colEPBT  = findCol('epbt (year)', 'epbt');
-  const colGWP   = findCol('gw impact', 'gwp');
-  const colGWPH  = findCol('harmonised gw', 'harmonized gw', 'harmonised');
-  const colMeth  = findCol('lcia method', 'method');
-  const colYear  = findCol('year', 'año');
-  const colRef   = findCol('ref.', 'ref');
-  const colNote  = findCol('note', 'nota');
-  const colArch  = findCol('archivo', 'file');
-
-  // Fallback: find TWO gw-impact columns — first for raw, second for harmonised
-  const gwCols = cols.filter(c => norm(c).includes('gw impact') || norm(c).includes('gwp'));
-  const colGWP_fb   = gwCols[0] || null;
-  const colGWPH_fb  = gwCols[1] || null;
-
-  const val = (row, col) => {
-    if (!col) return '—';
-    const v = row[col];
-    if (v === undefined || v === null || String(v).trim() === '') return '—';
-    return String(v).trim();
-  };
-
-  return result.data.map(row => ({
-    mw:        val(row, colMW),
-    units:     val(row, colUnits),
-    foundation:val(row, colFnd),
-    type:      val(row, colType),
-    cf:        val(row, colCF),
-    lt:        val(row, colLT),
-    epbt:      val(row, colEPBT),
-    gwp:       val(row, colGWP) !== '—' ? val(row, colGWP) : val(row, colGWP_fb),
-    gwp_h:     val(row, colGWPH) !== '—' ? val(row, colGWPH) : val(row, colGWPH_fb),
-    method:    val(row, colMeth),
-    year:      val(row, colYear),
-    ref:       val(row, colRef),
-    note:      val(row, colNote) === '—' ? '' : val(row, colNote),
-    archivo:   val(row, colArch) === '—' ? '' : val(row, colArch),
-  }));
-}
-
-// ─── PROCESS ─────────────────────────────────────────────────────────────────
-function processData(data) {
-  allData = data;
-  applyFilter(currentFilter, null, true);
-  updateStats();
-}
-
-function isNE(v) {
-  if (!v) return false;
-  const s = String(v).trim().toLowerCase();
-  return s === 'ne' || s.startsWith('no especificado');
-}
-
-function parseNum(v) {
-  if (!v || v === '—' || v === 'NR' || v === 'NaN') return null;
-  const n = parseFloat(String(v).replace(',', '.'));
-  return isNaN(n) ? null : n;
-}
-
-function median(arr) {
-  if (!arr.length) return null;
-  const s = [...arr].sort((a,b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
-}
-
-function avg(arr) {
-  return arr.length ? arr.reduce((a,b) => a+b, 0) / arr.length : null;
-}
-
-// ─── STATS ────────────────────────────────────────────────────────────────────
-function updateStats() {
-  const vals = allData.map(d => parseNum(d.gwp_h)).filter(v => v !== null);
-  const floatVals = allData.filter(d => d.type === 'Floating').map(d => parseNum(d.gwp_h)).filter(v => v !== null);
-  const fixedVals = allData.filter(d => d.type === 'Bottom-fixed').map(d => parseNum(d.gwp_h)).filter(v => v !== null);
-
-  if (!vals.length) return;
-
-  const minVal = Math.min(...vals);
-  const maxVal = Math.max(...vals);
-  const medVal = median(vals);
-  const minEntry = allData.find(d => parseNum(d.gwp_h) === minVal);
-  const maxEntry = allData.find(d => parseNum(d.gwp_h) === maxVal);
-
-  setText('stat-min', minVal.toFixed(1));
-  setText('stat-med', medVal ? medVal.toFixed(1) : '—');
-  setText('stat-max', maxVal.toFixed(1));
-  setText('stat-float', floatVals.length ? avg(floatVals).toFixed(1) : '—');
-  setText('stat-fixed', fixedVals.length ? avg(fixedVals).toFixed(1) : '—');
-  setText('stat-count', vals.length);
-  setText('n-studies', allData.length);
-  if (minEntry) setText('stat-min-ref', minEntry.ref.split('(')[0].trim());
-  if (maxEntry) setText('stat-max-ref', maxEntry.ref.split('(')[0].trim());
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ─── FILTER ───────────────────────────────────────────────────────────────────
-function applyFilter(filter, btn, skipBtnUpdate) {
-  currentFilter = filter;
-  if (!skipBtnUpdate && btn) {
-    document.querySelectorAll('.filter-tab').forEach(t => {
-      t.className = 'filter-tab';
-    });
-    if (filter === 'all') btn.classList.add('active');
-    else if (filter === 'Floating') btn.classList.add('active-float');
-    else btn.classList.add('active-fixed');
-  }
-  filteredData = filter === 'all' ? allData : allData.filter(d => d.type === filter);
-  renderTable(filteredData);
-  renderCharts(filteredData);
-}
-
-// ─── TABLE ────────────────────────────────────────────────────────────────────
-function filterTable() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const rows = filteredData.filter(d =>
-    Object.values(d).some(v => String(v).toLowerCase().includes(q))
-  );
-  renderTable(rows);
-}
-
-function renderTable(data) {
-  const tbody = document.getElementById('table-body');
-  document.getElementById('row-count').textContent = `${data.length} entradas`;
-
-  if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:2rem">Sin resultados</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = data.map(d => {
-    const typeClass = d.type === 'Floating' ? 'type-float' : d.type === 'Bottom-fixed' ? 'type-fixed' : '';
-    const typeLabel = d.type === 'Floating' ? 'Flotante' : d.type === 'Bottom-fixed' ? 'Fijo' : d.type;
-    const gwpNum = parseNum(d.gwp);
-    const gwpHNum = parseNum(d.gwp_h);
-
-    return `<tr>
-      <td><span class="val-num">${isNE(d.mw) ? '<span class="val-nr">NE</span>' : d.mw}</span></td>
-      <td>${d.units !== '—' ? d.units : '<span class="val-nr">—</span>'}</td>
-      <td>${d.foundation}</td>
-      <td><span class="type-badge ${typeClass}">${typeLabel}</span></td>
-      <td>${d.cf && d.cf !== 'NR' && !isNE(d.cf) ? d.cf + ' %' : '<span class="val-nr">NR</span>'}</td>
-      <td>${d.lt !== 'NR' ? d.lt + ' a' : '<span class="val-nr">NR</span>'}</td>
-      <td>${d.epbt && d.epbt !== 'NR' && !isNE(d.epbt) ? `<span class="val-num">${d.epbt}</span>` : '<span class="val-nr">NR</span>'}</td>
-      <td>${gwpNum !== null ? `<span class="val-num">${gwpNum.toFixed(1)}</span>` : '<span class="val-nr">NR</span>'}</td>
-      <td>${gwpHNum !== null ? `<span class="val-num">${gwpHNum.toFixed(2)}</span>` : '<span class="val-nr">NR</span>'}</td>
-      <td>${d.year !== '—' ? d.year : '<span class="val-nr">—</span>'}</td>
-      <td><span class="ref-text">${d.ref}${d.note && d.note !== '—' ? `<br><em style="color:var(--accent-2);font-size:.68rem">${d.note}</em>` : ''}</span></td>
-      <td style="text-align:center">${d.archivo && d.archivo !== '—' && d.archivo !== '-' ? `<span title="${d.archivo}" style="font-size:1rem;cursor:default" aria-label="PDF disponible">📄</span>` : '<span class="val-nr">—</span>'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function sortTable(col) {
-  if (sortCol === col) sortAsc = !sortAsc;
-  else { sortCol = col; sortAsc = true; }
-  const keys = ['mw','units','foundation','type','cf','lt','epbt','gwp','gwp_h','year','ref','archivo'];
-  const k = keys[col];
-  filteredData.sort((a, b) => {
-    const av = parseNum(a[k]) ?? a[k];
-    const bv = parseNum(b[k]) ?? b[k];
-    if (av === null || av === '—' || av === 'NR') return 1;
-    if (bv === null || bv === '—' || bv === 'NR') return -1;
-    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
-  });
-  document.querySelectorAll('th').forEach((th, i) => {
-    th.className = i === col ? 'sorted' : '';
-    const arrow = th.querySelector('.sort-arrow');
-    if (arrow) arrow.textContent = i === col ? (sortAsc ? ' ↑' : ' ↓') : ' ↕';
-  });
-  renderTable(filteredData);
-}
-
-// ─── CHARTS ───────────────────────────────────────────────────────────────────
-const ACCENT   = '#5baaff';
-const ACCENT2  = '#62f0cf';
-const AMBER    = '#ffc06b';
-const RED      = '#ff6b6b';
-const MUTED    = '#7a9bbf';
-const GRID     = 'rgba(100,181,255,0.07)';
-const TEXTCOL  = '#ddeeff';
-
-const BASE_OPTIONS = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: {
-    legend: { labels: { color: MUTED, font: { family: 'DM Sans', size: 11 }, boxWidth: 12, padding: 16 } },
-    tooltip: {
-      backgroundColor: '#0d1c2e', borderColor: 'rgba(100,181,255,0.25)', borderWidth: 1,
-      titleColor: TEXTCOL, bodyColor: MUTED,
-      titleFont: { family: 'DM Sans', size: 12 },
-      bodyFont: { family: 'DM Sans', size: 11 },
-      padding: 10,
-    }
-  },
-  scales: {
-    x: { ticks: { color: MUTED, font: { family: 'DM Sans', size: 10 } }, grid: { color: GRID } },
-    y: { ticks: { color: MUTED, font: { family: 'DM Sans', size: 10 } }, grid: { color: GRID } }
-  }
-};
-
-function renderCharts(data) {
-  renderFoundationChart(data);
-  renderYearChart(data);
-  renderScatterChart(data);
-}
-
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
-
-// Chart 1: Foundation bar
-function renderFoundationChart(data) {
-  destroyChart('foundation');
-  const byFoundation = {};
-  data.forEach(d => {
-    const v = parseNum(d.gwp_h);
-    if (v === null) return;
-    const key = abbreviate(d.foundation);
-    if (!byFoundation[key]) byFoundation[key] = [];
-    byFoundation[key].push(v);
-  });
-  const labels = Object.keys(byFoundation).sort((a,b) => avg(byFoundation[b]) - avg(byFoundation[a]));
-  const vals   = labels.map(l => avg(byFoundation[l]).toFixed(1));
-  const colors = labels.map((_, i) => `hsla(${200 + i * 18}, 70%, 65%, 0.8)`);
-
-  charts['foundation'] = new Chart(document.getElementById('chart-foundation'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 5, borderSkipped: false }]
-    },
-    options: {
-      ...BASE_OPTIONS,
-      plugins: { ...BASE_OPTIONS.plugins, legend: { display: false } },
-      scales: {
-        x: { ...BASE_OPTIONS.scales.x, ticks: { ...BASE_OPTIONS.scales.x.ticks, maxRotation: 35, minRotation: 20 } },
-        y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'gCO₂eq/kWh', color: MUTED, font: { size: 10 } } }
-      }
-    }
-  });
-}
-
-// Chart 2: Year scatter
-function renderYearChart(data) {
-  destroyChart('year');
-  const byYear = {};
-  data.forEach(d => {
-    const v = parseNum(d.gwp_h);
-    const y = parseInt(d.year);
-    if (v === null || isNaN(y)) return;
-    if (!byYear[y]) byYear[y] = [];
-    byYear[y].push(v);
-  });
-  const years  = Object.keys(byYear).map(Number).sort((a,b) => a - b);
-  const medians = years.map(y => median(byYear[y]).toFixed(1));
-  const mins    = years.map(y => Math.min(...byYear[y]).toFixed(1));
-  const maxs    = years.map(y => Math.max(...byYear[y]).toFixed(1));
-
-  charts['year'] = new Chart(document.getElementById('chart-year'), {
-    type: 'line',
-    data: {
-      labels: years,
-      datasets: [
-        { label: 'Mediana', data: medians, borderColor: ACCENT, backgroundColor: 'rgba(91,170,255,0.15)', tension: .35, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-        { label: 'Mínimo', data: mins, borderColor: ACCENT2, borderDash: [4,3], tension: .35, fill: false, pointRadius: 3 },
-        { label: 'Máximo', data: maxs, borderColor: AMBER, borderDash: [4,3], tension: .35, fill: false, pointRadius: 3 },
-      ]
-    },
-    options: {
-      ...BASE_OPTIONS,
-      scales: {
-        x: { ...BASE_OPTIONS.scales.x },
-        y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'gCO₂eq/kWh', color: MUTED, font: { size: 10 } } }
-      }
-    }
-  });
-}
-
-// Chart 3: Scatter MW vs GWP
-function renderScatterChart(data) {
-  destroyChart('scatter');
-  const floating = data.filter(d => d.type === 'Floating').map(d => ({
-    x: parseNum(d.mw), y: parseNum(d.gwp_h), label: d.ref
-  })).filter(p => p.x !== null && p.y !== null);
-  const fixed = data.filter(d => d.type === 'Bottom-fixed').map(d => ({
-    x: parseNum(d.mw), y: parseNum(d.gwp_h), label: d.ref
-  })).filter(p => p.x !== null && p.y !== null);
-
-  charts['scatter'] = new Chart(document.getElementById('chart-scatter'), {
-    type: 'scatter',
-    data: {
-      datasets: [
-        { label: 'Flotante', data: floating, backgroundColor: 'rgba(98,240,207,0.65)', pointRadius: 6, pointHoverRadius: 8 },
-        { label: 'Fijo al fondo', data: fixed, backgroundColor: 'rgba(255,192,107,0.65)', pointRadius: 6, pointHoverRadius: 8 },
-      ]
-    },
-    options: {
-      ...BASE_OPTIONS,
-      plugins: {
-        ...BASE_OPTIONS.plugins,
-        tooltip: {
-          ...BASE_OPTIONS.plugins.tooltip,
-          callbacks: {
-            label: ctx => {
-              const pt = ctx.raw;
-              return ` ${ctx.dataset.label} · ${pt.x} MW · ${pt.y} gCO₂eq/kWh`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: { ...BASE_OPTIONS.scales.x, title: { display: true, text: 'Potencia nominal (MW)', color: MUTED, font: { family: 'DM Sans', size: 11 } } },
-        y: { ...BASE_OPTIONS.scales.y, title: { display: true, text: 'Impacto armonizado (gCO₂eq/kWh)', color: MUTED, font: { family: 'DM Sans', size: 11 } } }
-      }
-    }
-  });
-}
-
-function abbreviate(name) {
-  const map = {
-    'Semi-submersible steel': 'Semi-sub. acero',
-    'Semi-submersible platform': 'Semi-sub.',
-    'Semi-submersible': 'Semi-sub.',
-    'Spar buoy (concreto)': 'Spar concreto',
-    'Bottom-fixed (Gravity)': 'Fijo (gravedad)',
-    'Bottom-fixed (Driven)': 'Fijo (hincado)',
-    'Bottom-fixed (Monopile)': 'Monopile',
-    'Sway (Tension Leg Spar)': 'TLS',
-    'TLB (Tension Leg Barge)': 'TLB',
-    'TLP (Tension Leg Platform)': 'TLP',
-    'SPAR (Hywind Tampen)': 'Spar',
-  };
-  return map[name] || (name.length > 18 ? name.slice(0, 17) + '…' : name);
-}
-</script>
-
+  </main>
 </body>
 </html>
