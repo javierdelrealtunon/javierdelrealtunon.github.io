@@ -53,8 +53,8 @@
 
     /* ─── HERO ─── */
     .hero {
-      padding: 5rem 2rem 3rem;
-      max-width: 960px; margin: 0 auto;
+      padding: 2rem 2rem 1.5rem;
+      max-width: min(98vw, 1600px); margin: 0 auto;
       position: relative;
     }
     .hero-tag {
@@ -67,14 +67,14 @@
     }
     h1 {
       font-family: 'DM Serif Display', serif;
-      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-size: clamp(1.3rem, 2vw, 2rem);
       line-height: 1.1;
       letter-spacing: -0.02em;
       margin-bottom: 1.25rem;
     }
     h1 em { font-style: italic; color: var(--accent); }
     .hero-sub {
-      font-size: 1.05rem; color: var(--muted); line-height: 1.7;
+      font-size: 0.9rem; color: var(--muted); line-height: 1.7;
       max-width: 680px; margin-bottom: 2rem;
     }
     .hero-meta {
@@ -86,7 +86,7 @@
 
     /* ─── GOOGLE SHEETS BANNER ─── */
     .gs-banner {
-      max-width: 960px; margin: 0 auto 2rem;
+      max-width: min(98vw, 1600px); margin: 0 auto 2rem;
       padding: 0 2rem;
     }
     .gs-config {
@@ -137,7 +137,7 @@
     .btn-ghost:hover { border-color: var(--border-h); color: var(--text); }
 
     /* ─── MAIN CONTAINER ─── */
-    main { max-width: 960px; margin: 0 auto; padding: 0 2rem 6rem; }
+    main { max-width: min(98vw, 1600px); margin: 0 auto; padding: 0 2rem 6rem; }
 
     /* ─── SECTION HEADINGS ─── */
     .section-label {
@@ -147,7 +147,7 @@
     }
     .section-title {
       font-family: 'DM Serif Display', serif;
-      font-size: 1.6rem; margin-bottom: 1.5rem;
+      font-size: 1.1rem; margin-bottom: 1.2rem;
     }
     section { margin-bottom: 4rem; }
 
@@ -170,7 +170,7 @@
     .stat-card:hover { background: var(--surface2); }
     .stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: .04em; margin-bottom: 0.5rem; }
     .stat-value {
-      font-size: 1.9rem; font-weight: 600;
+      font-size: 1.4rem; font-weight: 600;
       color: var(--text); line-height: 1;
       margin-bottom: 0.25rem;
     }
