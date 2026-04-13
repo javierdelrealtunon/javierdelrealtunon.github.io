@@ -637,31 +637,68 @@ function setStatus(type, msg) {
 
 function parseSheetCSV(csv) {
   const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
-  return result.data.map(row => {
-    const get = (...keys) => {
-      for (const k of keys) {
-        const v = row[k];
-        if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
-      }
-      return '—';
-    };
-    return {
-      mw:        get('Power rating (MW)', 'MW'),
-      units:     get('Units', 'Unidades'),
-      foundation:get('Offshore foundation design', 'Foundation'),
-      type:      get('Type', 'Tipo'),
-      cf:        get('CF (%)', 'CF'),
-      lt:        get('LT (year)', 'LT'),
-      epbt:      get('EPBT (year)', 'EPBT'),
-      gwp:       get('GW impact \n(gCO₂eq/kWh)', 'GW impact (gCO₂eq/kWh)', 'GW impact\n(gCO₂eq/kWh)', 'GWP'),
-      gwp_h:     get('Harmonised GW impact\n(gCO₂eq/kWh)', 'Harmonised GW impact (gCO₂eq/kWh)', 'Harmonised'),
-      method:    get('LCIA method'),
-      year:      get('Year', 'Año'),
-      ref:       get('Ref.', 'Ref'),
-      note:      get('Note', 'Nota') === '—' ? '' : get('Note', 'Nota'),
-      archivo:   get('Archivo', 'File') === '—' ? '' : get('Archivo', 'File'),
-    };
-  });
+  if (!result.data.length) return [];
+
+  // Fuzzy column finder: matches if the key appears as a substring (case-insensitive, ignoring whitespace/newlines)
+  const cols = Object.keys(result.data[0]);
+  const norm = s => String(s).toLowerCase().replace(/[\s\n\r]+/g, ' ').trim();
+
+  function findCol(...hints) {
+    for (const hint of hints) {
+      const h = norm(hint);
+      // exact match first
+      const exact = cols.find(c => norm(c) === h);
+      if (exact) return exact;
+      // partial match
+      const partial = cols.find(c => norm(c).includes(h) || h.includes(norm(c)));
+      if (partial) return partial;
+    }
+    return null;
+  }
+
+  const colMW    = findCol('power rating', 'mw');
+  const colUnits = findCol('units', 'unidades');
+  const colFnd   = findCol('offshore foundation design', 'foundation design', 'foundation');
+  const colType  = findCol('type', 'tipo');
+  const colCF    = findCol('cf (%)', 'cf(%)', 'cf');
+  const colLT    = findCol('lt (year)', 'lt');
+  const colEPBT  = findCol('epbt (year)', 'epbt');
+  const colGWP   = findCol('gw impact', 'gwp');
+  const colGWPH  = findCol('harmonised gw', 'harmonized gw', 'harmonised');
+  const colMeth  = findCol('lcia method', 'method');
+  const colYear  = findCol('year', 'año');
+  const colRef   = findCol('ref.', 'ref');
+  const colNote  = findCol('note', 'nota');
+  const colArch  = findCol('archivo', 'file');
+
+  // Fallback: find TWO gw-impact columns — first for raw, second for harmonised
+  const gwCols = cols.filter(c => norm(c).includes('gw impact') || norm(c).includes('gwp'));
+  const colGWP_fb   = gwCols[0] || null;
+  const colGWPH_fb  = gwCols[1] || null;
+
+  const val = (row, col) => {
+    if (!col) return '—';
+    const v = row[col];
+    if (v === undefined || v === null || String(v).trim() === '') return '—';
+    return String(v).trim();
+  };
+
+  return result.data.map(row => ({
+    mw:        val(row, colMW),
+    units:     val(row, colUnits),
+    foundation:val(row, colFnd),
+    type:      val(row, colType),
+    cf:        val(row, colCF),
+    lt:        val(row, colLT),
+    epbt:      val(row, colEPBT),
+    gwp:       val(row, colGWP) !== '—' ? val(row, colGWP) : val(row, colGWP_fb),
+    gwp_h:     val(row, colGWPH) !== '—' ? val(row, colGWPH) : val(row, colGWPH_fb),
+    method:    val(row, colMeth),
+    year:      val(row, colYear),
+    ref:       val(row, colRef),
+    note:      val(row, colNote) === '—' ? '' : val(row, colNote),
+    archivo:   val(row, colArch) === '—' ? '' : val(row, colArch),
+  }));
 }
 
 // ─── PROCESS ─────────────────────────────────────────────────────────────────
