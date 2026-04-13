@@ -813,7 +813,7 @@ function renderTable(data) {
       <td>${gwpHNum !== null ? `<span class="val-num">${gwpHNum.toFixed(2)}</span>` : '<span class="val-nr">NR</span>'}</td>
       <td>${d.year !== '—' ? d.year : '<span class="val-nr">—</span>'}</td>
       <td><span class="ref-text">${d.ref}${d.note && d.note !== '—' ? `<br><em style="color:var(--accent-2);font-size:.68rem">${d.note}</em>` : ''}</span></td>
-      <td style="text-align:center">${d.archivo && d.archivo !== '—' && d.archivo !== '-' ? `<span title="${d.archivo}" style="font-size:1rem;cursor:default" aria-label="PDF disponible">📄</span>` : '<span class="val-nr">—</span>'}</td>
+      <td style="text-align:center">${d.archivo && d.archivo !== '—' && d.archivo !== '-' ? `<a href="./pdf/${d.archivo}" target="_blank" title="${d.archivo}" style="font-size:1rem;text-decoration:none" aria-label="Abrir PDF">📄</a>` : '<span class="val-nr">—</span>'}</td>
     </tr>`;
   }).join('');
 }
