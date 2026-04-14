@@ -1,8 +1,9 @@
 /* ============================================================
-   GEOPORTAL MAR PORTUGUÊS — DGRM
+   GEOPORTAL MAR PORTUGUÊS — DGRM + EMODnet
    app.js — Lógica del mapa, capas y sidebar
-   Usa ArcGIS REST /MapServer/export (esri-leaflet) en lugar de
-   WMS, evitando el bloqueo del servidor DGRM al endpoint /services/
+   Soporta dos tipos de capa:
+     type: "arcgis"  → L.esri.dynamicMapLayer  (DGRM)
+     type: "wms"     → L.tileLayer.wms         (EMODnet)
    ============================================================ */
 
 // ── MAPA ─────────────────────────────────────────────────────
@@ -47,28 +48,24 @@ L.control.layers(
 L.control.scale({ position: "bottomleft", imperial: false }).addTo(map);
 
 // ── GESTÃO DE CAMADAS ─────────────────────────────────────────
-const activeLayers = {}; // id → L.esri.dynamicMapLayer
+const activeLayers = {}; // id → layer instance
 
 /**
  * Actualiza el badge de estado visual de una capa.
- * @param {string} id
- * @param {'loading'|'ok'|'error'|''} status
  */
 function setLayerStatus(id, status) {
   const badge = document.getElementById("status-" + id);
   if (!badge) return;
   badge.className = status ? "layer-status layer-status--" + status : "layer-status";
-  badge.title = status === "loading" ? "Carregando…"
+  badge.title = status === "loading" ? "A carregar…"
               : status === "ok"      ? "Camada activa"
               : status === "error"   ? "Erro ao carregar (servidor não acessível)"
               : "";
 }
 
 /**
- * Activa ou desactiva uma camada ArcGIS REST no mapa.
- * Usa L.esri.dynamicMapLayer que llama al endpoint /MapServer/export,
- * accesible desde dominios externos (a diferencia del endpoint WMS).
- * @param {string} id
+ * Activa ou desactiva uma camada no mapa.
+ * Detecta automaticamente o tipo: "wms" (EMODnet) ou "arcgis" (DGRM).
  */
 function toggleLayer(id) {
   const cfg  = LAYERS.find(l => l.id === id);
@@ -79,32 +76,49 @@ function toggleLayer(id) {
     delete activeLayers[id];
     item.classList.remove("active");
     setLayerStatus(id, "");
-  } else {
-    setLayerStatus(id, "loading");
+    return;
+  }
 
-    const dynLayer = L.esri.dynamicMapLayer({
+  setLayerStatus(id, "loading");
+
+  let newLayer;
+
+  if (cfg.type === "wms") {
+    // ── WMS (EMODnet) ─────────────────────────────────────────
+    newLayer = L.tileLayer.wms(cfg.url, {
+      layers:      cfg.wmsLayers,
+      format:      "image/png",
+      transparent: true,
+      version:     "1.3.0",
+      opacity:     0.75,
+      attribution: "© EMODnet"
+    });
+
+    newLayer.on("load",      () => setLayerStatus(id, "ok"));
+    newLayer.on("tileerror", () => setLayerStatus(id, "error"));
+
+  } else {
+    // ── ArcGIS REST (DGRM) ────────────────────────────────────
+    newLayer = L.esri.dynamicMapLayer({
       url:         cfg.url,
       opacity:     0.75,
       f:           "image",
       transparent: true,
-      format:      "png32",
-      // No establecer useCors — esri-leaflet gestiona esto correctamente
-      // con el endpoint /export que sí permite CORS desde dominios externos
+      format:      "png32"
     });
 
-    dynLayer.on("load", () => setLayerStatus(id, "ok"));
-    dynLayer.on("error", () => setLayerStatus(id, "error"));
-
-    dynLayer.addTo(map);
-    activeLayers[id] = dynLayer;
-    item.classList.add("active");
+    newLayer.on("load",  () => setLayerStatus(id, "ok"));
+    newLayer.on("error", () => setLayerStatus(id, "error"));
   }
+
+  newLayer.addTo(map);
+  activeLayers[id] = newLayer;
+  item.classList.add("active");
 }
 
 /**
  * Altera a opacidade de uma camada activa.
- * @param {string} id
- * @param {number} value
+ * Funciona tanto para WMS como para ArcGIS REST.
  */
 function setOpacity(id, value) {
   if (activeLayers[id]) activeLayers[id].setOpacity(parseFloat(value));
@@ -129,13 +143,16 @@ function buildSidebar(filterText) {
     const visible = layers.filter(l =>
       !q ||
       l.name.toLowerCase().includes(q) ||
-      l.desc.toLowerCase().includes(q)
+      l.desc.toLowerCase().includes(q) ||
+      l.cat.toLowerCase().includes(q)
     );
     if (!visible.length) return;
     visCount += visible.length;
 
+    const isEmodnet = cat.includes("[EMODnet]");
+
     const group = document.createElement("div");
-    group.className = "cat-group open";
+    group.className = "cat-group" + (isEmodnet ? " cat-group--emodnet" : "") + " open";
 
     const header = document.createElement("div");
     header.className = "cat-header";
