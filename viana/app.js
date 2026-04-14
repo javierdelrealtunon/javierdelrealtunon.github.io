@@ -65,7 +65,6 @@ function setLayerStatus(id, status) {
 
 /**
  * Activa ou desactiva uma camada no mapa.
- * Detecta automaticamente o tipo: "wms" (EMODnet) ou "arcgis" (DGRM).
  */
 function toggleLayer(id) {
   const cfg  = LAYERS.find(l => l.id === id);
@@ -93,7 +92,6 @@ function toggleLayer(id) {
       opacity:     0.75,
       attribution: "© EMODnet"
     });
-
     newLayer.on("load",      () => setLayerStatus(id, "ok"));
     newLayer.on("tileerror", () => setLayerStatus(id, "error"));
 
@@ -106,7 +104,6 @@ function toggleLayer(id) {
       transparent: true,
       format:      "png32"
     });
-
     newLayer.on("load",  () => setLayerStatus(id, "ok"));
     newLayer.on("error", () => setLayerStatus(id, "error"));
   }
@@ -118,97 +115,71 @@ function toggleLayer(id) {
 
 /**
  * Altera a opacidade de uma camada activa.
- * Funciona tanto para WMS como para ArcGIS REST.
  */
 function setOpacity(id, value) {
   if (activeLayers[id]) activeLayers[id].setOpacity(parseFloat(value));
 }
 
-// ── SIDEBAR ───────────────────────────────────────────────────
+// ── SIDEBAR — lista plana con indicador de origen ─────────────
 function buildSidebar(filterText) {
   const panel = document.getElementById("layerPanel");
   panel.innerHTML = "";
 
   const q = (filterText || "").toLowerCase().trim();
 
-  const cats = {};
-  LAYERS.forEach(l => {
-    if (!cats[l.cat]) cats[l.cat] = [];
-    cats[l.cat].push(l);
-  });
+  const visible = LAYERS.filter(l =>
+    !q ||
+    l.name.toLowerCase().includes(q) ||
+    l.desc.toLowerCase().includes(q) ||
+    l.cat.toLowerCase().includes(q)
+  );
 
-  let visCount = 0;
+  document.getElementById("layerCount").textContent = visible.length;
 
-  Object.entries(cats).forEach(([cat, layers]) => {
-    const visible = layers.filter(l =>
-      !q ||
-      l.name.toLowerCase().includes(q) ||
-      l.desc.toLowerCase().includes(q) ||
-      l.cat.toLowerCase().includes(q)
-    );
-    if (!visible.length) return;
-    visCount += visible.length;
+  visible.forEach(l => {
+    const isActive  = !!activeLayers[l.id];
+    const isEmodnet = l.type === "wms";
+    const srcClass  = isEmodnet ? "src-emodnet" : "src-dgrm";
+    const srcLabel  = isEmodnet ? "EMODnet" : "DGRM";
+    const opVal     = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
+    const inputId   = "range-" + l.id;
 
-    const isEmodnet = cat.includes("[EMODnet]");
-
-    const group = document.createElement("div");
-    group.className = "cat-group" + (isEmodnet ? " cat-group--emodnet" : "") + " open";
-
-    const header = document.createElement("div");
-    header.className = "cat-header";
-    header.innerHTML = `<span>${cat}</span><span class="cat-arrow">▶</span>`;
-    header.addEventListener("click", () => group.classList.toggle("open"));
-
-    const body = document.createElement("div");
-    body.className = "cat-body";
-
-    visible.forEach(l => {
-      const isActive = !!activeLayers[l.id];
-      const opVal    = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
-      const inputId  = "range-" + l.id;
-
-      const item = document.createElement("div");
-      item.className = "layer-item" + (isActive ? " active" : "");
-      item.id = "item-" + l.id;
-      item.innerHTML = `
-        <div class="layer-toggle"></div>
-        <div class="layer-info">
-          <div class="layer-name">
-            ${l.name}
-            <span class="layer-status" id="status-${l.id}"></span>
-          </div>
-          <div class="layer-desc">${l.desc}</div>
+    const item = document.createElement("div");
+    item.className = `layer-item ${srcClass}${isActive ? " active" : ""}`;
+    item.id = "item-" + l.id;
+    item.innerHTML = `
+      <div class="layer-toggle"></div>
+      <div class="layer-info">
+        <div class="layer-name">
+          ${l.name}
+          <span class="layer-status" id="status-${l.id}"></span>
         </div>
-      `;
-      item.addEventListener("click", () => {
-        toggleLayer(l.id);
-        buildSidebar(filterText);
-      });
-
-      const opRow = document.createElement("div");
-      opRow.className = "opacity-row";
-      opRow.id = "op-" + l.id;
-      opRow.innerHTML = `
-        <label for="${inputId}">Opacidade</label>
-        <input id="${inputId}" type="range" min="0.1" max="1" step="0.05"
-          value="${opVal}"
-          oninput="setOpacity('${l.id}', this.value)" />
-      `;
-
-      body.appendChild(item);
-      body.appendChild(opRow);
-
-      if (isActive) {
-        requestAnimationFrame(() => setLayerStatus(l.id, "ok"));
-      }
+        <div class="layer-cat-tag">${l.cat}</div>
+        <div class="layer-desc">${l.desc}</div>
+      </div>
+    `;
+    item.addEventListener("click", () => {
+      toggleLayer(l.id);
+      buildSidebar(filterText);
     });
 
-    group.appendChild(header);
-    group.appendChild(body);
-    panel.appendChild(group);
-  });
+    const opRow = document.createElement("div");
+    opRow.className = "opacity-row";
+    opRow.id = "op-" + l.id;
+    opRow.innerHTML = `
+      <label for="${inputId}">Opacidade</label>
+      <input id="${inputId}" type="range" min="0.1" max="1" step="0.05"
+        value="${opVal}"
+        oninput="setOpacity('${l.id}', this.value)" />
+    `;
 
-  document.getElementById("layerCount").textContent = visCount;
+    panel.appendChild(item);
+    panel.appendChild(opRow);
+
+    if (isActive) {
+      requestAnimationFrame(() => setLayerStatus(l.id, "ok"));
+    }
+  });
 }
 
 // ── EVENTOS ───────────────────────────────────────────────────
