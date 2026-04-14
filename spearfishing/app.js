@@ -101,6 +101,20 @@ const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}
 const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
 NAUTICAL_OVERLAY.addTo(map);
 
+// ── IHPT ENC WMS (Portugal) ───────────────────
+const IHPT_LAYER = L.tileLayer.wms('https://enc.hidrografico.pt/?', {
+  layers:      'ENC',
+  format:      'image/png',
+  transparent: true,
+  version:     '1.3.0',
+  uppercase:   true,
+  CSBOOL:      '2183',
+  CSVALUE:     ',,,,,3',
+  opacity:     0.85,
+  attribution: 'Instituto Hidrográfico de Portugal (IHPT ENC WMS)'
+});
+IHPT_LAYER.addTo(map);
+
 // ── MARKER ICON ───────────────────────────────
 function makeIcon(color) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
@@ -356,6 +370,10 @@ document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
   cb.addEventListener('change', function() {
     if (this.dataset.layer === 'nautico') {
       this.checked ? NAUTICAL_OVERLAY.addTo(map) : map.removeLayer(NAUTICAL_OVERLAY);
+      return;
+    }
+    if (this.dataset.layer === 'ihpt') {
+      this.checked ? IHPT_LAYER.addTo(map) : map.removeLayer(IHPT_LAYER);
       return;
     }
     const layer = leafletLayers[this.dataset.layer];
