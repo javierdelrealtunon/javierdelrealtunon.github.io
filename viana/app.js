@@ -5,7 +5,7 @@
 
 // ── MAPA ─────────────────────────────────────────────────────
 const map = L.map("map", {
-  center: [39.5, -8.5],
+  center: [39.5, -9.0],
   zoom: 6,
   zoomControl: true
 });
@@ -14,6 +14,7 @@ const cartoLayer = L.tileLayer(
   "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
   {
     maxZoom: 19,
+    crossOrigin: false,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
       '&copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -22,7 +23,7 @@ const cartoLayer = L.tileLayer(
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  { maxZoom: 19, attribution: "Tiles &copy; Esri" }
+  { maxZoom: 19, crossOrigin: false, attribution: "Tiles &copy; Esri" }
 );
 
 L.control.layers(
@@ -33,6 +34,21 @@ L.control.layers(
 
 // ── GESTÃO DE CAMADAS ─────────────────────────────────────────
 const activeLayers = {}; // id → L.tileLayer.wms
+
+/**
+ * Marca visualmente el estado de carga de una capa en la sidebar.
+ * @param {string} id     - identificador da camada
+ * @param {'loading'|'ok'|'error'|''} status
+ */
+function setLayerStatus(id, status) {
+  const badge = document.getElementById("status-" + id);
+  if (!badge) return;
+  badge.className = status ? "layer-status layer-status--" + status : "layer-status";
+  badge.title = status === "loading" ? "Carregando tiles…"
+              : status === "ok"      ? "Camada activa"
+              : status === "error"   ? "Servidor não responde (possível CORS)"
+              : "";
+}
 
 /**
  * Activa ou desactiva uma camada WMS no mapa.
@@ -46,6 +62,7 @@ function toggleLayer(id) {
     map.removeLayer(activeLayers[id]);
     delete activeLayers[id];
     item.classList.remove("active");
+    setLayerStatus(id, "");
   } else {
     const wmsLayer = L.tileLayer.wms(cfg.url, {
       layers:      cfg.layer,
@@ -53,8 +70,24 @@ function toggleLayer(id) {
       transparent: true,
       version:     "1.1.1",
       opacity:     0.75,
+      tileSize:    256,
+      // crossOrigin: false es CRÍTICO — evita que Leaflet añada el atributo
+      // crossorigin a las <img> de tiles, lo que provoca un preflight CORS
+      // que el servidor DGRM no tiene habilitado para dominios externos.
+      crossOrigin: false,
       attribution: "DGRM / PSOEM Geoportal"
     });
+
+    setLayerStatus(id, "loading");
+
+    let firstLoad = true;
+    wmsLayer.on("tileload", () => {
+      if (firstLoad) { firstLoad = false; setLayerStatus(id, "ok"); }
+    });
+    wmsLayer.on("tileerror", () => {
+      setLayerStatus(id, "error");
+    });
+
     wmsLayer.addTo(map);
     activeLayers[id] = wmsLayer;
     item.classList.add("active");
@@ -71,18 +104,12 @@ function setOpacity(id, value) {
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────
-/**
- * Constrói (ou reconstrói) o painel lateral de camadas,
- * opcionalmente filtrando por texto.
- * @param {string} [filterText] - texto de pesquisa
- */
 function buildSidebar(filterText) {
   const panel = document.getElementById("layerPanel");
   panel.innerHTML = "";
 
   const q = (filterText || "").toLowerCase().trim();
 
-  // Agrupar por categoria
   const cats = {};
   LAYERS.forEach(l => {
     if (!cats[l.cat]) cats[l.cat] = [];
@@ -100,7 +127,6 @@ function buildSidebar(filterText) {
     if (!visible.length) return;
     visCount += visible.length;
 
-    // Grupo de categoria
     const group = document.createElement("div");
     group.className = "cat-group open";
 
@@ -114,15 +140,19 @@ function buildSidebar(filterText) {
 
     visible.forEach(l => {
       const isActive = !!activeLayers[l.id];
+      const opVal    = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
+      const inputId  = "range-" + l.id; // para accesibilidad (label for=)
 
-      // Item de camada
       const item = document.createElement("div");
       item.className = "layer-item" + (isActive ? " active" : "");
       item.id = "item-" + l.id;
       item.innerHTML = `
         <div class="layer-toggle"></div>
         <div class="layer-info">
-          <div class="layer-name">${l.name}</div>
+          <div class="layer-name">
+            ${l.name}
+            <span class="layer-status" id="status-${l.id}"></span>
+          </div>
           <div class="layer-desc">${l.desc}</div>
         </div>
       `;
@@ -131,19 +161,23 @@ function buildSidebar(filterText) {
         buildSidebar(filterText);
       });
 
-      // Controlo de opacidade (aparece quando activo)
+      // Label vinculado con for/id — fix de los 37 errores de accesibilidad
       const opRow = document.createElement("div");
       opRow.className = "opacity-row";
       opRow.id = "op-" + l.id;
       opRow.innerHTML = `
-        <label>Opacidade</label>
-        <input type="range" min="0.1" max="1" step="0.05"
-          value="${activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75}"
+        <label for="${inputId}">Opacidade</label>
+        <input id="${inputId}" type="range" min="0.1" max="1" step="0.05"
+          value="${opVal}"
           oninput="setOpacity('${l.id}', this.value)" />
       `;
 
       body.appendChild(item);
       body.appendChild(opRow);
+
+      if (isActive) {
+        requestAnimationFrame(() => setLayerStatus(l.id, "ok"));
+      }
     });
 
     group.appendChild(header);
@@ -159,5 +193,4 @@ document.getElementById("searchInput").addEventListener("input", e => {
   buildSidebar(e.target.value);
 });
 
-// Arranque
 buildSidebar();
