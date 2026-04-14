@@ -6,104 +6,6 @@
   <title>Geoportal Mar Português</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    /* ── INFO BUTTON & POPOVER ─────────────────────────────── */
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .info-btn-wrap {
-      position: relative;
-    }
-
-    .info-btn {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.35);
-      color: white;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      font-size: 15px;
-      font-style: italic;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
-      line-height: 1;
-      padding: 0;
-    }
-    .info-btn:hover { background: rgba(255,255,255,0.28); }
-
-    .info-popover {
-      display: none;
-      position: absolute;
-      top: calc(100% + 10px);
-      right: 0;
-      background: #fff;
-      border: 1px solid #dde3ea;
-      border-radius: 10px;
-      padding: 14px 18px;
-      min-width: 300px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
-      font-size: 12.5px;
-      line-height: 1.65;
-      z-index: 9999;
-      color: #2d3748;
-    }
-    .info-popover.visible { display: block; }
-    .info-popover strong { display: block; font-size: 13px; margin-bottom: 8px; color: #111; }
-    .info-popover p { margin: 0 0 10px; }
-    .info-popover p:last-child { margin-bottom: 0; }
-    .info-popover a { color: #2563eb; text-decoration: none; }
-    .info-popover a:hover { text-decoration: underline; }
-    .info-popover code {
-      font-size: 11px;
-      background: #f1f5f9;
-      padding: 1px 5px;
-      border-radius: 4px;
-    }
-
-    /* ── SOURCE LEGEND ─────────────────────────────────────── */
-    .source-legend {
-      display: flex;
-      gap: 14px;
-      padding: 5px 12px 7px;
-      font-size: 11px;
-      color: #888;
-      border-bottom: 1px solid #eee;
-      flex-shrink: 0;
-    }
-    .legend-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 4px;
-      vertical-align: middle;
-      position: relative;
-      top: -1px;
-    }
-    .dot-dgrm    { background: #2563eb; }
-    .dot-emodnet { background: #0891b2; }
-
-    /* ── FLAT LAYER ITEMS ──────────────────────────────────── */
-    .layer-item {
-      border-left: 3px solid transparent;
-    }
-    .layer-item.src-dgrm    { border-left-color: #2563eb; }
-    .layer-item.src-emodnet { border-left-color: #0891b2; }
-
-    .layer-cat-tag {
-      font-size: 10px;
-      color: #aaa;
-      margin-top: 1px;
-      margin-bottom: 1px;
-    }
-  </style>
 </head>
 <body>
 <div class="app">
@@ -113,20 +15,27 @@
     <div class="topbar-logo">🌊 Geoportal Mar Português</div>
 
     <div class="topbar-actions">
-      <!-- ℹ️ Fuentes de datos -->
+      <!-- Botón ℹ️ con bocadillo de fuentes -->
       <div class="info-btn-wrap">
         <button class="info-btn" id="infoBtn" title="Fontes de dados" aria-label="Fontes de dados">i</button>
         <div class="info-popover" id="infoPopover">
           <strong>Fontes de dados</strong>
           <p>
-            🇵🇹 <strong>DGRM</strong> — Direção-Geral de Recursos Naturais, Segurança e Serviços Marítimos<br>
+            🇵🇹 <b>DGRM</b> — Direção-Geral de Recursos Naturais,<br>
+            Segurança e Serviços Marítimos<br>
             Serviço ArcGIS REST · PSOEM Geoportal<br>
-            <a href="https://webgis.dgrm.mm.gov.pt" target="_blank" rel="noopener"><code>webgis.dgrm.mm.gov.pt</code></a>
+            <a href="https://webgis.dgrm.mm.gov.pt" target="_blank" rel="noopener">
+              <code>webgis.dgrm.mm.gov.pt</code>
+            </a>
           </p>
           <p>
-            🇪🇺 <strong>EMODnet</strong> — European Marine Observation and Data Network<br>
-            Serviço WMS (Bathymetry · Habitats · Human Activities · Geology)<br>
-            <a href="https://emodnet.ec.europa.eu" target="_blank" rel="noopener"><code>emodnet.ec.europa.eu</code></a>
+            🇪🇺 <b>EMODnet</b> — European Marine Observation<br>
+            and Data Network<br>
+            Serviço WMS · Bathymetry · Habitats ·<br>
+            Human Activities · Geology<br>
+            <a href="https://emodnet.ec.europa.eu" target="_blank" rel="noopener">
+              <code>emodnet.ec.europa.eu</code>
+            </a>
           </p>
         </div>
       </div>
@@ -169,16 +78,17 @@
 <script src="layers.js"></script>
 <script src="app.js"></script>
 <script>
-  // Info popover toggle
   const infoBtn     = document.getElementById("infoBtn");
   const infoPopover = document.getElementById("infoPopover");
 
   infoBtn.addEventListener("click", e => {
     e.stopPropagation();
     infoPopover.classList.toggle("visible");
+    infoBtn.classList.toggle("open");
   });
   document.addEventListener("click", () => {
     infoPopover.classList.remove("visible");
+    infoBtn.classList.remove("open");
   });
   infoPopover.addEventListener("click", e => e.stopPropagation());
 </script>
