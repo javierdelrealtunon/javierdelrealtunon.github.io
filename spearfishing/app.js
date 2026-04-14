@@ -73,47 +73,54 @@ const BasemapControl = L.Control.extend({
 });
 new BasemapControl().addTo(map);
 
-// ── NAUTICAL TOGGLE ───────────────────────────
+// ── NAUTICAL LAYERS ───────────────────────────
+const NAUTICAL_PT = L.tileLayer.wms('https://enc.hidrografico.pt/?', {
+  layers: 'ENC', format: 'image/png', transparent: true,
+  version: '1.3.0', uppercase: true, CSBOOL: '2183', CSVALUE: ',,,,,3',
+  opacity: 0.88, attribution: 'Instituto Hidrográfico de Portugal (IHPT ENC WMS)'
+});
+
+const NAUTICAL_ES = L.layerGroup([
+  L.tileLayer(
+    'https://ideihm.covam.es/ihmcache/wmts/1.0.0/RasterENC/default/googlemapscompatible/{z}/{y}/{x}.png',
+    { opacity: 0.85, maxZoom: 21, attribution: '&copy; <a href="https://ideihm.covam.es">IHM España</a>' }
+  ),
+  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+    maxZoom: 20, attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>'
+  })
+]);
+
+// Mantener compatibilidad con el toggle del sidebar (data-layer="nautico")
+const NAUTICAL_OVERLAY = NAUTICAL_ES;
+
+// ── NAUTICAL CONTROL (PT / ES) ────────────────
 const NauticalControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
-    const btn = L.DomUtil.create('button', 'nautical-toggle-btn active');
-    btn.innerHTML = '⚓ Náutico';
-    btn.title = 'Activar/desactivar capa náutica';
-    L.DomEvent.disableClickPropagation(btn);
-    L.DomEvent.on(btn, 'click', () => {
-      const active = btn.classList.toggle('active');
-      active ? NAUTICAL_OVERLAY.addTo(map) : map.removeLayer(NAUTICAL_OVERLAY);
+    const wrap = L.DomUtil.create('div', 'enc-control');
+    L.DomEvent.disableClickPropagation(wrap);
+    L.DomEvent.disableScrollPropagation(wrap);
+
+    wrap.innerHTML = `
+      <span class="enc-label">⚓</span>
+      <button class="enc-btn" data-enc="pt" title="Cartas náuticas Portugal (IHPT)">🇵🇹 PT</button>
+      <button class="enc-btn" data-enc="es" title="Cartas náuticas España (IHM)">🇪🇸 ES</button>
+    `;
+
+    const layers = { pt: NAUTICAL_PT, es: NAUTICAL_ES };
+
+    wrap.querySelectorAll('.enc-btn').forEach(btn => {
+      L.DomEvent.on(btn, 'click', () => {
+        const key = btn.dataset.enc;
+        const active = btn.classList.toggle('active');
+        active ? layers[key].addTo(map) : map.removeLayer(layers[key]);
+      });
     });
-    return btn;
-  },
+
+    return wrap;
+  }
 });
 new NauticalControl().addTo(map);
-
-// ── NAUTICAL OVERLAY ──────────────────────────
-const ENC_LAYER = L.tileLayer(
-  'https://ideihm.covam.es/ihmcache/wmts/1.0.0/RasterENC/default/googlemapscompatible/{z}/{y}/{x}.png',
-  { attribution: '&copy; <a href="https://ideihm.covam.es">IHM</a>', opacity: 0.85, maxZoom: 21 }
-);
-const SEAMARKS_LAYER = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>', maxZoom: 20,
-});
-const NAUTICAL_OVERLAY = L.layerGroup([ENC_LAYER, SEAMARKS_LAYER]);
-NAUTICAL_OVERLAY.addTo(map);
-
-// ── IHPT ENC WMS (Portugal) ───────────────────
-const IHPT_LAYER = L.tileLayer.wms('https://enc.hidrografico.pt/?', {
-  layers:      'ENC',
-  format:      'image/png',
-  transparent: true,
-  version:     '1.3.0',
-  uppercase:   true,
-  CSBOOL:      '2183',
-  CSVALUE:     ',,,,,3',
-  opacity:     0.85,
-  attribution: 'Instituto Hidrográfico de Portugal (IHPT ENC WMS)'
-});
-IHPT_LAYER.addTo(map);
 
 // ── MARKER ICON ───────────────────────────────
 function makeIcon(color) {
@@ -370,10 +377,6 @@ document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
   cb.addEventListener('change', function() {
     if (this.dataset.layer === 'nautico') {
       this.checked ? NAUTICAL_OVERLAY.addTo(map) : map.removeLayer(NAUTICAL_OVERLAY);
-      return;
-    }
-    if (this.dataset.layer === 'ihpt') {
-      this.checked ? IHPT_LAYER.addTo(map) : map.removeLayer(IHPT_LAYER);
       return;
     }
     const layer = leafletLayers[this.dataset.layer];
