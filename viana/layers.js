@@ -32,20 +32,6 @@ const LAYERS = [
     url: "https://webgis.dgrm.mm.gov.pt/arcgis/rest/services/PSOEM_PosCPub/LinhaJMM_pcp_final1/MapServer" },
 
   // ── AMBIENTE E CONSERVAÇÃO ─────────────────────────────────
-  { cat: "🌿 Ambiente e Conservação", id: "ospar",
-    name: "OSPAR — Áreas Protegidas",
-    desc: "Áreas marinhas protegidas da Convenção OSPAR",
-    url: BASE + "OSPAR" + MS },
-
-  { cat: "🌿 Ambiente e Conservação", id: "iba",
-    name: "IBA — Áreas Importantes para Aves",
-    desc: "Important Bird & Biodiversity Areas em meio marinho",
-    url: BASE + "IBA" + MS },
-
-  { cat: "🌿 Ambiente e Conservação", id: "rede_natura_es",
-    name: "Rede Natura 2000 (Espanha)",
-    desc: "Zonas de proteção especial da Rede Natura 2000 em águas espanholas",
-    url: BASE + "PSOEM_Rede_natura_2000_Espanha" + MS },
 
   // ── PESCA ──────────────────────────────────────────────────
   { cat: "🎣 Pesca", id: "portos_docapesca",
@@ -63,11 +49,6 @@ const LAYERS = [
     name: "Energia Eólica Offshore",
     desc: "Zonas existentes e potenciais para eólica offshore — PSOEM",
     url: BASE + "PSOEM_Eolicas_geoportal" + MS },
-
-  { cat: "⚡ Energia e Infraestrutura", id: "cabos_submarinos",
-    name: "Cabos Submarinos (EMODnet)",
-    desc: "Rede de cabos de telecomunicações e elétricos submarinos",
-    url: BASE + "Cabos_submarinos_EMODnet" + MS },
 
   { cat: "⚡ Energia e Infraestrutura", id: "emissarios",
     name: "Emissários Submarinos",
@@ -111,11 +92,6 @@ const LAYERS = [
     desc: "Área de gestão estratégica de sedimentos costeiros — APA",
     url: BASE + "Area_estrat_gest_sedimentar_APA" + MS },
 
-  { cat: "🪨 Geologia e Batimetria", id: "hsmax",
-    name: "Cartas Hsmax (LNEC)",
-    desc: "Altura significativa máxima de ondas — modelação LNEC",
-    url: BASE + "Cartas_Hsmax_LNEC" + MS },
-
   { cat: "🪨 Geologia e Batimetria", id: "recursos_geo",
     name: "Títulos Recursos Geológicos (TIT)",
     desc: "Títulos de prospeção e extração de recursos geológicos marinhos",
@@ -126,11 +102,6 @@ const LAYERS = [
     name: "Exercícios Militares",
     desc: "Áreas e períodos reservados para exercícios militares marítimos",
     url: BASE + "Exercicios_Militares" + MS },
-
-  { cat: "🛡️ Defesa e Segurança", id: "naufrágios",
-    name: "Naufrágios e Afundamentos (IH)",
-    desc: "Localização de embarcações naufragadas nas águas portuguesas",
-    url: BASE + "Localiza%C3%A7%C3%A3o_de_naufr%C3%A1gios_e_afundamentos_Fonte_IH_v2" + MS },
 
   { cat: "🛡️ Defesa e Segurança", id: "imersao",
     name: "Áreas de Imersão",
