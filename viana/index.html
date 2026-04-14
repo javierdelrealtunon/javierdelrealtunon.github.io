@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geoportal Mar Português — DGRM</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">🌊 Geoportal Mar Português</div>
+      <div class="topbar-sub">DGRM — Direção-Geral de Recursos Naturais, Segurança e Serviços Marítimos</div>
+    </div>
+    <a class="topbar-link"
+       href="https://webgis.dgrm.mm.gov.pt/portal/apps/webappviewer/index.html?id=f108701225c24cca935b97e1d6180c4a"
+       target="_blank" rel="noopener">↗ Portal DGRM</a>
+  </div>
+
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <span>Camadas WMS disponibles</span>
+        <span class="layer-count" id="layerCount">0</span>
+      </div>
+      <div class="search-wrap">
+        <input id="searchInput" type="text" placeholder="🔍  Filtrar camadas..." />
+      </div>
+      <div class="layer-scroll" id="layerPanel"></div>
+    </aside>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- INFO BOX -->
+    <div class="info-box" id="infoBox">
+      <strong>Fonte dos dados</strong>
+      ArcGIS MapServer — PSOEM Geoportal<br>
+      Serviço WMS: <code>webgis.dgrm.mm.gov.pt</code>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="layers.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
