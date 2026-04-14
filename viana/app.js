@@ -27,9 +27,20 @@ const orthoLayer = L.tileLayer(
   { maxZoom: 19, attribution: "Tiles &copy; Esri" }
 );
 
+const ihptEnc = L.tileLayer.wms("https://enc.hidrografico.pt/?", {
+  layers:      "ENC",
+  format:      "image/png",
+  transparent: true,
+  version:     "1.3.0",
+  uppercase:   true,
+  CSBOOL:      "2183",
+  CSVALUE:     ",,,,,3",
+  attribution: "Instituto Hidrográfico de Portugal (IHPT ENC WMS)"
+});
+
 L.control.layers(
   { "Cartografia (CartoDB)": cartoLayer, "Ortofoto (Esri)": orthoLayer },
-  {},
+  { "Carta náutica (IHPT ENC)": ihptEnc },
   { position: "topright", collapsed: true }
 ).addTo(map);
 
