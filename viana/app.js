@@ -1,6 +1,8 @@
 /* ============================================================
    GEOPORTAL MAR PORTUGUÊS — DGRM
    app.js — Lógica del mapa, capas y sidebar
+   Usa ArcGIS REST /MapServer/export (esri-leaflet) en lugar de
+   WMS, evitando el bloqueo del servidor DGRM al endpoint /services/
    ============================================================ */
 
 // ── MAPA ─────────────────────────────────────────────────────
@@ -14,7 +16,6 @@ const cartoLayer = L.tileLayer(
   "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
   {
     maxZoom: 19,
-    crossOrigin: false,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
       '&copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -23,7 +24,7 @@ const cartoLayer = L.tileLayer(
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  { maxZoom: 19, crossOrigin: false, attribution: "Tiles &copy; Esri" }
+  { maxZoom: 19, attribution: "Tiles &copy; Esri" }
 );
 
 L.control.layers(
@@ -33,26 +34,28 @@ L.control.layers(
 ).addTo(map);
 
 // ── GESTÃO DE CAMADAS ─────────────────────────────────────────
-const activeLayers = {}; // id → L.tileLayer.wms
+const activeLayers = {}; // id → L.esri.dynamicMapLayer
 
 /**
- * Marca visualmente el estado de carga de una capa en la sidebar.
- * @param {string} id     - identificador da camada
+ * Actualiza el badge de estado visual de una capa.
+ * @param {string} id
  * @param {'loading'|'ok'|'error'|''} status
  */
 function setLayerStatus(id, status) {
   const badge = document.getElementById("status-" + id);
   if (!badge) return;
   badge.className = status ? "layer-status layer-status--" + status : "layer-status";
-  badge.title = status === "loading" ? "Carregando tiles…"
+  badge.title = status === "loading" ? "Carregando…"
               : status === "ok"      ? "Camada activa"
-              : status === "error"   ? "Servidor não responde (possível CORS)"
+              : status === "error"   ? "Erro ao carregar (servidor não acessível)"
               : "";
 }
 
 /**
- * Activa ou desactiva uma camada WMS no mapa.
- * @param {string} id - identificador da camada
+ * Activa ou desactiva uma camada ArcGIS REST no mapa.
+ * Usa L.esri.dynamicMapLayer que llama al endpoint /MapServer/export,
+ * accesible desde dominios externos (a diferencia del endpoint WMS).
+ * @param {string} id
  */
 function toggleLayer(id) {
   const cfg  = LAYERS.find(l => l.id === id);
@@ -64,40 +67,31 @@ function toggleLayer(id) {
     item.classList.remove("active");
     setLayerStatus(id, "");
   } else {
-    const wmsLayer = L.tileLayer.wms(cfg.url, {
-      layers:      cfg.layer,
-      format:      "image/png",
-      transparent: true,
-      version:     "1.1.1",
-      opacity:     0.75,
-      tileSize:    256,
-      // crossOrigin: false es CRÍTICO — evita que Leaflet añada el atributo
-      // crossorigin a las <img> de tiles, lo que provoca un preflight CORS
-      // que el servidor DGRM no tiene habilitado para dominios externos.
-      crossOrigin: false,
-      attribution: "DGRM / PSOEM Geoportal"
-    });
-
     setLayerStatus(id, "loading");
 
-    let firstLoad = true;
-    wmsLayer.on("tileload", () => {
-      if (firstLoad) { firstLoad = false; setLayerStatus(id, "ok"); }
-    });
-    wmsLayer.on("tileerror", () => {
-      setLayerStatus(id, "error");
+    const dynLayer = L.esri.dynamicMapLayer({
+      url:         cfg.url,
+      opacity:     0.75,
+      f:           "image",
+      transparent: true,
+      format:      "png32",
+      // No establecer useCors — esri-leaflet gestiona esto correctamente
+      // con el endpoint /export que sí permite CORS desde dominios externos
     });
 
-    wmsLayer.addTo(map);
-    activeLayers[id] = wmsLayer;
+    dynLayer.on("load", () => setLayerStatus(id, "ok"));
+    dynLayer.on("error", () => setLayerStatus(id, "error"));
+
+    dynLayer.addTo(map);
+    activeLayers[id] = dynLayer;
     item.classList.add("active");
   }
 }
 
 /**
  * Altera a opacidade de uma camada activa.
- * @param {string} id    - identificador da camada
- * @param {number} value - valor de opacidade (0.1 – 1)
+ * @param {string} id
+ * @param {number} value
  */
 function setOpacity(id, value) {
   if (activeLayers[id]) activeLayers[id].setOpacity(parseFloat(value));
@@ -141,7 +135,7 @@ function buildSidebar(filterText) {
     visible.forEach(l => {
       const isActive = !!activeLayers[l.id];
       const opVal    = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
-      const inputId  = "range-" + l.id; // para accesibilidad (label for=)
+      const inputId  = "range-" + l.id;
 
       const item = document.createElement("div");
       item.className = "layer-item" + (isActive ? " active" : "");
@@ -161,7 +155,6 @@ function buildSidebar(filterText) {
         buildSidebar(filterText);
       });
 
-      // Label vinculado con for/id — fix de los 37 errores de accesibilidad
       const opRow = document.createElement("div");
       opRow.className = "opacity-row";
       opRow.id = "op-" + l.id;
