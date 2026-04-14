@@ -1,1207 +1,825 @@
-// ─── Constantes de configuración ───────────────────────────────────────────
-const REQUIRED_KEYS = ["name", "lat", "lon"];
-const INITIAL_CENTER = [20, 0];
-const INITIAL_ZOOM   = 2;
-const PDF_BASE_PATH  = "./pdffiles/";
-
-const CATEGORY_COLORS = [
-  "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236", "#166a8f",
-  "#00a950", "#58595b", "#8549ba", "#ffb000", "#00bcd4", "#ff7043",
-  "#7e57c2", "#66bb6a", "#ef5350", "#26a69a", "#ab47bc", "#ffa726",
-  "#8d6e63", "#42a5f5"
+/* ─── DEFAULT DATA ───────────────────────────────────────────────────────────── */
+const DEFAULT_DATA = [
+  { mw:"15",  units:"3",   foundation:"Barge (SATH)",                           type:"Floating",     cf:"38",    lt:"25", epbt:"NR",  gwp:"37.9",       gwp_h:"43.09", method:"Ecoinvent EN-15804",                               year:"2026", ref:"ANGELOS",                                                                                                                                                                         note:"Con site construction",                                      archivo:"",                                    lat:"",      lon:"" },
+  { mw:"15",  units:"3",   foundation:"Barge (SATH)",                           type:"Floating",     cf:"38",    lt:"25", epbt:"NR",  gwp:"33.5",       gwp_h:"38.08", method:"Ecoinvent EN-15804",                               year:"2026", ref:"ANGELOS",                                                                                                                                                                         note:"Sin site construction",                                      archivo:"",                                    lat:"",      lon:"" },
+  { mw:"8",   units:"75",  foundation:"Spar buoy",                              type:"Floating",     cf:"50",    lt:"25", epbt:"NR",  gwp:"30.17",      gwp_h:"26.07", method:"LCA, cradle-to-grave",                             year:"2019", ref:"Bang, J.-I., Ma, C., Tarantino, E., Vela, A., & Yamane, D. (2019). Life cycle assessment of greenhouse gas emissions for floating offshore wind energy in California. UC Santa Barbara.", note:"",                                                           archivo:"Bang-2019-Floating-Wind-LCA.pdf",      lat:"34.05", lon:"-119.25" },
+  { mw:"4",   units:"—",   foundation:"Bottom-fixed (Gravity)",                 type:"Bottom-fixed", cf:"59",    lt:"20", epbt:"0.9", gwp:"10.9",       gwp_h:"9.98",  method:"ReCiPe",                                           year:"2016", ref:"Bonou, A., Laurent, A., & Olsen, S. I. (2016). Life cycle assessment of onshore and offshore wind energy-from theory to application. Applied Energy, 180.",                        note:"Not available",                                              archivo:"-",                                   lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"Bottom-fixed (Driven)",                  type:"Bottom-fixed", cf:"59",    lt:"20", epbt:"0.8", gwp:"7.8",        gwp_h:"7.14",  method:"ReCiPe",                                           year:"2016", ref:"Bonou, A., Laurent, A., & Olsen, S. I. (2016). Life cycle assessment of onshore and offshore wind energy-from theory to application. Applied Energy, 180.",                        note:"Not available",                                              archivo:"-",                                   lat:"",      lon:"" },
+  { mw:"14.7",units:"190", foundation:"Semi-submersible steel",                 type:"Floating",     cf:"34.35", lt:"30", epbt:"NR",  gwp:"31",         gwp_h:"32.49", method:"LCA, cradle-to-grave; EPD (version 2018)",         year:"2023", ref:"Brussa, G., Grosso, M., & Rigamonti, L. (2023). Life cycle assessment of a floating offshore wind farm in Italy. Sustainable Production and Consumption, 39, 134–144.",             note:"",                                                           archivo:"1-s2.0-S235255092300101X-main.pdf",    lat:"44.4",  lon:"12.2" },
+  { mw:"6",   units:"5",   foundation:"Spar buoy",                              type:"Floating",     cf:"49.4",  lt:"25", epbt:"NR",  gwp:"45.2",       gwp_h:"39.53", method:"LCA, cradle-to-grave; recycling partially",        year:"2022", ref:"Garcia Teruel, A., Rinaldi, G., Thies, P. R., Johanning, L., & Jeffrey, H. (2022). Life cycle assessment of floating offshore wind farms. Applied Energy, 307, 118067.",             note:"Not available",                                              archivo:"-",                                   lat:"",      lon:"" },
+  { mw:"9.5", units:"5",   foundation:"Semi-submersible steel",                 type:"Floating",     cf:"39.6",  lt:"25", epbt:"NR",  gwp:"39.4",       gwp_h:"42.98", method:"LCA, cradle-to-grave; recycling partially",        year:"2022", ref:"Garcia Teruel, A., Rinaldi, G., Thies, P. R., Johanning, L., & Jeffrey, H. (2022). Life cycle assessment of floating offshore wind farms. Applied Energy, 307, 118067.",             note:"Not available",                                              archivo:"-",                                   lat:"",      lon:"" },
+  { mw:"15",  units:"1",   foundation:"Semi-submersible steel",                 type:"Floating",     cf:"43",    lt:"20", epbt:"NR",  gwp:"32.6",       gwp_h:"40.94", method:"LCA, cradle-to-grave",                             year:"2022", ref:"Kollia, M. (2022). Life cycle assesment of floating offshore wind farms (Master's thesis, Oslo Metropolitan University).",                                                       note:"",                                                           archivo:"",                                    lat:"59.9",  lon:"10.7" },
+  { mw:"15",  units:"1",   foundation:"Spar buoy concrete",                     type:"Floating",     cf:"43",    lt:"20", epbt:"NR",  gwp:"24.3",       gwp_h:"30.52", method:"LCA, cradle-to-grave",                             year:"2022", ref:"Kollia, M. (2022). Life cycle assesment of floating offshore wind farms (Master's thesis, Oslo Metropolitan University).",                                                       note:"",                                                           archivo:"",                                    lat:"59.9",  lon:"10.7" },
+  { mw:"14",  units:"—",   foundation:"Monopile",                               type:"Bottom-fixed", cf:"45.34", lt:"20", epbt:"NR",  gwp:"26.15",      gwp_h:"31.14", method:"ReCiPe 2016 v1.03 midpoint (H)",                   year:"2024", ref:"Lotfizadeh, O. (2024). Life Cycle Assessment of Offshore Wind Farms – A Comparative Study of Floating Vs. Fixed Offshore Wind Turbines. MSc, Univ. of South-Eastern Norway.",    note:"",                                                           archivo:"ThesisReport-OmidLotfizadeh-258992.pdf", lat:"59.1", lon:"9.8" },
+  { mw:"8",   units:"—",   foundation:"Concrete SPAR-type (ballast-stabilized)", type:"Floating",   cf:"54",    lt:"20", epbt:"NR",  gwp:"36.78",      gwp_h:"36.78", method:"ReCiPe 2016 v1.03 midpoint (H)",                   year:"2024", ref:"Lotfizadeh, O. (2024). Life Cycle Assessment of Offshore Wind Farms – A Comparative Study. MSc, Univ. of South-Eastern Norway.",                                           note:"",                                                           archivo:"ThesisReport-OmidLotfizadeh-258992.pdf", lat:"59.1", lon:"9.8" },
+  { mw:"8",   units:"11",  foundation:"SPAR (Hywind Tampen)",                   type:"Floating",     cf:"54",    lt:"20", epbt:"NR",  gwp:"36.78",      gwp_h:"36.78", method:"ReCiPe 2016 v1.03 midpoint (H)",                   year:"2024", ref:"Lotfizadeh, O., Barahmand, Z., & Amlashi, H. (2024). LCA of Floating Offshore Wind Farms: The Case of Hywind Tampen. SIMS EUROSIM 2024.",                                        note:"",                                                           archivo:"ThesisReport-OmidLotfizadeh-258992.pdf", lat:"61.1", lon:"2.3" },
+  { mw:"5",   units:"—",   foundation:"Bottom-fixed (Driven)",                  type:"Bottom-fixed", cf:"46",    lt:"20", epbt:"1.6", gwp:"18.9",       gwp_h:"22.19", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"Sway (Tension Leg Spar)",                type:"Floating",     cf:"46",    lt:"20", epbt:"1.8", gwp:"20.9",       gwp_h:"24.53", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"TLB (Tension Leg Barge)",                type:"Floating",     cf:"46",    lt:"20", epbt:"1.6", gwp:"18",         gwp_h:"21.13", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"TLP (Tension Leg Platform)",             type:"Floating",     cf:"46",    lt:"20", epbt:"1.7", gwp:"19.2",       gwp_h:"22.54", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"Spar buoy",                              type:"Floating",     cf:"46",    lt:"20", epbt:"2.2", gwp:"25.3",       gwp_h:"29.70", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"Semi-submersible platform",              type:"Floating",     cf:"46",    lt:"20", epbt:"2.7", gwp:"31.4",       gwp_h:"36.86", method:"Only GWP",                                         year:"2014", ref:"Raadal, H. L., Vold, B. I., Myhr, A., & Nygaard, T. A. (2014). GHG emissions and energy performance of offshore wind power. Renewable Energy, 66.",                            note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"NE",  units:"—",   foundation:"Steel hull",                             type:"Floating",     cf:"50",    lt:"50", epbt:"NE",  gwp:"NR",         gwp_h:"NR",    method:"OneClickLCA + Ecoinvent; GWP en CO₂e/T",           year:"2025", ref:"Shakori, R., & Chaudhuri, A. (2025). Life cycle analysis of floating offshore wind turbine concepts. Springer.",                                                                 note:"Métrica en CO₂e/tonelada, no en gCO₂eq/kWh",                archivo:"978-3-031-69626-8_144.pdf",           lat:"",      lon:"" },
+  { mw:"NE",  units:"—",   foundation:"Concrete hull",                          type:"Floating",     cf:"50",    lt:"50", epbt:"NE",  gwp:"NR",         gwp_h:"NR",    method:"OneClickLCA + Ecoinvent; GWP en CO₂e/T",           year:"2025", ref:"Shakori, R., & Chaudhuri, A. (2025). Life cycle analysis of floating offshore wind turbine concepts. Springer.",                                                                 note:"Métrica en CO₂e/tonelada, no en gCO₂eq/kWh",                archivo:"978-3-031-69626-8_144.pdf",           lat:"",      lon:"" },
+  { mw:"4",   units:"—",   foundation:"Bottom-fixed (Monopile)",                type:"Bottom-fixed", cf:"52",    lt:"20", epbt:"0.88",gwp:"10",         gwp_h:"10.38", method:"EPD",                                              year:"—",    ref:"Siemens AG. (n.d.). EPD: Offshore Wind Power Plant SWT-4.0-130 and SWT-6.0-154.",                                                                                                note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"6",   units:"—",   foundation:"Bottom-fixed (Monopile)",                type:"Bottom-fixed", cf:"50",    lt:"25", epbt:"0.79",gwp:"7",          gwp_h:"6.05",  method:"EPD",                                              year:"—",    ref:"Siemens AG. (n.d.). EPD: Offshore Wind Power Plant SWT-4.0-130 and SWT-6.0-154.",                                                                                                note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"8",   units:"—",   foundation:"Bottom-fixed (Driven)",                  type:"Bottom-fixed", cf:"61",    lt:"25", epbt:"0.62",gwp:"6",          gwp_h:"4.25",  method:"EPD",                                              year:"—",    ref:"Siemens-Gamesa. (n.d.). EPD: Offshore Wind Power Plant SWT-8.0-167 DD.",                                                                                                         note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"15",  units:"94",  foundation:"Semi-submersible steel",                 type:"Floating",     cf:"52.3",  lt:"20", epbt:"NR",  gwp:"26.3",       gwp_h:"27.15", method:"LCA, cradle-to-grave",                             year:"2023", ref:"Struthers, I. A. et al. (2023). LCA of four floating wind farms around Scotland using site-specific O&M model with SOVs. Energies, 16(23), 7739.",                              note:"",                                                           archivo:"",                                    lat:"57.5",  lon:"-3.2" },
+  { mw:"5",   units:"6",   foundation:"Jacket foundation",                      type:"Bottom-fixed", cf:"44",    lt:"20", epbt:"NR",  gwp:"32",         gwp_h:"39.27", method:"LCA, cradle-to-grave",                             year:"2011", ref:"Wagner, H.-J. et al. (2011). Life cycle assessment of the offshore wind farm alpha ventus. Energy, 36(5), 2459–2464.",                                                         note:"Alpha Ventus",                                               archivo:"",                                    lat:"54.0",  lon:"6.6" },
+  { mw:"5",   units:"40",  foundation:"Spar buoy",                              type:"Floating",     cf:"53",    lt:"20", epbt:"NR",  gwp:"11.52",      gwp_h:"11.74", method:"LCA, cradle-to-grave",                             year:"2009", ref:"Weinzettel, J., Reenaas, M., Solli, C., & Hertwich, E. G. (2009). Life cycle assessment of a floating offshore wind turbine. Renewable Energy, 34(3), 742–747.",                  note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"5",   units:"—",   foundation:"Sway",                                   type:"Floating",     cf:"53",    lt:"20", epbt:"0.43",gwp:"11.5",       gwp_h:"11.72", method:"CML 2 baseline 2000 v2.03",                        year:"2009", ref:"Weinzettel, J., Reenaas, M., Solli, C., & Hertwich, E. G. (2009). Life cycle assessment of a floating offshore wind turbine. Renewable Energy, 34(3).",                          note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"3.6", units:"27",  foundation:"Monopile",                               type:"Bottom-fixed", cf:"NR",    lt:"25", epbt:"NR",  gwp:"25",         gwp_h:"NR",    method:"LCA, cradle-to-grave",                             year:"2018", ref:"Yang, J. et al. (2018). The life-cycle energy and environmental emissions of a typical offshore wind farm in China. Journal of Cleaner Production, 180, 316–324.",                   note:"China",                                                      archivo:"",                                    lat:"30.0",  lon:"121.5" },
+  { mw:"2",   units:"1",   foundation:"Barge-type",                             type:"Floating",     cf:"NR",    lt:"20", epbt:"NR",  gwp:"18.6",       gwp_h:"NR",    method:"LCA, cradle-to-cradle",                            year:"2021", ref:"Yildiz, N., Hemida, H., & Baniotopoulos, C. (2021). LCA of a barge-type floating wind turbine. Energies, 14(18), 5656.",                                                          note:"",                                                           archivo:"",                                    lat:"",      lon:"" },
+  { mw:"15",  units:"NR",  foundation:"Semi-submersible",                       type:"Floating",     cf:"NR",    lt:"NR", epbt:"NR",  gwp:"18.63–29.01",gwp_h:"NR",   method:"NR",                                               year:"2026", ref:"Guo, X., Liu, Y., & Ren, D. (2026). Life cycle carbon emissions assessment of floating offshore wind power in China. Sustainable Energy Technologies and Assessments, 86, 104879.", note:"Not available",                                              archivo:"-",                                   lat:"25.0",  lon:"120.0" },
 ];
 
-// Mapa de país (en minúsculas) → continente
-const COUNTRY_TO_CONTINENT = {
-  // Europa
-  "españa": "Europa",        "spain": "Europa",
-  "alemania": "Europa",      "germany": "Europa",
-  "francia": "Europa",       "france": "Europa",
-  "italia": "Europa",        "italy": "Europa",
-  "reino unido": "Europa",   "united kingdom": "Europa",
-  "suecia": "Europa",        "sweden": "Europa",
-  "noruega": "Europa",       "norway": "Europa",
-  "finlandia": "Europa",     "finland": "Europa",
-  "dinamarca": "Europa",     "denmark": "Europa",
-  "países bajos": "Europa",  "netherlands": "Europa",
-  "holanda": "Europa",
-  "bélgica": "Europa",       "belgium": "Europa",
-  "austria": "Europa",
-  "suiza": "Europa",         "switzerland": "Europa",
-  "portugal": "Europa",
-  "polonia": "Europa",       "poland": "Europa",
-  "república checa": "Europa", "czech republic": "Europa",
-  "eslovaquia": "Europa",    "slovakia": "Europa",
-  "hungría": "Europa",       "hungary": "Europa",
-  "rumanía": "Europa",       "romania": "Europa",
-  "bulgaria": "Europa",
-  "grecia": "Europa",        "greece": "Europa",
-  "turquía": "Europa",       "turkey": "Europa",
-  "ucrania": "Europa",       "ukraine": "Europa",
-  "rusia": "Europa",         "russia": "Europa",
-  "luxemburgo": "Europa",    "luxembourg": "Europa",
-  "croacia": "Europa",       "croatia": "Europa",
-  "eslovenia": "Europa",     "slovenia": "Europa",
-  "serbia": "Europa",
-  "lituania": "Europa",      "lithuania": "Europa",
-  "letonia": "Europa",       "latvia": "Europa",
-  "estonia": "Europa",
+/* ─── STATE ──────────────────────────────────────────────────────────────────── */
+let allData = [], filteredData = [];
+let sortCol = -1, sortAsc = true;
+let charts = {};
+let leafletMap = null, mapMarkers = [], mapInited = false;
+let searchQuery = '';
 
-  // América del Norte
-  "estados unidos": "América del Norte", "united states": "América del Norte", "usa": "América del Norte",
-  "canadá": "América del Norte",         "canada": "América del Norte",
-  "méxico": "América del Norte",         "mexico": "América del Norte",
-
-  // América del Sur
-  "brasil": "América del Sur",  "brazil": "América del Sur",
-  "argentina": "América del Sur",
-  "chile": "América del Sur",
-  "colombia": "América del Sur",
-  "perú": "América del Sur",    "peru": "América del Sur",
-  "venezuela": "América del Sur",
-  "ecuador": "América del Sur",
-
-  // Asia
-  "china": "Asia",
-  "japón": "Asia",          "japan": "Asia",
-  "corea del sur": "Asia",  "south korea": "Asia",
-  "india": "Asia",
-  "taiwán": "Asia",         "taiwan": "Asia",
-  "vietnam": "Asia",
-  "indonesia": "Asia",
-  "tailandia": "Asia",      "thailand": "Asia",
-  "malasia": "Asia",        "malaysia": "Asia",
-  "singapur": "Asia",       "singapore": "Asia",
-
-  // Oriente Medio
-  "emiratos árabes": "Oriente Medio", "uae": "Oriente Medio",
-  "arabia saudí": "Oriente Medio",    "saudi arabia": "Oriente Medio",
-  "qatar": "Oriente Medio",
-  "irán": "Oriente Medio",            "iran": "Oriente Medio",
-
-  // África
-  "sudáfrica": "África",    "south africa": "África",
-  "egipto": "África",       "egypt": "África",
-  "marruecos": "África",    "morocco": "África",
-
-  // Oceanía
-  "australia": "Oceanía",
-  "nueva zelanda": "Oceanía", "new zealand": "Oceanía",
+const FS = {
+  type: 'all',
+  yearLo: null, yearHi: null,
+  mwLo: null,   mwHi: null,
+  gwpLo: null,  gwpHi: null,
+  foundations: new Set(),
+  methods: new Set(),
 };
 
-// ─── Traducciones ───────────────────────────────────────────────────────────
-const I18N = {
-  es: {
-    pageTitle: "Steel EPDs for Offshore Wind",
-    pageSubtitle: "",
-    back: "← Volver al índice",
-    loading: "Cargando datos...",
-    continentFilter: "Continente",
-    countryFilter: "País de producción",
-    productFilter: "Tipo de acero",
-    searchLabel: "Buscar",
-    searchPlaceholder: "Nombre, código…",
-    allContinents: "Todos los continentes",
-    allCountries: "Todos los países",
-    all: "Todos",
-    distributionTitle: "Distribución por tipo de acero",
-    distributionStatus: "El punto resaltado muestra la EPD seleccionada dentro de la distribución de su categoría.",
-    gwpBoxTitle: "GWP-total",
-    gwpBoxSubtitle: "Distribución por producto asignado",
-    recycledBoxTitle: "Contenido reciclado",
-    recycledBoxSubtitle: "Distribución por producto asignado",
-    scatterPanelTitle: "Reciclaje vs emisiones",
-    preparingChart: "Preparando gráfico...",
-    noValidChartData: "No hay registros con valores numéricos válidos en contenido reciclado y GWP-total.",
-    errorReadingCsv: msg => `Error al leer datos.csv: ${msg}`,
-    chartBuildError: "No se pudo construir el gráfico.",
-    noValidRecords: "No hay registros válidos",
-    fileNotFound: "No se encontró datos.csv",
-    emptyCsv: "CSV vacío o sin filas de datos",
-    requiredColumnsMissing: missing => `Faltan columnas obligatorias: ${missing.join(", ")}`,
-    trendLabel: "Tendencia",
-    globalTrendLabel: "Tendencia global",
-    refs: n => `n=${n}`,
-    loadedData: (visible, total) => `${visible} / ${total} EPD visibles`,
-    loadedAllData: total => `${total} EPD cargadas`,
-    chartPoints: (valid, total) => `Puntos representados: ${valid} de ${total} EPD filtradas.`,
-    noExtraData: "Sin datos complementarios",
-    geolocatedEPD: "EPD geolocalizada",
-    location: "Ubicación",
-    openPdf: "Abrir PDF",
-    latitude: "Lat",
-    longitude: "Lon",
-    googleMapsLabel: "Ver ubicación",
-    assignedProduct: "Producto asignado",
-    recycledContentAxis: "Contenido reciclado (%)",
-    gwpAxis: "GWP-total (kg CO₂e/t)",
-    recycledTooltip: "Reciclaje",
-    gwpTooltip: "CO₂",
-    epdCode: "Código EPD",
-    selectedCategory: "Categoría",
-    unknownContinent: "Sin datos",
-    expandMap: "Ampliar mapa",
-    closeMap: "Cerrar mapa",
-    metrics: {
-      name: "Nombre", lat: "Latitud", lon: "Longitud",
-      codigo_epd: "Código EPD", producto: "Producto",
-      producto_asignado: "Producto asignado",
-      pais_produccion: "País producción",
-      ciudad_produccion: "Ciudad producción",
-      centro_produccion: "Centro de producción",
-      titular: "Titular",
-      compania_verificadora: "Compañía verificadora",
-      referencia: "Referencia",
-      ruta_de_produccion: "Ruta de producción",
-      contenido_reciclado_pct: "Contenido reciclado %",
-      gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-      archivo: "Archivo PDF", pdf_url: "PDF",
-      caracteristicas_funcionales: "Características funcionales"
+/* ─── GOOGLE SHEETS ──────────────────────────────────────────────────────────── */
+const SHEET_ID  = '19QFDP_oa8FHAQWEn3j6t8gysZvGbOrTrLSTtAExCBFk';
+const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GW_impact`;
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('gs-url').value = SHEET_CSV;
+  autoLoadSheets();
+});
+
+function autoLoadSheets() {
+  setStatus('syncing', 'Sincronizando con Google Sheets…');
+  fetch(SHEET_CSV)
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    .then(csv => {
+      const mapped = parseSheetCSV(csv);
+      if (!mapped.length) throw new Error('Sin datos');
+      processData(mapped);
+      setStatus('ok', `Datos cargados · ${mapped.length} entradas`);
+    })
+    .catch(e => {
+      console.warn('Google Sheets no disponible, usando datos locales:', e);
+      processData(DEFAULT_DATA);
+      setStatus('warn', 'Datos locales (hoja no responde)');
+    });
+}
+
+function loadFromSheets() {
+  const url = document.getElementById('gs-url').value.trim();
+  if (!url) return;
+  setStatus('syncing', 'Cargando…');
+  fetch(url)
+    .then(r => r.text())
+    .then(csv => { const m = parseSheetCSV(csv); processData(m); setStatus('ok', `Cargado · ${m.length} entradas`); })
+    .catch(e => { setStatus('error', 'Error al cargar'); console.error(e); });
+}
+
+function loadDefaultData() {
+  processData(DEFAULT_DATA);
+  setStatus('warn', 'Mostrando datos locales');
+}
+
+function setStatus(type, msg) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  dot.className = 'status-dot ' + type;
+  txt.textContent = msg;
+}
+
+function parseSheetCSV(csv) {
+  const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
+  if (!result.data.length) return [];
+  const cols = Object.keys(result.data[0]);
+  const norm = s => String(s).toLowerCase().replace(/[\s\n\r]+/g, ' ').trim();
+
+  function findCol(...hints) {
+    for (const hint of hints) {
+      const h = norm(hint);
+      const exact = cols.find(c => norm(c) === h);
+      if (exact) return exact;
+      const partial = cols.find(c => norm(c).includes(h) || h.includes(norm(c)));
+      if (partial) return partial;
     }
-  },
-  en: {
-    pageTitle: "Steel EPDs for Offshore Wind",
-    pageSubtitle: "",
-    back: "← Back to index",
-    loading: "Loading data...",
-    continentFilter: "Continent",
-    countryFilter: "Production country",
-    productFilter: "Steel type",
-    searchLabel: "Search",
-    searchPlaceholder: "Name, code…",
-    allContinents: "All continents",
-    allCountries: "All countries",
-    all: "All",
-    distributionTitle: "Distribution by steel type",
-    distributionStatus: "The highlighted point shows the selected EPD within the distribution of its category.",
-    gwpBoxTitle: "GWP-total",
-    gwpBoxSubtitle: "Distribution by assigned product",
-    recycledBoxTitle: "Recycled content",
-    recycledBoxSubtitle: "Distribution by assigned product",
-    scatterPanelTitle: "Recycled content vs emissions",
-    preparingChart: "Preparing chart...",
-    noValidChartData: "There are no records with valid numeric values for recycled content and GWP-total.",
-    errorReadingCsv: msg => `Error reading datos.csv: ${msg}`,
-    chartBuildError: "The chart could not be built.",
-    noValidRecords: "No valid records",
-    fileNotFound: "datos.csv was not found",
-    emptyCsv: "Empty CSV or no data rows",
-    requiredColumnsMissing: missing => `Missing required columns: ${missing.join(", ")}`,
-    trendLabel: "Trend",
-    globalTrendLabel: "Global trend",
-    refs: n => `n=${n}`,
-    loadedData: (visible, total) => `${visible} / ${total} visible EPDs`,
-    loadedAllData: total => `${total} EPDs loaded`,
-    chartPoints: (valid, total) => `Displayed points: ${valid} out of ${total} filtered EPDs.`,
-    noExtraData: "No additional data",
-    geolocatedEPD: "Geolocated EPD",
-    location: "Location",
-    openPdf: "Open PDF",
-    latitude: "Lat",
-    longitude: "Lon",
-    googleMapsLabel: "View location",
-    assignedProduct: "Assigned product",
-    recycledContentAxis: "Recycled content (%)",
-    gwpAxis: "GWP-total (kg CO₂e/t)",
-    recycledTooltip: "Recycled content",
-    gwpTooltip: "CO₂",
-    epdCode: "EPD code",
-    selectedCategory: "Category",
-    unknownContinent: "No data",
-    expandMap: "Expand map",
-    closeMap: "Close map",
-    metrics: {
-      name: "Name", lat: "Latitude", lon: "Longitude",
-      codigo_epd: "EPD code", producto: "Product",
-      producto_asignado: "Assigned product",
-      pais_produccion: "Production country",
-      ciudad_produccion: "Production city",
-      centro_produccion: "Production facility",
-      titular: "Owner",
-      compania_verificadora: "Verifying company",
-      referencia: "Reference",
-      ruta_de_produccion: "Production route",
-      contenido_reciclado_pct: "Recycled content %",
-      gwp_total_kg_co2e_t: "GWP-total (kg CO₂e/t)",
-      archivo: "PDF file", pdf_url: "PDF",
-      caracteristicas_funcionales: "Functional characteristics"
-    }
-  }
-};
-
-// ─── Estado global ──────────────────────────────────────────────────────────
-let currentLang   = localStorage.getItem("epd_lang") || "es";
-let allSites      = [];
-let filteredSites = [];
-let selectedId    = null;
-
-let map, cartoLayer, orthoLayer;
-let markers = [];
-let markerById = new Map();
-let scatterChart = null;
-const categoryColorMap = new Map();
-
-// ─── Referencias al DOM ─────────────────────────────────────────────────────
-const statusEl          = document.getElementById("status");
-const chartStatusEl     = document.getElementById("chartStatus");
-const searchInput       = document.getElementById("searchInput");
-const continentFilterEl = document.getElementById("continentFilter");
-const countryFilterEl   = document.getElementById("countryFilter");
-const productFilterEl   = document.getElementById("productFilter");
-const langSwitchEl      = document.getElementById("langSwitch");
-const mapPanelEl        = document.getElementById("mapPanel");
-const mapExpandBtn      = document.getElementById("mapExpandBtn");
-
-// Range slider refs
-const gwpRangeMinEl      = document.getElementById("gwpRangeMin");
-const gwpRangeMaxEl      = document.getElementById("gwpRangeMax");
-const recycledRangeMinEl = document.getElementById("recycledRangeMin");
-const recycledRangeMaxEl = document.getElementById("recycledRangeMax");
-const gwpMinLabelEl      = document.getElementById("gwpMinLabel");
-const gwpMaxLabelEl      = document.getElementById("gwpMaxLabel");
-const recycledMinLabelEl = document.getElementById("recycledMinLabel");
-const recycledMaxLabelEl = document.getElementById("recycledMaxLabel");
-const epdListBodyEl      = document.getElementById("epdListBody");
-
-// Range state
-let gwpFilterMin = 0, gwpFilterMax = Infinity;
-let recycledFilterMin = 0, recycledFilterMax = 100;
-
-// ─── Utilidades ─────────────────────────────────────────────────────────────
-function t(key) {
-  return I18N[currentLang]?.[key] ?? key;
-}
-
-function tm(key) {
-  return I18N[currentLang]?.metrics?.[key]
-    ?? key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
-
-function slugify(text) {
-  return String(text || "")
-    .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
-// ─── Idioma ─────────────────────────────────────────────────────────────────
-function applyStaticLanguage() {
-  document.documentElement.lang = currentLang;
-  document.title = t("pageTitle");
-  document.getElementById("backLink").textContent = t("back");
-  document.getElementById("pageTitle").textContent = t("pageTitle");
-  const subtitleEl = document.getElementById("pageSubtitle");
-  if (subtitleEl) subtitleEl.innerHTML = t("pageSubtitle");
-  document.getElementById("continentFilterLabel").textContent = t("continentFilter");
-  document.getElementById("countryFilterLabel").textContent = t("countryFilter");
-  document.getElementById("productFilterLabel").textContent = t("productFilter");
-  document.getElementById("searchLabel").textContent = t("searchLabel");
-  document.getElementById("searchInput").placeholder = t("searchPlaceholder");
-  document.getElementById("distributionTitle").textContent = t("distributionTitle");
-  document.getElementById("distributionStatus").textContent = t("distributionStatus");
-  document.getElementById("gwpBoxTitle").textContent = t("gwpBoxTitle");
-  document.getElementById("gwpBoxSubtitle").textContent = t("gwpBoxSubtitle");
-  document.getElementById("recycledBoxTitle").textContent = t("recycledBoxTitle");
-  document.getElementById("recycledBoxSubtitle").textContent = t("recycledBoxSubtitle");
-  document.getElementById("scatterPanelTitle").textContent = t("scatterPanelTitle");
-
-  if (!allSites.length) {
-    statusEl.textContent = t("loading");
-    chartStatusEl.textContent = t("preparingChart");
+    return null;
   }
 
-  if (mapExpandBtn) {
-    const isExpanded = mapPanelEl?.classList.contains("map-fullscreen");
-    mapExpandBtn.textContent = isExpanded ? t("closeMap") : t("expandMap");
-    mapExpandBtn.setAttribute("aria-label", isExpanded ? t("closeMap") : t("expandMap"));
-  }
-}
+  const colMW    = findCol('power rating', 'mw');
+  const colUnits = findCol('units', 'unidades');
+  const colFnd   = findCol('offshore foundation design', 'foundation design', 'foundation');
+  const colType  = findCol('type', 'tipo');
+  const colCF    = findCol('cf (%)', 'cf(%)', 'cf');
+  const colLT    = findCol('lt (year)', 'lt');
+  const colEPBT  = findCol('epbt (year)', 'epbt');
+  const colGWP   = findCol('gw impact', 'gwp');
+  const colGWPH  = findCol('harmonised gw', 'harmonized gw', 'harmonised');
+  const colMeth  = findCol('lcia method', 'method');
+  const colYear  = findCol('year', 'año');
+  const colRef   = findCol('ref.', 'ref');
+  const colNote  = findCol('note', 'nota');
+  const colArch  = findCol('archivo', 'file');
+  const colLat   = findCol('lat', 'latitude');
+  const colLon   = findCol('lon', 'longitude', 'long');
 
-// ─── Mapa de normalización: valor CSV → etiqueta de visualización ────────────
-const CONTINENT_DISPLAY = {
-  "europa":        "Europa",
-  "europa / asia": "Europa / Asia",
-  "asia":          "Asia",
-  "america":       "América",
-  "africa":        "África",
-  "medio oriente": "Medio Oriente",
-  "oceania":       "Oceanía",
-};
-
-// ─── Continente ─────────────────────────────────────────────────────────────
-function getContinentForSite(site) {
-  // 1. Usar directamente la columna Continente del CSV
-  const raw = String(site?.raw?.Continente || "").trim();
-  if (raw) {
-    const key = raw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (CONTINENT_DISPLAY[key]) return CONTINENT_DISPLAY[key];
-    // Si el valor existe pero no está en el mapa, devolverlo en title case
-    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-  }
-
-  // 2. Fallback: buscar por país (para registros sin columna Continente)
-  const country = String(site?.raw?.pais_produccion || "").trim().toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  for (const [key, continent] of Object.entries(COUNTRY_TO_CONTINENT)) {
-    const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (country === keyNorm) return continent;
-  }
-  return t("unknownContinent");
-}
-
-// ─── Parseo de CSV ──────────────────────────────────────────────────────────
-function detectDelimiter(headerLine) {
-  const sc = (headerLine.match(/;/g) || []).length;
-  const co = (headerLine.match(/,/g) || []).length;
-  return sc > co ? ";" : ",";
-}
-
-function splitCSVLine(line, delimiter) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const next = line[i + 1];
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === delimiter && !inQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  result.push(current);
-  return result;
-}
-
-function parseCoordinate(value) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return NaN;
-  if (/[.,]/.test(raw)) return parseFloat(raw.replace(",", "."));
-
-  const sign = raw.startsWith("-") ? -1 : 1;
-  const digits = raw.replace(/^[+-]/, "");
-  if (!/^\d+$/.test(digits)) return NaN;
-
-  if (digits.length >= 3) {
-    return sign * parseFloat(`${digits.slice(0, digits.length - 2)}.${digits.slice(-2)}`);
-  }
-  return sign * parseFloat(digits);
-}
-
-function parseLocaleNumber(value) {
-  let raw = String(value ?? "").trim();
-  if (!raw) return NaN;
-
-  raw = raw.replace(/\s+/g, "").replace(/[%‰]/g, "").replace(/[^\d,.\-]/g, "");
-  if (!raw) return NaN;
-
-  const hasComma = raw.includes(",");
-  const hasDot   = raw.includes(".");
-
-  if (hasComma && hasDot) {
-    raw = raw.lastIndexOf(",") > raw.lastIndexOf(".")
-      ? raw.replace(/\./g, "").replace(",", ".")
-      : raw.replace(/,/g, "");
-  } else if (hasComma) {
-    raw = raw.replace(",", ".");
-  }
-
-  const n = parseFloat(raw);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-function getAssignedProduct(site) {
-  const value = site?.raw?.producto_asignado;
-  return value && String(value).trim() !== ""
-    ? String(value).trim()
-    : (currentLang === "es" ? "Sin asignar" : "Unassigned");
-}
-
-function getColorForCategory(category) {
-  const key = category || (currentLang === "es" ? "Sin asignar" : "Unassigned");
-  if (!categoryColorMap.has(key)) {
-    categoryColorMap.set(key, CATEGORY_COLORS[categoryColorMap.size % CATEGORY_COLORS.length]);
-  }
-  return categoryColorMap.get(key);
-}
-
-function getCategoryCounts(sites) {
-  const counts = new Map();
-  sites.forEach(site => counts.set(site.productAssigned, (counts.get(site.productAssigned) || 0) + 1));
-  return counts;
-}
-
-function formatCategoryWithCount(category, count) {
-  return `${category} (${t("refs")(count)})`;
-}
-
-function parseCSV(text) {
-  const lines = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) throw new Error(t("emptyCsv"));
-
-  const delimiter = detectDelimiter(lines[0]);
-  const headers = splitCSVLine(lines[0], delimiter).map(h => h.trim());
-  const missing = REQUIRED_KEYS.filter(k => !headers.includes(k));
-  if (missing.length) throw new Error(t("requiredColumnsMissing")(missing));
-
-  return lines.slice(1).map((line, idx) => {
-    const values = splitCSVLine(line, delimiter);
-    const raw = {};
-    headers.forEach((h, i) => { raw[h] = (values[i] || "").trim(); });
-
-    const site = {
-      id: raw.id || slugify(raw.name) || `epd-${idx + 1}`,
-      name: raw.name || `EPD ${idx + 1}`,
-      lat: parseCoordinate(raw.lat),
-      lon: parseCoordinate(raw.lon),
-      raw
-    };
-
-    if (Number.isNaN(site.lat) || Number.isNaN(site.lon)) return null;
-
-    site.productAssigned = getAssignedProduct(site);
-    site.recycledPct = parseLocaleNumber(site.raw.contenido_reciclado_pct);
-    site.gwp = parseLocaleNumber(site.raw.gwp_total_kg_co2e_t);
-
-    return site;
-  }).filter(Boolean);
-}
-
-// ─── Filtros desplegables ───────────────────────────────────────────────────
-function populateAllFilters() {
-  const continentSel = continentFilterEl.value;
-  const countrySel   = countryFilterEl.value;
-  const productSel   = productFilterEl.value;
-
-  allSites.forEach(site => { site.continent = getContinentForSite(site); });
-
-  const continents = Array.from(new Set(allSites.map(s => s.continent))).sort();
-  continentFilterEl.innerHTML =
-    `<option value="">${escapeHtml(t("allContinents"))}</option>` +
-    continents.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-  if (continents.includes(continentSel)) continentFilterEl.value = continentSel;
-
-  updateCountryFilter(continentFilterEl.value, countrySel);
-
-  const products = Array.from(new Set(allSites.map(s => s.productAssigned)))
-    .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
-  productFilterEl.innerHTML =
-    `<option value="">${escapeHtml(t("all"))}</option>` +
-    products.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-  if (products.includes(productSel)) productFilterEl.value = productSel;
-}
-
-function updateCountryFilter(selectedContinent, keepValue = "") {
-  const sourceSites = selectedContinent
-    ? allSites.filter(s => s.continent === selectedContinent)
-    : allSites;
-
-  const countries = Array.from(new Set(
-    sourceSites.map(s => String(s.raw.pais_produccion || "").trim()).filter(Boolean)
-  )).sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
-
-  countryFilterEl.innerHTML =
-    `<option value="">${escapeHtml(t("allCountries"))}</option>` +
-    countries.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-
-  if (countries.includes(keepValue)) countryFilterEl.value = keepValue;
-}
-
-// ─── Rutas de PDF ───────────────────────────────────────────────────────────
-function getPdfSubdir(site) {
-  const explicitFolder = String(site?.raw?.pdf_subdir || site?.raw?.pdf_folder || "").trim();
-  if (explicitFolder) return explicitFolder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-
-  const normalized = String(site?.productAssigned || "")
-    .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  if (normalized.includes("b500sd")) return "B500SD";
-  if (normalized.includes("y1860") && normalized.includes("s7")) return "Y1860_S7";
-  if (normalized.includes("s355") && normalized.includes("offshore")) return "S355_Offshore";
-
-  return slugify(site?.productAssigned || "").replace(/-/g, "_");
-}
-
-function buildPdfHref(site) {
-  const archivoRaw = String(site?.raw?.archivo || "").trim();
-  if (!archivoRaw) return String(site?.raw?.pdf_url || "").trim();
-
-  const fileName = archivoRaw.split(/[\\/]/).pop().trim();
-  const subdir = getPdfSubdir(site);
-  const safeName = fileName.split("/").filter(Boolean).map(encodeURIComponent).join("/");
-  const safeDir = String(subdir || "").split("/").filter(Boolean).map(encodeURIComponent).join("/");
-
-  return safeDir ? `${PDF_BASE_PATH}${safeDir}/${safeName}` : `${PDF_BASE_PATH}${safeName}`;
-}
-
-// ─── Popup ──────────────────────────────────────────────────────────────────
-function buildPopupHtml(site) {
-  const popupKeys = ["contenido_reciclado_pct", "gwp_total_kg_co2e_t"]
-    .filter(key => site.raw[key] && String(site.raw[key]).trim() !== "");
-
-  const popupItems = popupKeys.length
-    ? popupKeys.map(key => `
-        <div class="popup-item">
-          <span class="k">${escapeHtml(tm(key))}</span>
-          <span class="v">${escapeHtml(site.raw[key])}</span>
-        </div>`).join("")
-    : `<div class="popup-item">
-        <span class="k">${escapeHtml(t("location"))}</span>
-        <span class="v">${escapeHtml(t("latitude"))} ${site.lat.toFixed(4)}, ${escapeHtml(t("longitude"))} ${site.lon.toFixed(4)}</span>
-       </div>`;
-
-  const pdfHref = buildPdfHref(site);
-
-  return `
-    <div class="popup-shell">
-      <div class="popup-head">
-        <div class="popup-title">${escapeHtml(site.name)}</div>
-        <div class="popup-subtitle">${escapeHtml(String(site.raw.producto || "").trim() || t("geolocatedEPD"))}</div>
-      </div>
-      <div class="popup-grid">${popupItems}</div>
-      <div class="popup-links">
-        ${pdfHref ? `<a class="popup-link" href="${escapeHtml(pdfHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("openPdf"))}</a>` : ""}
-        <a class="popup-link" href="https://www.google.com/maps?q=${site.lat},${site.lon}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("googleMapsLabel"))}</a>
-      </div>
-    </div>`;
-}
-
-// ─── Mapa pantalla completa ─────────────────────────────────────────────────
-function setMapExpanded(expanded) {
-  if (!mapPanelEl || !mapExpandBtn) return;
-
-  mapPanelEl.classList.toggle("map-fullscreen", expanded);
-  document.body.classList.toggle("map-fullscreen-open", expanded);
-  mapExpandBtn.textContent = expanded ? t("closeMap") : t("expandMap");
-  mapExpandBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
-  mapExpandBtn.setAttribute("aria-label", expanded ? t("closeMap") : t("expandMap"));
-
-  setTimeout(() => {
-    if (map) map.invalidateSize();
-  }, 120);
-}
-
-function toggleMapExpanded() {
-  const expanded = mapPanelEl?.classList.contains("map-fullscreen");
-  setMapExpanded(!expanded);
-}
-
-// ─── Mapa ───────────────────────────────────────────────────────────────────
-function initMap() {
-  cartoLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
-  });
-
-  orthoLayer = L.tileLayer(
-    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    { maxZoom: 19, attribution: "Tiles &copy; Esri" }
-  );
-
-  map = L.map("map", { center: INITIAL_CENTER, zoom: INITIAL_ZOOM, layers: [cartoLayer] });
-
-  L.control.layers(
-    { "Cartografía / Map": cartoLayer, "Ortofoto / Imagery": orthoLayer },
-    {},
-    { collapsed: false }
-  ).addTo(map);
-}
-
-function getMarkerStyle(site, isSelected = false) {
-  return {
-    radius: isSelected ? 10 : 7,
-    fillColor: getColorForCategory(site.productAssigned),
-    color: isSelected ? "#ffffff" : "rgba(255,255,255,0.72)",
-    weight: isSelected ? 3 : 1.5,
-    opacity: 1,
-    fillOpacity: isSelected ? 1 : 0.88
+  const gwCols   = cols.filter(c => norm(c).includes('gw impact') || norm(c).includes('gwp'));
+  const val = (row, col) => {
+    if (!col) return '—';
+    const v = row[col];
+    if (v === undefined || v === null || String(v).trim() === '') return '—';
+    return String(v).trim();
   };
-}
 
-function updateMarkerStyles() {
-  markerById.forEach((marker, id) => {
-    const site = allSites.find(s => s.id === id);
-    if (site) marker.setStyle(getMarkerStyle(site, id === selectedId));
-  });
-}
-
-function renderMarkers() {
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
-  markerById = new Map();
-
-  if (!filteredSites.length) {
-    map.setView(INITIAL_CENTER, INITIAL_ZOOM);
-    return;
-  }
-
-  const bounds = [];
-
-  filteredSites.forEach(site => {
-    const marker = L.circleMarker([site.lat, site.lon], getMarkerStyle(site, site.id === selectedId)).addTo(map);
-
-    marker.bindPopup(buildPopupHtml(site), {
-      maxWidth: 360,
-      minWidth: 220,
-      autoPan: true
-    });
-
-    marker.on("click", () => {
-      selectedId = site.id;
-      updateMarkerStyles();
-      renderScatterPlot();
-      renderBoxplots();
-    });
-
-    markers.push(marker);
-    markerById.set(site.id, marker);
-    bounds.push([site.lat, site.lon]);
-  });
-
-  bounds.length === 1
-    ? map.setView(bounds[0], 6)
-    : map.fitBounds(bounds, { padding: [30, 30] });
-}
-
-// ─── Gráfico de dispersión ──────────────────────────────────────────────────
-function computeTrendLine(points) {
-  if (!points || points.length < 2) return null;
-
-  const xs = points.map(p => p.x);
-  const ys = points.map(p => p.y);
-  const n = points.length;
-  const sumX = xs.reduce((a, b) => a + b, 0);
-  const sumY = ys.reduce((a, b) => a + b, 0);
-  const sumXY = points.reduce((a, p) => a + p.x * p.y, 0);
-  const sumXX = xs.reduce((a, x) => a + x * x, 0);
-  const denom = n * sumXX - sumX * sumX;
-
-  if (!Number.isFinite(denom) || denom === 0) return null;
-
-  const slope = (n * sumXY - sumX * sumY) / denom;
-  const intercept = (sumY - slope * sumX) / n;
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-
-  return [
-    { x: minX, y: slope * minX + intercept },
-    { x: maxX, y: slope * maxX + intercept }
-  ];
-}
-
-function renderScatterPlot() {
-  const chartCanvas = document.getElementById("scatterChart");
-  const validSites = filteredSites.filter(s => Number.isFinite(s.recycledPct) && Number.isFinite(s.gwp));
-
-  if (scatterChart) {
-    scatterChart.destroy();
-    scatterChart = null;
-  }
-
-  if (!validSites.length) {
-    chartStatusEl.textContent = t("noValidChartData");
-    return;
-  }
-
-  const grouped = new Map();
-  const categoryCounts = getCategoryCounts(validSites);
-
-  validSites.forEach(site => {
-    if (!grouped.has(site.productAssigned)) grouped.set(site.productAssigned, []);
-    grouped.get(site.productAssigned).push({
-      x: site.recycledPct,
-      y: site.gwp,
-      siteId: site.id,
-      label: site.name,
-      productAssigned: site.productAssigned,
-      codigo: site.raw.codigo_epd || ""
-    });
-  });
-
-  const datasets = [];
-
-  Array.from(grouped.entries())
-    .sort((a, b) => a[0].localeCompare(b[0], currentLang, { sensitivity: "base" }))
-    .forEach(([category, data]) => {
-      const color = getColorForCategory(category);
-      const label = formatCategoryWithCount(category, categoryCounts.get(category) || data.length);
-
-      datasets.push({
-        label,
-        data,
-        showLine: false,
-        borderColor: color,
-        backgroundColor: color,
-        pointRadius: ctx => ctx.raw.siteId === selectedId ? 8 : 5,
-        pointHoverRadius: 9,
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: ctx => ctx.raw.siteId === selectedId ? 2.5 : 1.2,
-        order: 2
-      });
-    });
-
-  const globalTrendData = validSites.map(site => ({
-    x: site.recycledPct,
-    y: site.gwp
+  return result.data.map(row => ({
+    mw:        val(row, colMW),
+    units:     val(row, colUnits),
+    foundation:val(row, colFnd),
+    type:      val(row, colType),
+    cf:        val(row, colCF),
+    lt:        val(row, colLT),
+    epbt:      val(row, colEPBT),
+    gwp:       val(row, colGWP)  !== '—' ? val(row, colGWP)  : val(row, gwCols[0] || null),
+    gwp_h:     val(row, colGWPH) !== '—' ? val(row, colGWPH) : val(row, gwCols[1] || null),
+    method:    val(row, colMeth),
+    year:      val(row, colYear),
+    ref:       val(row, colRef),
+    note:      val(row, colNote) === '—' ? '' : val(row, colNote),
+    archivo:   val(row, colArch) === '—' ? '' : val(row, colArch),
+    lat:       val(row, colLat)  === '—' ? '' : val(row, colLat),
+    lon:       val(row, colLon)  === '—' ? '' : val(row, colLon),
   }));
+}
 
-  const globalTrend = computeTrendLine(globalTrendData);
+/* ─── PROCESS DATA ───────────────────────────────────────────────────────────── */
+function processData(data) {
+  allData = data;
+  initFilterRanges(data);
+  initCheckboxLists(data);
+  updateTypeCounts(data);
+  applyAllFilters();
+}
 
-  if (globalTrend) {
-    datasets.push({
-      label: t("globalTrendLabel"),
-      data: globalTrend,
-      type: "line",
-      showLine: true,
-      parsing: false,
-      borderColor: "#ffffff",
-      backgroundColor: "#ffffff",
-      borderWidth: 2.5,
-      borderDash: [],
-      pointRadius: 0,
-      pointHoverRadius: 0,
-      pointHitRadius: 8,
-      fill: false,
-      tension: 0,
-      order: 1
-    });
+function initFilterRanges(data) {
+  const years = data.map(d => parseInt(d.year)).filter(y => !isNaN(y));
+  if (years.length) {
+    const yMin = Math.min(...years), yMax = Math.max(...years);
+    setRangeAttr('year', yMin, yMax, yMin, yMax);
   }
-
-  scatterChart = new Chart(chartCanvas, {
-    type: "scatter",
-    data: { datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      parsing: false,
-      plugins: {
-        legend: {
-          labels: {
-            color: "#eaf1ff",
-            usePointStyle: true,
-            filter: (item, d) => !!d.datasets[item.datasetIndex].label,
-            generateLabels(chart) {
-              const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-
-              return defaultLabels.map(label => {
-                const ds = chart.data.datasets[label.datasetIndex];
-
-                if (ds.type === "line") {
-                  return {
-                    ...label,
-                    pointStyle: "line",
-                    strokeStyle: ds.borderColor,
-                    fillStyle: ds.borderColor,
-                    lineWidth: ds.borderWidth || 2
-                  };
-                }
-
-                return {
-                  ...label,
-                  pointStyle: "circle"
-                };
-              });
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: "rgba(10,16,29,0.95)",
-          borderColor: "rgba(102,179,255,0.35)",
-          borderWidth: 1,
-          titleColor: "#ffffff",
-          bodyColor: "#eaf1ff",
-          callbacks: {
-            label(ctx) {
-              const raw = ctx.raw;
-
-              if (!raw?.siteId) {
-                return ctx.dataset?.label || "";
-              }
-
-              return [
-                raw.label,
-                `${t("assignedProduct")}: ${raw.productAssigned}`,
-                `${t("recycledTooltip")}: ${raw.x} %`,
-                `${t("gwpTooltip")}: ${raw.y} kg CO₂e/t`,
-                raw.codigo ? `${t("epdCode")}: ${raw.codigo}` : null
-              ].filter(Boolean);
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          min: 0,
-          max: 100,
-          title: {
-            display: true,
-            text: t("recycledContentAxis"),
-            color: "#eaf1ff"
-          },
-          ticks: { color: "#9db0d1" },
-          grid: { color: "rgba(157,176,209,0.15)" }
-        },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: t("gwpAxis"),
-            color: "#eaf1ff"
-          },
-          ticks: { color: "#9db0d1" },
-          grid: { color: "rgba(157,176,209,0.15)" }
-        }
-      },
-      onClick(event, elements, chart) {
-        if (!elements.length) return;
-        const raw = chart.data.datasets[elements[0].datasetIndex].data[elements[0].index];
-        if (raw?.siteId) selectSite(raw.siteId, true, true);
-      }
-    }
-  });
-
-  chartStatusEl.textContent = t("chartPoints")(validSites.length, filteredSites.length);
-}
-
-// ─── Boxplots ───────────────────────────────────────────────────────────────
-function wrapLabel(text, maxLen = 18) {
-  if (text.length <= maxLen) return text;
-  const words = text.split(' ');
-  const lines = [];
-  let current = '';
-  for (const word of words) {
-    if ((current + ' ' + word).trim().length > maxLen && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = (current + ' ' + word).trim();
-    }
+  const mws = data.map(d => parseNum(d.mw)).filter(v => v !== null);
+  if (mws.length) {
+    const lo = Math.floor(Math.min(...mws)), hi = Math.ceil(Math.max(...mws));
+    setRangeAttr('mw', lo, hi, lo, hi);
   }
-  if (current) lines.push(current);
-  return lines.join('<br>');
-}
-
-function getPlotlyBaseLayout(yTitle) {
-  return {
-    paper_bgcolor: "rgba(0,0,0,0)",
-    plot_bgcolor: "rgba(0,0,0,0)",
-    margin: { l: 56, r: 12, t: 8, b: 110 },
-    autosize: true,
-    showlegend: false,
-    font: { color: "#eaf1ff", family: 'Inter, system-ui, sans-serif' },
-    xaxis: {
-      title: "",
-      tickangle: 0,
-      automargin: true,
-      color: "#9db0d1",
-      gridcolor: "rgba(157,176,209,0.08)",
-      zeroline: false
-    },
-    yaxis: {
-      title: yTitle,
-      automargin: true,
-      color: "#9db0d1",
-      gridcolor: "rgba(157,176,209,0.15)",
-      zeroline: false
-    }
-  };
-}
-
-function renderSingleBoxplot(targetId, accessor, yTitle) {
-  const validSites = filteredSites.filter(s => Number.isFinite(accessor(s)));
-  const targetEl = document.getElementById(targetId);
-
-  if (!validSites.length) {
-    Plotly.purge(targetEl);
-    targetEl.innerHTML = "";
-    return;
+  const gwps = data.map(d => parseNum(d.gwp_h)).filter(v => v !== null);
+  if (gwps.length) {
+    const lo = Math.floor(Math.min(...gwps)), hi = Math.ceil(Math.max(...gwps));
+    setRangeAttr('gwp', lo, hi, lo, hi);
   }
+  FS.yearLo = null; FS.yearHi = null;
+  FS.mwLo   = null; FS.mwHi   = null;
+  FS.gwpLo  = null; FS.gwpHi  = null;
+}
 
-  const categoryCounts = getCategoryCounts(validSites);
-  const categories = Array.from(new Set(validSites.map(s => s.productAssigned)))
-    .sort((a, b) => a.localeCompare(b, currentLang, { sensitivity: "base" }));
-  const labelMap = new Map(categories.map(c => [c, wrapLabel(formatCategoryWithCount(c, categoryCounts.get(c) || 0))]));
+function setRangeAttr(id, min, max, lo, hi) {
+  const rlo = document.getElementById(`rlo-${id}`);
+  const rhi = document.getElementById(`rhi-${id}`);
+  if (!rlo || !rhi) return;
+  [rlo.min, rlo.max, rlo.value] = [min, max, lo];
+  [rhi.min, rhi.max, rhi.value] = [min, max, hi];
+  updateRangeFill(id);
+  setRangeLabel(id, lo, hi);
+}
 
-  const traces = categories.map(cat => ({
-    type: "box",
-    name: labelMap.get(cat),
-    y: validSites.filter(s => s.productAssigned === cat).map(s => accessor(s)),
-    boxpoints: false,
-    line: { color: getColorForCategory(cat), width: 1.8 },
-    fillcolor: "rgba(102,179,255,0.14)",
-    marker: { color: getColorForCategory(cat) },
-    hovertemplate: `<b>${escapeHtml(labelMap.get(cat))}</b><br>${escapeHtml(yTitle)}: %{y}<extra></extra>`
-  }));
-
-  const sel = validSites.find(s => s.id === selectedId);
-  if (sel) {
-    traces.push({
-      type: "scatter",
-      mode: "markers",
-      x: [labelMap.get(sel.productAssigned)],
-      y: [accessor(sel)],
-      marker: { size: 12, color: "#ffffff", line: { color: "#111827", width: 2 } },
-      hovertemplate:
-        `<b>${escapeHtml(sel.name)}</b><br>` +
-        `${escapeHtml(t("selectedCategory"))}: ${escapeHtml(labelMap.get(sel.productAssigned))}<br>` +
-        `${escapeHtml(yTitle)}: ${accessor(sel)}<extra></extra>`
-    });
+function setRangeLabel(id, lo, hi) {
+  const loEl = document.getElementById(`rlv-${id}-lo`);
+  const hiEl = document.getElementById(`rlv-${id}-hi`);
+  if (loEl) loEl.textContent = lo;
+  if (hiEl) {
+    if (hiEl.children.length) hiEl.childNodes[0].textContent = hi;
+    else hiEl.textContent = hi;
   }
-
-  Plotly.react(targetEl, traces, getPlotlyBaseLayout(yTitle), {
-    responsive: true,
-    displayModeBar: false
-  });
 }
 
-function renderBoxplots() {
-  renderSingleBoxplot("boxplotGwp", s => s.gwp, t("gwpAxis"));
-  renderSingleBoxplot("boxplotRecycled", s => s.recycledPct, t("recycledContentAxis"));
+function initCheckboxLists(data) {
+  const foundations = [...new Set(data.map(d => d.foundation).filter(v => v && v !== '—'))].sort();
+  const methods     = [...new Set(data.map(d => d.method).filter(v => v && v !== '—'))].sort();
+  buildCheckList('chk-found',  foundations, 'found');
+  buildCheckList('chk-method', methods,     'method');
 }
 
-// ─── Rangos de filtro ───────────────────────────────────────────────────────
-function initRanges() {
-  const gwpValues      = allSites.map(s => s.gwp).filter(v => Number.isFinite(v));
-  const recycledValues = allSites.map(s => s.recycledPct).filter(v => Number.isFinite(v));
-
-  if (gwpValues.length && gwpRangeMinEl) {
-    const minG = Math.floor(Math.min(...gwpValues) / 50) * 50;
-    const maxG = Math.ceil(Math.max(...gwpValues)  / 50) * 50;
-    [gwpRangeMinEl, gwpRangeMaxEl].forEach(el => { el.min = minG; el.max = maxG; });
-    gwpRangeMinEl.value = minG;
-    gwpRangeMaxEl.value = maxG;
-    gwpFilterMin = minG;
-    gwpFilterMax = maxG;
-  }
-
-  if (recycledValues.length && recycledRangeMinEl) {
-    recycledRangeMinEl.value = 0;
-    recycledRangeMaxEl.value = 100;
-    recycledFilterMin = 0;
-    recycledFilterMax = 100;
-  }
-
-  updateRangeFill("gwp");
-  updateRangeFill("recycled");
-  updateRangeLabels();
+function buildCheckList(containerId, values, fsKey) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = values.map((v, i) => `
+    <label class="chk-item">
+      <input type="checkbox" id="chk-${fsKey}-${i}" value="${esc(v)}" onchange="onCheckbox('${fsKey}')">
+      <label for="chk-${fsKey}-${i}" style="pointer-events:none">${esc(v)}</label>
+    </label>`).join('');
 }
 
-function updateRangeFill(type) {
-  const minEl  = type === "gwp" ? gwpRangeMinEl  : recycledRangeMinEl;
-  const maxEl  = type === "gwp" ? gwpRangeMaxEl  : recycledRangeMaxEl;
-  const fillEl = document.getElementById(type === "gwp" ? "gwpRangeFill" : "recycledRangeFill");
-  if (!minEl || !maxEl || !fillEl) return;
-
-  const min    = parseFloat(minEl.min);
-  const max    = parseFloat(minEl.max);
-  const valMin = parseFloat(minEl.value);
-  const valMax = parseFloat(maxEl.value);
-  const pctL   = ((valMin - min) / (max - min)) * 100;
-  const pctR   = ((valMax - min) / (max - min)) * 100;
-  fillEl.style.left  = pctL + "%";
-  fillEl.style.width = (pctR - pctL) + "%";
+function updateTypeCounts(data) {
+  setText('cnt-all',   data.length);
+  setText('cnt-float', data.filter(d => d.type === 'Floating').length);
+  setText('cnt-fixed', data.filter(d => d.type === 'Bottom-fixed').length);
+  setText('n-studies', data.length);
 }
 
-function updateRangeLabels() {
-  if (gwpMinLabelEl)      gwpMinLabelEl.textContent      = Math.round(gwpFilterMin);
-  if (gwpMaxLabelEl)      gwpMaxLabelEl.textContent      = Math.round(gwpFilterMax);
-  if (recycledMinLabelEl) recycledMinLabelEl.textContent = Math.round(recycledFilterMin) + "%";
-  if (recycledMaxLabelEl) recycledMaxLabelEl.textContent = Math.round(recycledFilterMax) + "%";
+/* ─── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 260);
 }
 
-// ─── Lista de EPD ───────────────────────────────────────────────────────────
-function renderEpdList() {
-  if (!epdListBodyEl) return;
-
-  epdListBodyEl.innerHTML = filteredSites.map(site => {
-    const sel = site.id === selectedId ? " epd-row--selected" : "";
-    const gwp = Number.isFinite(site.gwp) ? site.gwp.toLocaleString() : "—";
-    const rec = Number.isFinite(site.recycledPct) ? site.recycledPct + "%" : "—";
-    const pdfFile = site.raw.archivo || site.raw.pdf_url || "";
-    const pdfCell = pdfFile
-      ? `<a class="epd-pdf-link" href="${PDF_BASE_PATH}${escapeHtml(pdfFile)}" target="_blank" rel="noopener" title="${escapeHtml(pdfFile)}" onclick="event.stopPropagation()">📄</a>`
-      : `<span class="epd-pdf-none">—</span>`;
-    return `<tr class="epd-row${sel}" data-id="${escapeHtml(site.id)}">
-      <td class="epd-td" title="${escapeHtml(site.raw.codigo_epd || site.name)}">${escapeHtml(site.raw.codigo_epd || site.name)}</td>
-      <td class="epd-td" title="${escapeHtml(site.raw.pais_produccion || "")}">${escapeHtml(site.raw.pais_produccion || "—")}</td>
-      <td class="epd-td" title="${escapeHtml(site.productAssigned)}">${escapeHtml(site.productAssigned)}</td>
-      <td class="epd-td epd-td--num">${gwp}</td>
-      <td class="epd-td epd-td--num">${rec}</td>
-      <td class="epd-td epd-td--pdf">${pdfCell}</td>
-    </tr>`;
-  }).join("");
-
-  epdListBodyEl.querySelectorAll(".epd-row").forEach(row => {
-    row.addEventListener("click", () => {
-      selectSite(row.dataset.id, true, true);
-      renderEpdList();
-    });
-  });
+/* ─── ACCORDION ──────────────────────────────────────────────────────────────── */
+function toggleFSection(header) {
+  header.closest('.f-section').classList.toggle('open');
 }
 
-// ─── Filtrar y redibujar ────────────────────────────────────────────────────
-function applyFilter() {
-  const q = searchInput.value.trim().toLowerCase();
-  const selectedContinent = continentFilterEl.value.trim();
-  const selectedCountry = countryFilterEl.value.trim();
-  const selectedProduct = productFilterEl.value.trim();
+/* ─── FILTER: TYPE ───────────────────────────────────────────────────────────── */
+function setType(type, btn) {
+  FS.type = type;
+  document.querySelectorAll('.type-chip').forEach(c => c.className = 'type-chip');
+  if      (type === 'all')           btn.classList.add('active-all');
+  else if (type === 'Floating')      btn.classList.add('active-float');
+  else                               btn.classList.add('active-fixed');
+  const tag = document.getElementById('ftag-type');
+  tag.textContent = type === 'all' ? '' : (type === 'Floating' ? 'Flotante' : 'Fijo');
+  tag.classList.toggle('on', type !== 'all');
+  applyAllFilters();
+}
 
-  filteredSites = allSites.filter(site => {
-    if (selectedContinent && site.continent !== selectedContinent) return false;
-    if (selectedCountry && String(site.raw.pais_produccion || "").trim() !== selectedCountry) return false;
-    if (selectedProduct && site.productAssigned !== selectedProduct) return false;
-    if (q && !Object.values(site.raw).join(" ").toLowerCase().includes(q)) return false;
-    if (Number.isFinite(site.gwp) && (site.gwp < gwpFilterMin || site.gwp > gwpFilterMax)) return false;
-    if (Number.isFinite(site.recycledPct) && (site.recycledPct < recycledFilterMin || site.recycledPct > recycledFilterMax)) return false;
+/* ─── FILTER: RANGES ─────────────────────────────────────────────────────────── */
+function onRange(id) {
+  const rlo = document.getElementById(`rlo-${id}`);
+  const rhi = document.getElementById(`rhi-${id}`);
+  let lo = parseFloat(rlo.value), hi = parseFloat(rhi.value);
+  if (lo > hi) { [lo, hi] = [hi, lo]; rlo.value = lo; rhi.value = hi; }
+  updateRangeFill(id);
+  setRangeLabel(id, lo, hi);
+  const min = parseFloat(rlo.min), max = parseFloat(rlo.max);
+  const isDefault = (lo <= min && hi >= max);
+  if (id === 'year') { FS.yearLo = isDefault ? null : lo; FS.yearHi = isDefault ? null : hi; updateSectionTag('year', isDefault ? '' : `${lo}–${hi}`); }
+  if (id === 'mw')   { FS.mwLo   = isDefault ? null : lo; FS.mwHi   = isDefault ? null : hi; updateSectionTag('mw',   isDefault ? '' : `${lo}–${hi} MW`); }
+  if (id === 'gwp')  { FS.gwpLo  = isDefault ? null : lo; FS.gwpHi  = isDefault ? null : hi; updateSectionTag('gwp',  isDefault ? '' : `${lo}–${hi}`); }
+  applyAllFilters();
+}
+
+function updateRangeFill(id) {
+  const rlo  = document.getElementById(`rlo-${id}`);
+  const rhi  = document.getElementById(`rhi-${id}`);
+  const fill = document.getElementById(`rfill-${id}`);
+  if (!rlo || !rhi || !fill) return;
+  const min = parseFloat(rlo.min), max = parseFloat(rlo.max);
+  const lo  = parseFloat(rlo.value), hi = parseFloat(rhi.value);
+  const l = ((lo - min) / (max - min)) * 100;
+  const r = ((hi - min) / (max - min)) * 100;
+  fill.style.left  = l + '%';
+  fill.style.width = (r - l) + '%';
+}
+
+function updateSectionTag(id, text) {
+  const tag = document.getElementById(`ftag-${id}`);
+  if (!tag) return;
+  tag.textContent = text;
+  tag.classList.toggle('on', !!text);
+}
+
+/* ─── FILTER: CHECKBOXES ─────────────────────────────────────────────────────── */
+function onCheckbox(fsKey) {
+  const stateKey = fsKey === 'found' ? 'foundations' : 'methods';
+  const checkboxes = document.querySelectorAll(`#chk-${fsKey} input[type=checkbox]`);
+  FS[stateKey] = new Set([...checkboxes].filter(c => c.checked).map(c => c.value));
+  const count = FS[stateKey].size;
+  const tagId = fsKey === 'found' ? 'ftag-found' : 'ftag-method';
+  updateSectionTag(tagId.replace('ftag-', '').trim(), ''); // clear
+  const tag = document.getElementById(tagId);
+  if (tag) { tag.textContent = count ? `${count} sel.` : ''; tag.classList.toggle('on', count > 0); }
+  applyAllFilters();
+}
+
+/* ─── APPLY ALL FILTERS ──────────────────────────────────────────────────────── */
+function applyAllFilters() {
+  const rloYear = document.getElementById('rlo-year');
+  const rhiYear = document.getElementById('rhi-year');
+  const rloMw   = document.getElementById('rlo-mw');
+  const rhiMw   = document.getElementById('rhi-mw');
+  const rloGwp  = document.getElementById('rlo-gwp');
+  const rhiGwp  = document.getElementById('rhi-gwp');
+
+  const yearLo = FS.yearLo !== null ? FS.yearLo : (rloYear ? parseFloat(rloYear.min) : 0);
+  const yearHi = FS.yearHi !== null ? FS.yearHi : (rhiYear ? parseFloat(rhiYear.max) : 9999);
+  const mwLo   = FS.mwLo   !== null ? FS.mwLo   : -Infinity;
+  const mwHi   = FS.mwHi   !== null ? FS.mwHi   : Infinity;
+  const gwpLo  = FS.gwpLo  !== null ? FS.gwpLo  : -Infinity;
+  const gwpHi  = FS.gwpHi  !== null ? FS.gwpHi  : Infinity;
+
+  filteredData = allData.filter(d => {
+    if (FS.type !== 'all' && d.type !== FS.type) return false;
+    const year = parseInt(d.year);
+    if (!isNaN(year) && (year < yearLo || year > yearHi)) return false;
+    const mw  = parseNum(d.mw);
+    if (mw  !== null && (mw  < mwLo  || mw  > mwHi))  return false;
+    const gwp = parseNum(d.gwp_h);
+    if (gwp !== null && (gwp < gwpLo || gwp > gwpHi)) return false;
+    if (FS.foundations.size > 0 && !FS.foundations.has(d.foundation)) return false;
+    if (FS.methods.size     > 0 && !FS.methods.has(d.method))         return false;
     return true;
   });
 
-  if (!filteredSites.some(s => s.id === selectedId)) {
-    selectedId = filteredSites.length ? filteredSites[0].id : null;
+  const q = searchQuery.toLowerCase();
+  const display = q ? filteredData.filter(d => Object.values(d).some(v => String(v).toLowerCase().includes(q))) : filteredData;
+
+  updateStats();
+  renderTable(display);
+  renderCharts(filteredData);
+  updateMapMarkers(filteredData);
+  updateFilterCount(filteredData.length);
+  updateActiveChips();
+}
+
+function updateFilterCount(n) {
+  const el = document.getElementById('f-count');
+  if (el) el.textContent = n !== undefined ? n : (filteredData ? filteredData.length : '—');
+}
+
+/* ─── CLEAR FILTERS ──────────────────────────────────────────────────────────── */
+function clearAllFilters() {
+  FS.type = 'all'; FS.yearLo = null; FS.yearHi = null;
+  FS.mwLo = null;  FS.mwHi  = null;
+  FS.gwpLo = null; FS.gwpHi = null;
+  FS.foundations = new Set(); FS.methods = new Set();
+
+  document.querySelectorAll('.type-chip').forEach(c => c.className = 'type-chip');
+  document.querySelector('.type-chip[data-type="all"]').classList.add('active-all');
+
+  ['year', 'mw', 'gwp'].forEach(id => {
+    const rlo = document.getElementById(`rlo-${id}`);
+    const rhi = document.getElementById(`rhi-${id}`);
+    if (rlo && rhi) {
+      rlo.value = rlo.min; rhi.value = rhi.max;
+      updateRangeFill(id);
+      setRangeLabel(id, rlo.min, rhi.max);
+    }
+    updateSectionTag(id, '');
+  });
+
+  document.querySelectorAll('#chk-found input, #chk-method input').forEach(c => c.checked = false);
+  ['ftag-found', 'ftag-method', 'ftag-type'].forEach(id => {
+    const t = document.getElementById(id);
+    if (t) { t.textContent = ''; t.classList.remove('on'); }
+  });
+  applyAllFilters();
+}
+
+/* ─── ACTIVE FILTER CHIPS ────────────────────────────────────────────────────── */
+function updateActiveChips() {
+  const bar  = document.getElementById('af-bar');
+  const cont = document.getElementById('af-chips');
+  const chips = [];
+
+  if (FS.type !== 'all') chips.push({
+    label: FS.type === 'Floating' ? 'Flotante' : 'Fijo al fondo',
+    clear: () => setType('all', document.querySelector('.type-chip[data-type="all"]'))
+  });
+  if (FS.yearLo !== null || FS.yearHi !== null) {
+    const rlo = document.getElementById('rlo-year'), rhi = document.getElementById('rhi-year');
+    chips.push({ label: `Año ${rlo.value}–${rhi.value}`, clear: () => { FS.yearLo = null; FS.yearHi = null; rlo.value = rlo.min; rhi.value = rhi.max; updateRangeFill('year'); setRangeLabel('year', rlo.min, rhi.max); updateSectionTag('year', ''); applyAllFilters(); } });
   }
+  if (FS.mwLo !== null || FS.mwHi !== null) {
+    const rlo = document.getElementById('rlo-mw'), rhi = document.getElementById('rhi-mw');
+    chips.push({ label: `${rlo.value}–${rhi.value} MW`, clear: () => { FS.mwLo = null; FS.mwHi = null; rlo.value = rlo.min; rhi.value = rhi.max; updateRangeFill('mw'); setRangeLabel('mw', rlo.min, rhi.max); updateSectionTag('mw', ''); applyAllFilters(); } });
+  }
+  if (FS.gwpLo !== null || FS.gwpHi !== null) {
+    const rlo = document.getElementById('rlo-gwp'), rhi = document.getElementById('rhi-gwp');
+    chips.push({ label: `GWP ${rlo.value}–${rhi.value}`, clear: () => { FS.gwpLo = null; FS.gwpHi = null; rlo.value = rlo.min; rhi.value = rhi.max; updateRangeFill('gwp'); setRangeLabel('gwp', rlo.min, rhi.max); updateSectionTag('gwp', ''); applyAllFilters(); } });
+  }
+  if (FS.foundations.size > 0) chips.push({ label: `Cim. (${FS.foundations.size})`, clear: () => { FS.foundations = new Set(); document.querySelectorAll('#chk-found input').forEach(c => c.checked = false); updateSectionTag('found', ''); const t = document.getElementById('ftag-found'); if (t) { t.textContent = ''; t.classList.remove('on'); } applyAllFilters(); } });
+  if (FS.methods.size > 0)     chips.push({ label: `Método (${FS.methods.size})`,    clear: () => { FS.methods = new Set();     document.querySelectorAll('#chk-method input').forEach(c => c.checked = false); updateSectionTag('method', ''); const t = document.getElementById('ftag-method'); if (t) { t.textContent = ''; t.classList.remove('on'); } applyAllFilters(); } });
 
-  statusEl.textContent = t("loadedData")(filteredSites.length, allSites.length);
-  renderMarkers();
-  renderScatterPlot();
-  renderBoxplots();
-  renderEpdList();
+  if (!chips.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  cont.innerHTML = chips.map((c, i) => `<span class="af-chip">${esc(c.label)}<button onclick="clearChip(${i})" title="Quitar">×</button></span>`).join('');
+  window.__afClears = chips.map(c => c.clear);
 }
 
-function selectSite(id, centerMap, openPopup) {
-  selectedId = id;
-  updateMarkerStyles();
-  renderScatterPlot();
-  renderBoxplots();
+function clearChip(i) { if (window.__afClears && window.__afClears[i]) window.__afClears[i](); }
 
-  if (!map) return;
-
-  const site = allSites.find(s => s.id === id);
-  const marker = markerById.get(id);
-
-  if (site && centerMap) map.setView([site.lat, site.lon], Math.max(map.getZoom(), 5));
-  if (marker && openPopup) marker.openPopup();
+/* ─── TAB SWITCHING ──────────────────────────────────────────────────────────── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b  => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'mapa') {
+    if (!mapInited) { initMap(); mapInited = true; }
+    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 60);
+    updateMapMarkers(filteredData);
+  }
+  if (id === 'resumen') renderCharts(filteredData);
 }
 
-// ─── Carga de datos ─────────────────────────────────────────────────────────
-async function loadData() {
-  try {
-    const response = await fetch("./datos.csv", { cache: "no-store" });
-    if (!response.ok) throw new Error(t("fileNotFound"));
+/* ─── MAP ────────────────────────────────────────────────────────────────────── */
+function initMap() {
+  leafletMap = L.map('map', { center: [30, 10], zoom: 2 });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(leafletMap);
+}
 
-    allSites = parseCSV(await response.text());
-    if (!allSites.length) throw new Error(t("noValidRecords"));
+function updateMapMarkers(data) {
+  if (!leafletMap) return;
+  mapMarkers.forEach(m => leafletMap.removeLayer(m));
+  mapMarkers = [];
 
-    allSites.forEach(site => { site.continent = getContinentForSite(site); });
+  const withCoords = data.filter(d => {
+    const la = parseFloat(d.lat), lo = parseFloat(d.lon);
+    return !isNaN(la) && !isNaN(lo);
+  });
 
-    populateAllFilters();
-    filteredSites = [...allSites];
-    selectedId = allSites[0].id;
+  const isEmpty = withCoords.length === 0;
+  document.getElementById('map-empty').classList.toggle('hidden', !isEmpty);
+  document.getElementById('map-legend').style.display = isEmpty ? 'none' : 'block';
+  setText('map-cnt-total', withCoords.length);
+  setText('map-cnt-float', withCoords.filter(d => d.type === 'Floating').length);
+  setText('map-cnt-fixed', withCoords.filter(d => d.type === 'Bottom-fixed').length);
 
-    statusEl.textContent = t("loadedAllData")(allSites.length);
-    renderMarkers();
-    renderScatterPlot();
-    renderBoxplots();
-    initRanges();
-    renderEpdList();
+  withCoords.forEach(d => {
+    const la = parseFloat(d.lat), lo = parseFloat(d.lon);
+    const isFloat = d.type === 'Floating';
+    const color = isFloat ? '#62f0cf' : '#ffc06b';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:11px;height:11px;border-radius:50%;background:${color};border:2px solid rgba(7,17,30,.8);box-shadow:0 0 7px ${color}90"></div>`,
+      iconSize: [11, 11], iconAnchor: [5, 5], popupAnchor: [0, -8]
+    });
+    const refShort = d.ref.length > 55 ? d.ref.slice(0, 53) + '…' : d.ref;
+    const popup = `<div class="lpop">
+      <div class="lpop-type">${isFloat ? 'Flotante' : 'Fijo al fondo'}${d.note ? ' · ' + d.note : ''}</div>
+      <div class="lpop-ref">${refShort}</div>
+      <div class="lpop-grid">
+        <span class="lk">MW</span><span class="lv">${d.mw}</span>
+        <span class="lk">GWP_h</span><span class="lv">${d.gwp_h !== 'NR' ? d.gwp_h + ' gCO₂eq/kWh' : 'NR'}</span>
+        <span class="lk">Año</span><span class="lv">${d.year}</span>
+        <span class="lk">Cimentación</span><span class="lv">${d.foundation.split(' ')[0]}</span>
+      </div>
+    </div>`;
+    const marker = L.marker([la, lo], { icon }).bindPopup(popup, { maxWidth: 280 });
+    marker.addTo(leafletMap);
+    mapMarkers.push(marker);
+  });
 
-    setTimeout(() => {
-      map.invalidateSize();
-      window.dispatchEvent(new Event("resize"));
-    }, 80);
-  } catch (error) {
-    statusEl.textContent = t("errorReadingCsv")(error.message);
-    chartStatusEl.textContent = t("chartBuildError");
-    allSites = [];
-    filteredSites = [];
-    selectedId = null;
-    Plotly.purge("boxplotGwp");
-    Plotly.purge("boxplotRecycled");
+  if (withCoords.length > 0) {
+    leafletMap.fitBounds(L.featureGroup(mapMarkers).getBounds(), { padding: [40, 40], maxZoom: 8 });
   }
 }
 
-// ─── Eventos ────────────────────────────────────────────────────────────────
-searchInput.addEventListener("input", applyFilter);
-productFilterEl.addEventListener("change", applyFilter);
-countryFilterEl.addEventListener("change", applyFilter);
-
-// Range slider events
-function onGwpRange() {
-  let minVal = parseFloat(gwpRangeMinEl.value);
-  let maxVal = parseFloat(gwpRangeMaxEl.value);
-  if (minVal > maxVal) { gwpRangeMinEl.value = maxVal; minVal = maxVal; }
-  gwpFilterMin = minVal;
-  gwpFilterMax = maxVal;
-  updateRangeFill("gwp");
-  updateRangeLabels();
-  applyFilter();
+/* ─── STATS ──────────────────────────────────────────────────────────────────── */
+function updateStats() {
+  const vals      = filteredData.map(d => parseNum(d.gwp_h)).filter(v => v !== null);
+  const floatVals = filteredData.filter(d => d.type === 'Floating').map(d    => parseNum(d.gwp_h)).filter(v => v !== null);
+  const fixedVals = filteredData.filter(d => d.type === 'Bottom-fixed').map(d => parseNum(d.gwp_h)).filter(v => v !== null);
+  if (!vals.length) return;
+  const minV = Math.min(...vals), maxV = Math.max(...vals), medV = median(vals);
+  const minEntry = filteredData.find(d => parseNum(d.gwp_h) === minV);
+  const maxEntry = filteredData.find(d => parseNum(d.gwp_h) === maxV);
+  setText('stat-min',   minV.toFixed(1));
+  setText('stat-med',   medV ? medV.toFixed(1) : '—');
+  setText('stat-max',   maxV.toFixed(1));
+  setText('stat-float', floatVals.length ? avg(floatVals).toFixed(1) : '—');
+  setText('stat-fixed', fixedVals.length ? avg(fixedVals).toFixed(1) : '—');
+  setText('stat-count', vals.length);
+  setText('n-studies',  filteredData.length);
+  if (minEntry) setText('stat-min-ref', minEntry.ref.split('(')[0].trim().slice(0, 22));
+  if (maxEntry) setText('stat-max-ref', maxEntry.ref.split('(')[0].trim().slice(0, 22));
 }
 
-function onRecycledRange() {
-  let minVal = parseFloat(recycledRangeMinEl.value);
-  let maxVal = parseFloat(recycledRangeMaxEl.value);
-  if (minVal > maxVal) { recycledRangeMinEl.value = maxVal; minVal = maxVal; }
-  recycledFilterMin = minVal;
-  recycledFilterMax = maxVal;
-  updateRangeFill("recycled");
-  updateRangeLabels();
-  applyFilter();
+/* ─── TABLE ──────────────────────────────────────────────────────────────────── */
+function filterTable() {
+  searchQuery = document.getElementById('search-input').value;
+  applyAllFilters();
 }
 
-if (gwpRangeMinEl) gwpRangeMinEl.addEventListener("input", onGwpRange);
-if (gwpRangeMaxEl) gwpRangeMaxEl.addEventListener("input", onGwpRange);
-if (recycledRangeMinEl) recycledRangeMinEl.addEventListener("input", onRecycledRange);
-if (recycledRangeMaxEl) recycledRangeMaxEl.addEventListener("input", onRecycledRange);
-
-continentFilterEl.addEventListener("change", () => {
-  updateCountryFilter(continentFilterEl.value, "");
-  applyFilter();
-});
-
-langSwitchEl.value = currentLang;
-langSwitchEl.addEventListener("change", e => {
-  currentLang = e.target.value;
-  localStorage.setItem("epd_lang", currentLang);
-  applyStaticLanguage();
-  populateAllFilters();
-
-  if (allSites.length) {
-    applyFilter();
-  } else {
-    statusEl.textContent = t("loading");
-    chartStatusEl.textContent = t("preparingChart");
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  document.getElementById('row-count').textContent = `${data.length} entradas`;
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;color:var(--muted);padding:2rem;font-size:.8rem">Sin resultados para estos filtros</td></tr>';
+    return;
   }
-});
-
-window.addEventListener("resize", () => {
-  if (map) setTimeout(() => map.invalidateSize(), 50);
-});
-
-if (mapExpandBtn) {
-  mapExpandBtn.addEventListener("click", toggleMapExpanded);
+  tbody.innerHTML = data.map(d => {
+    const tClass = d.type === 'Floating' ? 'tbadge-float' : d.type === 'Bottom-fixed' ? 'tbadge-fixed' : '';
+    const tLabel = d.type === 'Floating' ? 'Flotante'     : d.type === 'Bottom-fixed' ? 'Fijo'         : d.type;
+    const gwp  = parseNum(d.gwp);
+    const gwph = parseNum(d.gwp_h);
+    const hasPdf = d.archivo && d.archivo !== '—' && d.archivo !== '-' && d.archivo !== '';
+    const latOk = d.lat && d.lat !== '—', lonOk = d.lon && d.lon !== '—';
+    return `<tr>
+      <td><span class="vnum">${isNE(d.mw) ? '<span class="vnr">NE</span>' : d.mw}</span></td>
+      <td>${d.units !== '—' ? d.units : '<span class="vnr">—</span>'}</td>
+      <td>${d.foundation}</td>
+      <td><span class="tbadge ${tClass}">${tLabel}</span></td>
+      <td>${d.cf && d.cf !== 'NR' && !isNE(d.cf) ? d.cf + ' %' : '<span class="vnr">NR</span>'}</td>
+      <td>${d.lt && d.lt !== 'NR' ? d.lt + ' a' : '<span class="vnr">NR</span>'}</td>
+      <td>${d.epbt && d.epbt !== 'NR' && !isNE(d.epbt) ? `<span class="vnum">${d.epbt}</span>` : '<span class="vnr">NR</span>'}</td>
+      <td>${gwp  !== null ? `<span class="vnum">${gwp.toFixed(1)}</span>`  : '<span class="vnr">NR</span>'}</td>
+      <td>${gwph !== null ? `<span class="vnum">${gwph.toFixed(2)}</span>` : '<span class="vnr">NR</span>'}</td>
+      <td><span class="meth">${d.method && d.method !== '—' && d.method !== 'NR' ? d.method : '<span class="vnr">—</span>'}</span></td>
+      <td>${d.year !== '—' ? d.year : '<span class="vnr">—</span>'}</td>
+      <td class="geo">${latOk ? parseFloat(d.lat).toFixed(4) : '<span class="vnr">—</span>'}</td>
+      <td class="geo">${lonOk ? parseFloat(d.lon).toFixed(4) : '<span class="vnr">—</span>'}</td>
+      <td><span class="reft">${d.ref}${d.note ? `<br><em style="color:var(--accent-2);font-size:.62rem">${d.note}</em>` : ''}</span></td>
+      <td style="text-align:center">${hasPdf ? `<a href="./pdf/${d.archivo}" target="_blank" style="font-size:1rem;text-decoration:none;opacity:.8" title="${d.archivo}">📄</a>` : '<span class="vnr">—</span>'}</td>
+    </tr>`;
+  }).join('');
 }
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && mapPanelEl?.classList.contains("map-fullscreen")) {
-    setMapExpanded(false);
-  }
-});
+function sortTable(col) {
+  if (sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = true; }
+  const keys = ['mw','units','foundation','type','cf','lt','epbt','gwp','gwp_h','method','year','lat','lon','ref','archivo'];
+  const k = keys[col];
+  filteredData.sort((a, b) => {
+    const av = parseNum(a[k]) ?? a[k];
+    const bv = parseNum(b[k]) ?? b[k];
+    if (av === null || av === '—' || av === 'NR') return 1;
+    if (bv === null || bv === '—' || bv === 'NR') return -1;
+    return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+  document.querySelectorAll('th').forEach((th, i) => {
+    th.className = i === col ? 'sorted' : '';
+    const arrow = th.querySelector('.sa');
+    if (arrow) arrow.textContent = i === col ? (sortAsc ? ' ↑' : ' ↓') : '↕';
+  });
+  const q = searchQuery.toLowerCase();
+  renderTable(q ? filteredData.filter(d => Object.values(d).some(v => String(v).toLowerCase().includes(q))) : filteredData);
+}
 
-// ─── Arranque ───────────────────────────────────────────────────────────────
-applyStaticLanguage();
-initMap();
-loadData();
+/* ─── CHARTS ─────────────────────────────────────────────────────────────────── */
+const ACCENT = '#5baaff', ACCENT2 = '#62f0cf', AMBER = '#ffc06b';
+const MUTED  = '#7a9bbf', GRID = 'rgba(100,181,255,0.07)', TEXTCOL = '#ddeeff';
+
+const BASE_OPTS = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    legend:  { labels: { color: MUTED, font: { family: 'DM Sans', size: 11 }, boxWidth: 12, padding: 14 } },
+    tooltip: { backgroundColor: '#0d1c2e', borderColor: 'rgba(100,181,255,0.22)', borderWidth: 1,
+               titleColor: TEXTCOL, bodyColor: MUTED,
+               titleFont: { family: 'DM Sans', size: 11 }, bodyFont: { family: 'DM Sans', size: 10 }, padding: 9 }
+  },
+  scales: {
+    x: { ticks: { color: MUTED, font: { family: 'DM Sans', size: 10 } }, grid: { color: GRID } },
+    y: { ticks: { color: MUTED, font: { family: 'DM Sans', size: 10 } }, grid: { color: GRID } }
+  }
+};
+
+function renderCharts(data) {
+  renderFoundationChart(data);
+  renderYearChart(data);
+  renderScatterChart(data);
+  renderBoxplot(data);
+}
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+/* Chart 1 – Foundation bar */
+function renderFoundationChart(data) {
+  destroyChart('foundation');
+  const byF = {};
+  data.forEach(d => { const v = parseNum(d.gwp_h); if (v === null) return; const k = abbreviate(d.foundation); if (!byF[k]) byF[k] = []; byF[k].push(v); });
+  const labels = Object.keys(byF).sort((a, b) => avg(byF[b]) - avg(byF[a]));
+  const vals   = labels.map(l => avg(byF[l]).toFixed(1));
+  const colors = labels.map((_, i) => `hsla(${200 + i * 20}, 68%, 62%, 0.82)`);
+  charts['foundation'] = new Chart(document.getElementById('chart-foundation'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderRadius: 5, borderSkipped: false }] },
+    options: { ...BASE_OPTS,
+      plugins: { ...BASE_OPTS.plugins, legend: { display: false } },
+      scales: {
+        x: { ...BASE_OPTS.scales.x, ticks: { ...BASE_OPTS.scales.x.ticks, maxRotation: 38, minRotation: 22 } },
+        y: { ...BASE_OPTS.scales.y, title: { display: true, text: 'gCO₂eq/kWh', color: MUTED, font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+/* Chart 2 – Year line */
+function renderYearChart(data) {
+  destroyChart('year');
+  const byY = {};
+  data.forEach(d => { const v = parseNum(d.gwp_h), y = parseInt(d.year); if (v === null || isNaN(y)) return; if (!byY[y]) byY[y] = []; byY[y].push(v); });
+  const years = Object.keys(byY).map(Number).sort((a, b) => a - b);
+  const meds  = years.map(y => median(byY[y]).toFixed(1));
+  const mins  = years.map(y => Math.min(...byY[y]).toFixed(1));
+  const maxs  = years.map(y => Math.max(...byY[y]).toFixed(1));
+  charts['year'] = new Chart(document.getElementById('chart-year'), {
+    type: 'line',
+    data: { labels: years, datasets: [
+      { label: 'Mediana', data: meds, borderColor: ACCENT,  backgroundColor: 'rgba(91,170,255,.12)', tension: .35, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+      { label: 'Mínimo',  data: mins, borderColor: ACCENT2, borderDash: [4, 3], tension: .35, fill: false, pointRadius: 3 },
+      { label: 'Máximo',  data: maxs, borderColor: AMBER,   borderDash: [4, 3], tension: .35, fill: false, pointRadius: 3 },
+    ]},
+    options: { ...BASE_OPTS,
+      scales: { x: { ...BASE_OPTS.scales.x }, y: { ...BASE_OPTS.scales.y, title: { display: true, text: 'gCO₂eq/kWh', color: MUTED, font: { size: 9 } } } }
+    }
+  });
+}
+
+/* Chart 3 – Scatter */
+function renderScatterChart(data) {
+  destroyChart('scatter');
+  const mk = t => data.filter(d => d.type === t).map(d => ({ x: parseNum(d.mw), y: parseNum(d.gwp_h), label: d.ref })).filter(p => p.x !== null && p.y !== null);
+  charts['scatter'] = new Chart(document.getElementById('chart-scatter'), {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'Flotante',     data: mk('Floating'),     backgroundColor: 'rgba(98,240,207,.68)', pointRadius: 6, pointHoverRadius: 8 },
+      { label: 'Fijo al fondo', data: mk('Bottom-fixed'), backgroundColor: 'rgba(255,192,107,.68)', pointRadius: 6, pointHoverRadius: 8 },
+    ]},
+    options: { ...BASE_OPTS,
+      plugins: { ...BASE_OPTS.plugins, tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: {
+        label: ctx => `${ctx.dataset.label} · ${ctx.raw.x} MW · ${ctx.raw.y} gCO₂eq/kWh`
+      }}},
+      scales: {
+        x: { ...BASE_OPTS.scales.x, title: { display: true, text: 'Potencia nominal (MW)', color: MUTED, font: { family: 'DM Sans', size: 10 } } },
+        y: { ...BASE_OPTS.scales.y, title: { display: true, text: 'GWP armonizado (gCO₂eq/kWh)', color: MUTED, font: { family: 'DM Sans', size: 10 } } }
+      }
+    }
+  });
+}
+
+/* Chart 4 – Boxplot (custom Canvas plugin) */
+function renderBoxplot(data) {
+  destroyChart('boxplot');
+  const floatVals = data.filter(d => d.type === 'Floating').map(d    => parseNum(d.gwp_h)).filter(v => v !== null);
+  const fixedVals = data.filter(d => d.type === 'Bottom-fixed').map(d => parseNum(d.gwp_h)).filter(v => v !== null);
+  if (!floatVals.length && !fixedVals.length) return;
+
+  const calcStats = vals => {
+    if (!vals.length) return null;
+    const s   = [...vals].sort((a, b) => a - b);
+    const n   = s.length;
+    const q1  = s[Math.floor(n * 0.25)];
+    const q3  = s[Math.floor(n * 0.75)];
+    const med = median(s);
+    const mn  = avg(s);
+    const iqr = q3 - q1;
+    const wlo = Math.max(s[0],   q1 - 1.5 * iqr);
+    const whi = Math.min(s[n-1], q3 + 1.5 * iqr);
+    const outliers = s.filter(v => v < wlo || v > whi);
+    return { q1, q3, med, mn, wlo, whi, outliers, n };
+  };
+
+  const fsStats = calcStats(floatVals);
+  const fxStats = calcStats(fixedVals);
+
+  // Pre-compute stable jitter per value (deterministic using index)
+  const jitter = (vals, halfW) => vals.map((_, i) => ((i * 6271 + 1237) % 1000 / 1000 - 0.5) * halfW * 1.4);
+  const fjit = floatVals.length ? jitter(floatVals, 1) : [];
+  const xjit = fixedVals.length ? jitter(fixedVals, 1) : [];
+
+  const boxPlugin = {
+    id: 'boxDraw',
+    afterDatasetsDraw(chart) {
+      const ctx    = chart.ctx;
+      const xScale = chart.scales.x;
+      const yScale = chart.scales.y;
+
+      const drawBox = (catIdx, st, color, vals, jit) => {
+        if (!st) return;
+        const cx    = xScale.getPixelForTick(catIdx);
+        const halfW = Math.min(55, xScale.width / 4.5);
+        const scY   = v => yScale.getPixelForValue(v);
+
+        ctx.save();
+
+        /* whisker lines */
+        ctx.strokeStyle = color + 'aa';
+        ctx.lineWidth   = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(cx, scY(st.whi)); ctx.lineTo(cx, scY(st.q3)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, scY(st.wlo)); ctx.lineTo(cx, scY(st.q1)); ctx.stroke();
+        ctx.setLineDash([]);
+
+        /* whisker caps */
+        ctx.strokeStyle = color + 'bb';
+        ctx.lineWidth   = 1.5;
+        const capW = halfW * 0.38;
+        ctx.beginPath(); ctx.moveTo(cx - capW, scY(st.whi)); ctx.lineTo(cx + capW, scY(st.whi)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx - capW, scY(st.wlo)); ctx.lineTo(cx + capW, scY(st.wlo)); ctx.stroke();
+
+        /* IQR box fill */
+        ctx.fillStyle   = color + '1a';
+        ctx.strokeStyle = color + 'cc';
+        ctx.lineWidth   = 2;
+        const bx = cx - halfW, bw = halfW * 2;
+        const by = scY(st.q3), bh = scY(st.q1) - scY(st.q3);
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        /* median line */
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth   = 2.5;
+        ctx.beginPath(); ctx.moveTo(cx - halfW, scY(st.med)); ctx.lineTo(cx + halfW, scY(st.med)); ctx.stroke();
+
+        /* mean diamond */
+        const dm = 5;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(cx,      scY(st.mn) - dm);
+        ctx.lineTo(cx + dm, scY(st.mn));
+        ctx.lineTo(cx,      scY(st.mn) + dm);
+        ctx.lineTo(cx - dm, scY(st.mn));
+        ctx.closePath();
+        ctx.fill();
+
+        /* individual data points */
+        vals.forEach((v, i) => {
+          const isOut = st.outliers.includes(v);
+          const px    = cx + jit[i] * halfW;
+          const py    = scY(v);
+          ctx.beginPath();
+          ctx.arc(px, py, isOut ? 4 : 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = isOut ? color : color + '55';
+          ctx.strokeStyle = isOut ? 'rgba(255,255,255,0.3)' : 'transparent';
+          ctx.lineWidth = 1;
+          ctx.fill();
+          if (isOut) ctx.stroke();
+        });
+
+        /* n label */
+        ctx.fillStyle  = MUTED;
+        ctx.font       = `11px DM Sans, sans-serif`;
+        ctx.textAlign  = 'center';
+        ctx.fillText(`n=${st.n}`, cx, yScale.bottom + 32);
+
+        ctx.restore();
+      };
+
+      drawBox(0, fsStats, ACCENT2, floatVals, fjit);
+      drawBox(1, fxStats, AMBER,   fixedVals, xjit);
+    }
+  };
+
+  const allVals = [...floatVals, ...fixedVals];
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+  const pad  = (maxV - minV) * 0.12;
+
+  charts['boxplot'] = new Chart(document.getElementById('chart-boxplot'), {
+    type: 'bar',
+    data: {
+      labels: ['Flotante', 'Fijo al fondo'],
+      datasets: [{ data: [null, null], backgroundColor: 'transparent', borderColor: 'transparent' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend:  { display: false },
+        tooltip: { enabled: false },
+      },
+      scales: {
+        x: { ticks: { color: TEXTCOL, font: { family: 'DM Sans', size: 12, weight: '500' } }, grid: { display: false } },
+        y: {
+          ticks: { color: MUTED, font: { family: 'DM Sans', size: 10 } },
+          grid:  { color: GRID },
+          title: { display: true, text: 'GWP armonizado (gCO₂eq/kWh)', color: MUTED, font: { size: 10 } },
+          min: Math.max(0, minV - pad),
+          max: maxV + pad,
+        }
+      },
+      layout: { padding: { bottom: 10 } }
+    },
+    plugins: [boxPlugin]
+  });
+}
+
+/* ─── UTILS ──────────────────────────────────────────────────────────────────── */
+function isNE(v)      { if (!v) return false; const s = String(v).trim().toLowerCase(); return s === 'ne' || s.startsWith('no especificado'); }
+function parseNum(v)  { if (!v || v === '—' || v === 'NR' || v === 'NaN') return null; const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? null : n; }
+function median(arr)  { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; }
+function avg(arr)     { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null; }
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function esc(s)       { return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+function abbreviate(name) {
+  const map = {
+    'Semi-submersible steel': 'Semi-sub. acero', 'Semi-submersible platform': 'Semi-sub.',
+    'Semi-submersible': 'Semi-sub.', 'Spar buoy concrete': 'Spar concreto',
+    'Concrete SPAR-type (ballast-stabilized)': 'Spar concreto',
+    'Bottom-fixed (Gravity)': 'Fijo (grav.)',   'Bottom-fixed (Driven)': 'Fijo (hincado)',
+    'Bottom-fixed (Monopile)': 'Monopile', 'Sway (Tension Leg Spar)': 'TLS',
+    'TLB (Tension Leg Barge)': 'TLB',     'TLP (Tension Leg Platform)': 'TLP',
+    'SPAR (Hywind Tampen)': 'Spar Hywind', 'Jacket foundation': 'Jacket',
+    'Barge-type': 'Barge', 'Barge (SATH)': 'SATH',
+  };
+  return map[name] || (name.length > 18 ? name.slice(0, 17) + '…' : name);
+}
