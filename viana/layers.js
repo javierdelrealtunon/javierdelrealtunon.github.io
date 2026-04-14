@@ -1,7 +1,7 @@
 /* ============================================================
    GEOPORTAL MAR PORTUGUÊS — DGRM + EMODnet
-   layers.js — Catálogo de camadas
-   Tipos:
+   layers.js — Layer catalogue
+   Types:
      type: "arcgis"  → L.esri.dynamicMapLayer  (DGRM)
      type: "wms"     → L.tileLayer.wms         (EMODnet)
    ============================================================ */
@@ -11,219 +11,218 @@ const BASE = "https://webgis.dgrm.mm.gov.pt/arcgis/rest/services/PSOEM_GEOPORTAL
 const MS   = "/MapServer";
 
 // ── EMODnet — WMS endpoints ───────────────────────────────────
-const EMOD_BATH  = "https://ows.emodnet-bathymetry.eu/wms";
-const EMOD_HAB   = "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms";
+const EMOD_BATH    = "https://ows.emodnet-bathymetry.eu/wms";
+const EMOD_HAB     = "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view/wms";
 const EMOD_HAB_LIB = "https://ows.emodnet-seabedhabitats.eu/geoserver/emodnet_view_maplibrary/wms";
-const EMOD_HUM   = "https://ows.emodnet-humanactivities.eu/wms";
-const EMOD_GEO   = "https://drive.emodnet-geology.eu/geoserver/bgr/wms";
-const EMOD_CHEM  = "https://ec.oceanbrowser.net/emodnet/Python/web/wms";
+const EMOD_HUM     = "https://ows.emodnet-humanactivities.eu/wms";
+const EMOD_GEO     = "https://drive.emodnet-geology.eu/geoserver/bgr/wms";
 
 const LAYERS = [
 
   // ══════════════════════════════════════════════════════════
-  //  DGRM — Camadas nacionais (ArcGIS REST)
+  //  DGRM — National layers (ArcGIS REST)
   // ══════════════════════════════════════════════════════════
 
-  // ── PLANEAMENTO E ORDENAMENTO ──────────────────────────────
-  { cat: "📋 Planeamento e Ordenamento", id: "tupem1",
+  // ── PLANNING & ZONING ──────────────────────────────────────
+  { cat: "📋 Planning & Zoning", id: "tupem1",
     name: "TUPEM (v1)",
-    desc: "Versão 1 da camada TUPEM",
+    desc: "Version 1 of the TUPEM (maritime space use title) layer",
     url: BASE + "Tupem_geoportal1" + MS },
 
-  // ── LIMITES E JURISDIÇÃO ───────────────────────────────────
-  { cat: "⚓ Limites e Jurisdição", id: "limites",
-    name: "Limites Marítimos (IH)",
-    desc: "Mar territorial, ZEE, zona contígua — fonte IH v2",
+  // ── LIMITS & JURISDICTION ──────────────────────────────────
+  { cat: "⚓ Limits & Jurisdiction", id: "limites",
+    name: "Maritime Limits (IH)",
+    desc: "Territorial sea, EEZ, contiguous zone — IH source v2",
     url: BASE + "Limites_Fonte_IH_v2" + MS },
 
-  { cat: "⚓ Limites e Jurisdição", id: "faixa",
-    name: "Faixa de Proteção Costeira (1 e 2 mn)",
-    desc: "Banda de proteção da orla costeira a 1 e 2 milhas náuticas",
+  { cat: "⚓ Limits & Jurisdiction", id: "faixa",
+    name: "Coastal Protection Zone (1 & 2 nm)",
+    desc: "Coastal protection buffer at 1 and 2 nautical miles from shore",
     url: BASE + "FaixaProtecaoCosteira1e2mn" + MS },
 
-  { cat: "⚓ Limites e Jurisdição", id: "linhajmm",
-    name: "Linha Base e Jurisdição Portuária",
-    desc: "Linha de Base normal (DL 495/85) e limites de jurisdição portuária",
+  { cat: "⚓ Limits & Jurisdiction", id: "linhajmm",
+    name: "Baseline & Port Jurisdiction",
+    desc: "Normal baseline (DL 495/85) and port jurisdiction boundaries",
     url: "https://webgis.dgrm.mm.gov.pt/arcgis/rest/services/PSOEM_PosCPub/LinhaJMM_pcp_final1/MapServer" },
 
-  // ── PESCA ──────────────────────────────────────────────────
-  { cat: "🎣 Pesca", id: "portos_docapesca",
-    name: "Portos e Docas de Pesca",
-    desc: "Infraestrutura portuária dedicada à pesca comercial",
+  // ── FISHING ────────────────────────────────────────────────
+  { cat: "🎣 Fishing", id: "portos_docapesca",
+    name: "Fishing Ports & Docks",
+    desc: "Port infrastructure dedicated to commercial fishing",
     url: BASE + "Portos_DocaPesca" + MS },
 
-  { cat: "🎣 Pesca", id: "bacias_dragagem",
-    name: "Bacias de Dragagem — Doca de Pesca",
-    desc: "Áreas de dragagem portuária associadas a docas de pesca",
+  { cat: "🎣 Fishing", id: "bacias_dragagem",
+    name: "Dredging Basins — Fishing Docks",
+    desc: "Port dredging areas associated with fishing docks",
     url: BASE + "BaciasDragagemDocaPesca" + MS },
 
-  // ── ENERGIA E INFRAESTRUTURA ───────────────────────────────
-  { cat: "⚡ Energia e Infraestrutura", id: "eolicas",
-    name: "Energia Eólica Offshore",
-    desc: "Zonas existentes e potenciais para eólica offshore — PSOEM",
+  // ── ENERGY & INFRASTRUCTURE ────────────────────────────────
+  { cat: "⚡ Energy & Infrastructure", id: "eolicas",
+    name: "Offshore Wind Energy",
+    desc: "Existing and potential offshore wind energy zones — PSOEM",
     url: BASE + "PSOEM_Eolicas_geoportal" + MS },
 
-  { cat: "⚡ Energia e Infraestrutura", id: "emissarios",
-    name: "Emissários Submarinos",
-    desc: "Condutas submarinas de descarga de efluentes",
+  { cat: "⚡ Energy & Infrastructure", id: "emissarios",
+    name: "Submarine Outfall Pipes",
+    desc: "Submarine discharge pipes for effluent disposal",
     url: BASE + "Emissarios_submarinos_geoportal" + MS },
 
-  { cat: "⚡ Energia e Infraestrutura", id: "residuos",
-    name: "Gestão de Resíduos (v4)",
-    desc: "Instalações e áreas de gestão de resíduos marítimos",
+  { cat: "⚡ Energy & Infrastructure", id: "residuos",
+    name: "Waste Management (v4)",
+    desc: "Maritime waste management facilities and areas",
     url: BASE + "Gest%C3%A3o_de_residuos_V4" + MS },
 
-  // ── TRÁFEGO MARÍTIMO ───────────────────────────────────────
-  { cat: "🚢 Tráfego Marítimo", id: "sep_trafego",
-    name: "Separação de Tráfego Marítimo",
-    desc: "Esquemas de separação de tráfego da OMI nas águas portuguesas",
+  // ── MARITIME TRAFFIC ───────────────────────────────────────
+  { cat: "🚢 Maritime Traffic", id: "sep_trafego",
+    name: "Traffic Separation Schemes",
+    desc: "IMO traffic separation schemes in Portuguese waters",
     url: BASE + "SeparacaoTrafegoMaritimo_geoportal" + MS },
 
-  { cat: "🚢 Tráfego Marítimo", id: "marinas",
-    name: "Marinas e Portos de Recreio",
-    desc: "Infraestruturas náuticas de recreio em Portugal continental",
+  { cat: "🚢 Maritime Traffic", id: "marinas",
+    name: "Marinas & Leisure Ports",
+    desc: "Recreational nautical infrastructure in mainland Portugal",
     url: BASE + "marinas_e_portos_de_recreio" + MS },
 
-  { cat: "🚢 Tráfego Marítimo", id: "itp",
-    name: "ITP — Infraestrutura de Transportes de Portugal",
-    desc: "Portos e marinas de recreio — base ITP",
+  { cat: "🚢 Maritime Traffic", id: "itp",
+    name: "ITP — Portugal Transport Infrastructure",
+    desc: "Ports and marinas — ITP database",
     url: BASE + "ITP_marinas_portos_recreio" + MS },
 
-  // ── GEOLOGIA E BATIMETRIA (DGRM) ──────────────────────────
-  { cat: "🪨 Geologia e Batimetria", id: "montes_sub",
-    name: "Montes Submarinos e Estrutura Geológica",
-    desc: "Morfologia do fundo marinho: montes, dorsais, estruturas geológicas",
+  // ── GEOLOGY & BATHYMETRY (DGRM) ────────────────────────────
+  { cat: "🪨 Geology & Bathymetry", id: "montes_sub",
+    name: "Seamounts & Geological Structure",
+    desc: "Seabed morphology: seamounts, ridges, geological structures",
     url: BASE + "MontesSub_EstrtGeol" + MS },
 
-  { cat: "🪨 Geologia e Batimetria", id: "manchas_emprestimo",
-    name: "Manchas de Empréstimo",
-    desc: "Áreas de extração de sedimentos marinhos para alimentação de praias",
+  { cat: "🪨 Geology & Bathymetry", id: "manchas_emprestimo",
+    name: "Borrow Areas",
+    desc: "Marine sediment extraction areas for beach nourishment",
     url: BASE + "ManchasEmprestimo" + MS },
 
-  { cat: "🪨 Geologia e Batimetria", id: "gest_sedimentar",
-    name: "Gestão Estratégica de Sedimentos (APA)",
-    desc: "Área de gestão estratégica de sedimentos costeiros — APA",
+  { cat: "🪨 Geology & Bathymetry", id: "gest_sedimentar",
+    name: "Strategic Sediment Management (APA)",
+    desc: "Coastal sediment strategic management area — APA",
     url: BASE + "Area_estrat_gest_sedimentar_APA" + MS },
 
-  { cat: "🪨 Geologia e Batimetria", id: "recursos_geo",
-    name: "Títulos Recursos Geológicos (TIT)",
-    desc: "Títulos de prospeção e extração de recursos geológicos marinhos",
+  { cat: "🪨 Geology & Bathymetry", id: "recursos_geo",
+    name: "Geological Resource Titles (TIT)",
+    desc: "Exploration and extraction titles for marine geological resources",
     url: BASE + "TIT_RECURSOS_GEOLOGICOS" + MS },
 
-  // ── DEFESA E SEGURANÇA ─────────────────────────────────────
-  { cat: "🛡️ Defesa e Segurança", id: "exercicios_mil",
-    name: "Exercícios Militares",
-    desc: "Áreas e períodos reservados para exercícios militares marítimos",
+  // ── DEFENCE & SECURITY ─────────────────────────────────────
+  { cat: "🛡️ Defence & Security", id: "exercicios_mil",
+    name: "Military Exercises",
+    desc: "Areas and periods reserved for maritime military exercises",
     url: BASE + "Exercicios_Militares" + MS },
 
-  { cat: "🛡️ Defesa e Segurança", id: "imersao",
-    name: "Áreas de Imersão",
-    desc: "Zonas autorizadas para imersão de materiais dragados",
+  { cat: "🛡️ Defence & Security", id: "imersao",
+    name: "Dumping Areas",
+    desc: "Zones authorised for disposal of dredged material",
     url: BASE + "PSOEM_AREASLOCAIS_IMERSAO" + MS },
 
-  // ── RECREIO E TURISMO ──────────────────────────────────────
-  { cat: "🏖️ Recreio e Turismo", id: "patrimonio_orla",
-    name: "Património e Restrições na Orla Marítima",
-    desc: "Bens patrimoniais classificados e restrições de uso na orla costeira",
+  // ── RECREATION & TOURISM ───────────────────────────────────
+  { cat: "🏖️ Recreation & Tourism", id: "patrimonio_orla",
+    name: "Heritage & Restrictions — Maritime Shore",
+    desc: "Listed heritage and use restrictions on the coastal fringe",
     url: BASE + "Patrim%C3%B3nio_e_Restri%C3%A7%C3%B5es_na_Orla_Maritima" + MS },
 
 
   // ══════════════════════════════════════════════════════════
-  //  EMODnet — Camadas europeias (WMS)
+  //  EMODnet — European layers (WMS)
   // ══════════════════════════════════════════════════════════
 
-  // ── BATIMETRIA EMODnet ─────────────────────────────────────
-  { cat: "🌊 [EMODnet] Batimetria", id: "emod_bath_multi",
+  // ── BATHYMETRY ─────────────────────────────────────────────
+  { cat: "🌊 [EMODnet] Bathymetry", id: "emod_bath_multi",
     type: "wms",
-    name: "Profundidade Média — Multicolor (DTM)",
-    desc: "Modelo digital de terreno do fundo marinho — resolução 1/8 arc min (~250 m)",
+    name: "Mean Depth — Multicolour (DTM)",
+    desc: "Digital terrain model of the seabed — 1/8 arc min resolution (~250 m)",
     url: EMOD_BATH, wmsLayers: "emodnet:mean_multicolour" },
 
-  { cat: "🌊 [EMODnet] Batimetria", id: "emod_bath_rainbow",
+  { cat: "🌊 [EMODnet] Bathymetry", id: "emod_bath_rainbow",
     type: "wms",
-    name: "Profundidade Média — Arco-íris",
-    desc: "DTM em escala de cores arco-íris, útil para distinguir relevos",
+    name: "Mean Depth — Rainbow",
+    desc: "DTM in rainbow colour scale, useful for highlighting relief",
     url: EMOD_BATH, wmsLayers: "emodnet:mean_rainbowcolour" },
 
-  { cat: "🌊 [EMODnet] Batimetria", id: "emod_bath_land",
+  { cat: "🌊 [EMODnet] Bathymetry", id: "emod_bath_land",
     type: "wms",
-    name: "DTM com Topografia Terrestre",
-    desc: "Batimetria combinada com altimetria terrestre (SRTM)",
+    name: "DTM with Land Topography",
+    desc: "Bathymetry combined with land altimetry (SRTM)",
     url: EMOD_BATH, wmsLayers: "emodnet:mean_atlas_land" },
 
-  { cat: "🌊 [EMODnet] Batimetria", id: "emod_bath_contours",
+  { cat: "🌊 [EMODnet] Bathymetry", id: "emod_bath_contours",
     type: "wms",
-    name: "Isolinhas Batimétricas",
-    desc: "Linhas de igual profundidade (curvas de nível do fundo marinho)",
+    name: "Bathymetric Contours",
+    desc: "Isobath lines (equal-depth contours of the seabed)",
     url: EMOD_BATH, wmsLayers: "emodnet:contours" },
 
-  // ── HABITATS DO FUNDO MARINHO ──────────────────────────────
-  { cat: "🐚 [EMODnet] Habitats Bênticos", id: "emod_euseamap",
+  // ── BENTHIC HABITATS ───────────────────────────────────────
+  { cat: "🐚 [EMODnet] Benthic Habitats", id: "emod_euseamap",
     type: "wms",
-    name: "EUSeaMap — Habitats Bênticos Pan-Europeus",
-    desc: "Mapa de habitats do fundo marinho (classificação EUNIS) a escala europeia",
+    name: "EUSeaMap — Pan-European Benthic Habitats",
+    desc: "Seabed habitat map (EUNIS classification) at European scale",
     url: EMOD_HAB, wmsLayers: "emodnet_view:EUSeaMap_2021" },
 
-  { cat: "🐚 [EMODnet] Habitats Bênticos", id: "emod_hab_ospar",
+  { cat: "🐚 [EMODnet] Benthic Habitats", id: "emod_hab_ospar",
     type: "wms",
-    name: "Habitats OSPAR Ameaçados e em Declínio",
-    desc: "Habitats marinhos classificados como ameaçados pela Convenção OSPAR",
+    name: "OSPAR Threatened & Declining Habitats",
+    desc: "Marine habitats classified as threatened under the OSPAR Convention",
     url: EMOD_HAB_LIB, wmsLayers: "emodnet_view_maplibrary:OSPAR_threatened_habitats" },
 
-  // ── ATIVIDADES HUMANAS ─────────────────────────────────────
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_windfarms",
+  // ── HUMAN ACTIVITIES ───────────────────────────────────────
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_windfarms",
     type: "wms",
-    name: "Parques Eólicos Offshore",
-    desc: "Parques eólicos no mar: operacionais, em construção e planeados",
+    name: "Offshore Wind Farms",
+    desc: "Offshore wind farms: operational, under construction and planned",
     url: EMOD_HUM, wmsLayers: "windfarms" },
 
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_cables",
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_cables",
     type: "wms",
-    name: "Cabos Submarinos",
-    desc: "Cabos elétricos e de telecomunicações no fundo do mar",
+    name: "Submarine Cables",
+    desc: "Electrical and telecommunications cables on the seabed",
     url: EMOD_HUM, wmsLayers: "cables" },
 
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_pipelines",
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_pipelines",
     type: "wms",
-    name: "Oleodutos e Gasodutos Submarinos",
-    desc: "Infraestrutura de transporte de hidrocarbonetos sob o mar",
+    name: "Submarine Pipelines",
+    desc: "Hydrocarbon transport infrastructure under the sea",
     url: EMOD_HUM, wmsLayers: "pipelines" },
 
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_ais",
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_ais",
     type: "wms",
-    name: "Densidade de Tráfego AIS",
-    desc: "Intensidade de tráfego marítimo baseada em dados AIS (transponders)",
+    name: "AIS Vessel Traffic Density",
+    desc: "Maritime traffic intensity based on AIS transponder data",
     url: EMOD_HUM, wmsLayers: "ais_vessel_density" },
 
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_mpa",
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_mpa",
     type: "wms",
-    name: "Áreas Marinhas Protegidas (AMP)",
-    desc: "Rede europeia de Áreas Marinhas Protegidas (MPAs)",
+    name: "Marine Protected Areas (MPA)",
+    desc: "European network of Marine Protected Areas",
     url: EMOD_HUM, wmsLayers: "MarineProtectedAreas" },
 
-  { cat: "🏭 [EMODnet] Atividades Humanas", id: "emod_aquaculture",
+  { cat: "🏭 [EMODnet] Human Activities", id: "emod_aquaculture",
     type: "wms",
-    name: "Aquicultura Marinha",
-    desc: "Instalações de aquicultura offshore e zonas de produção",
+    name: "Marine Aquaculture",
+    desc: "Offshore aquaculture installations and production zones",
     url: EMOD_HUM, wmsLayers: "aquaculture" },
 
-  // ── GEOLOGIA SUBMARINA (EMODnet) ───────────────────────────
-  { cat: "🗺️ [EMODnet] Geologia Submarina", id: "emod_substrate_1m",
+  // ── SUBMARINE GEOLOGY ──────────────────────────────────────
+  { cat: "🗺️ [EMODnet] Submarine Geology", id: "emod_substrate_1m",
     type: "wms",
-    name: "Substrato do Fundo Marinho (1:1.000.000)",
-    desc: "Tipo de substrato bêntico: rocha, cascalho, areia, lodo — escala 1M",
+    name: "Seabed Substrate (1:1,000,000)",
+    desc: "Benthic substrate type: rock, gravel, sand, mud — 1M scale",
     url: EMOD_GEO, wmsLayers: "emodnet_seabed_substrate_1m" },
 
-  { cat: "🗺️ [EMODnet] Geologia Submarina", id: "emod_substrate_250k",
+  { cat: "🗺️ [EMODnet] Submarine Geology", id: "emod_substrate_250k",
     type: "wms",
-    name: "Substrato do Fundo Marinho (1:250.000)",
-    desc: "Tipo de substrato bêntico a maior resolução — escala 250k",
+    name: "Seabed Substrate (1:250,000)",
+    desc: "Higher-resolution benthic substrate type — 250k scale",
     url: EMOD_GEO, wmsLayers: "emodnet_seabed_substrate_250k" },
 
-  { cat: "🗺️ [EMODnet] Geologia Submarina", id: "emod_geo_events",
+  { cat: "🗺️ [EMODnet] Submarine Geology", id: "emod_geo_events",
     type: "wms",
-    name: "Eventos Geológicos Submarinos",
-    desc: "Deslizamentos, vulcões submarinos e outras ocorrências geológicas",
+    name: "Submarine Geological Events",
+    desc: "Landslides, submarine volcanoes and other geological occurrences",
     url: EMOD_GEO, wmsLayers: "geological_events_and_probabilities" },
 
 ];

@@ -14,8 +14,8 @@
   --accent2:  #00c9a7;
   --tag-bg:   #0d2240;
 
-  --dgrm:     #3b9eff;   /* azul DGRM  */
-  --emodnet:  #00c9a7;   /* verde EMODnet */
+  --dgrm:     #f59e0b;   /* amber — DGRM (PT) */
+  --emodnet:  #22d3ee;   /* cyan  — EMODnet (EU) */
 }
 
 *, *::before, *::after {
@@ -265,16 +265,18 @@ html, body {
 .layer-item:hover {
   background: var(--panel2);
 }
+/* Active state — tint and outline, colour kept per source */
 .layer-item.active {
-  background: rgba(59, 158, 255, 0.08);
-  border-color: rgba(59, 158, 255, 0.5) !important;
-  outline: 1px solid rgba(59, 158, 255, 0.18);
+  outline: 1px solid rgba(255,255,255,0.1);
   outline-offset: -1px;
 }
 
-/* Franja de color según origen */
-.layer-item.src-dgrm    { border-left-color: var(--dgrm); }
-.layer-item.src-emodnet { border-left-color: var(--emodnet); }
+/* Source colour — left border + active background tint */
+.layer-item.src-dgrm              { border-left-color: var(--dgrm); }
+.layer-item.src-dgrm.active       { background: rgba(245,158,11, 0.09); }
+
+.layer-item.src-emodnet           { border-left-color: var(--emodnet); }
+.layer-item.src-emodnet.active    { background: rgba(34,211,238, 0.08); }
 
 .layer-toggle {
   flex-shrink: 0;
@@ -289,8 +291,15 @@ html, body {
   transition: all 0.15s;
 }
 .layer-item.active .layer-toggle {
-  background: var(--accent);
-  border-color: var(--accent);
+  border-color: currentColor;
+}
+.layer-item.src-dgrm.active .layer-toggle {
+  background: var(--dgrm);
+  border-color: var(--dgrm);
+}
+.layer-item.src-emodnet.active .layer-toggle {
+  background: var(--emodnet);
+  border-color: var(--emodnet);
 }
 .layer-item.active .layer-toggle::after {
   content: "✓";
