@@ -33,6 +33,8 @@ L.control.layers(
   { position: "topright", collapsed: true }
 ).addTo(map);
 
+L.control.scale({ position: "bottomleft", imperial: false }).addTo(map);
+
 // ── GESTÃO DE CAMADAS ─────────────────────────────────────────
 const activeLayers = {}; // id → L.esri.dynamicMapLayer
 

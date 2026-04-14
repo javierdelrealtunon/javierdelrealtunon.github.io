@@ -10,35 +10,10 @@ const MS   = "/MapServer";
 const LAYERS = [
 
   // ── PLANEAMENTO E ORDENAMENTO ──────────────────────────────
-  { cat: "📋 Planeamento e Ordenamento", id: "psoem_cn1",
-    name: "Carta Náutica 1 (CN1)",
-    desc: "Plano de Situação do POEM — Carta Náutica nível 1",
-    url: BASE + "Geoportal_CN1" + MS },
-
-  { cat: "📋 Planeamento e Ordenamento", id: "psoem_cn2",
-    name: "Carta Náutica 2 (CN2)",
-    desc: "Plano de Situação do POEM — Carta Náutica nível 2",
-    url: BASE + "Geoportal_CN2" + MS },
-
-  { cat: "📋 Planeamento e Ordenamento", id: "psoem_cn3",
-    name: "Carta Náutica 3 (CN3)",
-    desc: "Plano de Situação do POEM — Carta Náutica nível 3",
-    url: BASE + "Geoportal_CN3" + MS },
-
-  { cat: "📋 Planeamento e Ordenamento", id: "tupem",
-    name: "TUPEM — Títulos de Utilização do Espaço Marítimo",
-    desc: "Títulos de utilização privativa do espaço marítimo nacional",
-    url: BASE + "TUPEM" + MS },
-
   { cat: "📋 Planeamento e Ordenamento", id: "tupem1",
     name: "TUPEM (v1)",
     desc: "Versão 1 da camada TUPEM",
     url: BASE + "Tupem_geoportal1" + MS },
-
-  { cat: "📋 Planeamento e Ordenamento", id: "tin",
-    name: "Batimetria TIN",
-    desc: "Modelo batimétrico de superfície triangulada",
-    url: BASE + "tin" + MS },
 
   // ── LIMITES E JURISDIÇÃO ───────────────────────────────────
   { cat: "⚓ Limites e Jurisdição", id: "limites",
@@ -57,11 +32,6 @@ const LAYERS = [
     url: "https://webgis.dgrm.mm.gov.pt/arcgis/rest/services/PSOEM_PosCPub/LinhaJMM_pcp_final1/MapServer" },
 
   // ── AMBIENTE E CONSERVAÇÃO ─────────────────────────────────
-  { cat: "🌿 Ambiente e Conservação", id: "amps",
-    name: "Áreas Marinhas Protegidas (AMPs)",
-    desc: "Rede de AMPs nacionais — PSOEM",
-    url: BASE + "AMPs_geoportalPSOEM" + MS },
-
   { cat: "🌿 Ambiente e Conservação", id: "ospar",
     name: "OSPAR — Áreas Protegidas",
     desc: "Áreas marinhas protegidas da Convenção OSPAR",
@@ -72,37 +42,12 @@ const LAYERS = [
     desc: "Important Bird & Biodiversity Areas em meio marinho",
     url: BASE + "IBA" + MS },
 
-  { cat: "🌿 Ambiente e Conservação", id: "zpe_raa",
-    name: "ZPE — Zonas de Proteção Especial (Açores)",
-    desc: "Zonas de Proteção Especial da Região Autónoma dos Açores",
-    url: BASE + "ZPE_RAA" + MS },
-
   { cat: "🌿 Ambiente e Conservação", id: "rede_natura_es",
     name: "Rede Natura 2000 (Espanha)",
     desc: "Zonas de proteção especial da Rede Natura 2000 em águas espanholas",
     url: BASE + "PSOEM_Rede_natura_2000_Espanha" + MS },
 
   // ── PESCA ──────────────────────────────────────────────────
-  { cat: "🎣 Pesca", id: "artes_pesca",
-    name: "Artes de Pesca — Áreas Legais",
-    desc: "Artes de pesca com licença e respetivas áreas autorizadas",
-    url: BASE + "ArtesPesca_AreasLegais_GEOPORTAL" + MS },
-
-  { cat: "🎣 Pesca", id: "cond_pesca",
-    name: "Condicionamento à Pesca",
-    desc: "Zonas com restrições ou proibições de pesca",
-    url: BASE + "Condicionamento_pesca_GEOPORTAL" + MS },
-
-  { cat: "🎣 Pesca", id: "pesca_armacao",
-    name: "Pesca com Armação",
-    desc: "Localização e áreas de armações de pesca fixas",
-    url: BASE + "Pesca_com_arma%C3%A7%C3%A3o" + MS },
-
-  { cat: "🎣 Pesca", id: "rel_pesca_local",
-    name: "Relevância Pesca Local",
-    desc: "Áreas de relevância para a pesca local e artesanal",
-    url: BASE + "relevancia_pesca_local" + MS },
-
   { cat: "🎣 Pesca", id: "portos_docapesca",
     name: "Portos e Docas de Pesca",
     desc: "Infraestrutura portuária dedicada à pesca comercial",
@@ -128,11 +73,6 @@ const LAYERS = [
     name: "Emissários Submarinos",
     desc: "Condutas submarinas de descarga de efluentes",
     url: BASE + "Emissarios_submarinos_geoportal" + MS },
-
-  { cat: "⚡ Energia e Infraestrutura", id: "monoboia",
-    name: "Monoboia de Leixões",
-    desc: "Sistema de monoboia para descarregamento de hidrocarbonetos",
-    url: BASE + "MonoboiaLeixoes" + MS },
 
   { cat: "⚡ Energia e Infraestrutura", id: "residuos",
     name: "Gestão de Resíduos (v4)",
