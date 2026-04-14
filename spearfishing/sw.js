@@ -1,5 +1,6 @@
 // Service Worker — Spots Depredadores del Cantábrico
-const CACHE = 'sdc-v1';
+const CACHE = 'sdc-v2'; // ← incrementar aquí con cada despliegue si es necesario
+
 const PRECACHE = [
   '/spearfishing/',
   '/spearfishing/index.html',
@@ -12,9 +13,30 @@ const PRECACHE = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
 ];
 
+// Dominios externos de tiles/APIs: siempre desde red, sin cachear
+const NETWORK_ONLY = [
+  'ideihm.covam.es',
+  'openseamap.org',
+  'script.google.com',
+  'cartocdn.com',
+  'openstreetmap.org',
+  'arcgisonline.com',
+];
+
+// Archivos propios de la app: red primero, caché como fallback
+const OWN_PATHS = [
+  '/spearfishing/',
+  '/spearfishing/index.html',
+  '/spearfishing/app.js',
+  '/spearfishing/style.css',
+  '/spearfishing/kml/sitios.kml',
+];
+
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -27,23 +49,37 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Tiles del mapa siempre desde red (datos en tiempo real)
   const url = e.request.url;
-  if (url.includes('ideihm.covam.es') ||
-      url.includes('openseamap.org') ||
-      url.includes('script.google.com') ||
-      url.includes('cartocdn.com') ||
-      url.includes('openstreetmap.org') ||
-      url.includes('arcgisonline.com')) {
+
+  // Tiles del mapa y APIs externas: siempre red, sin pasar por caché
+  if (NETWORK_ONLY.some(domain => url.includes(domain))) {
     return;
   }
 
-  // Todo lo demás: cache primero, red como fallback
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
-      return res;
-    }))
-  );
+  const isOwnFile = OWN_PATHS.some(path => url.includes(path));
+
+  if (isOwnFile) {
+    // Red primero → siempre coge la versión más reciente de GitHub
+    // Si no hay red (offline), usa la caché
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // Resto (iconos, leaflet, etc.): caché primero para rendimiento
+    e.respondWith(
+      caches.match(e.request).then(cached =>
+        cached || fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+      )
+    );
+  }
 });
