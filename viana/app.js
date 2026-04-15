@@ -8,8 +8,9 @@
 
 // ── MAPA ─────────────────────────────────────────────────────
 const map = L.map("map", {
-  center: [39.5, -9.0],
+  center: [41.694, -8.834],
   zoom: 10,
+  minZoom: 10,
   zoomControl: true
 });
 
