@@ -180,15 +180,82 @@ html, body {
   overflow: hidden;
 }
 
-.sidebar-head {
-  padding: 12px 14px 8px;
+/* ── SIDEBAR GROUPS ───────────────────────────────────────── */
+.sidebar-group {
+  flex-shrink: 0;
   border-bottom: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--muted);
+}
+
+.sidebar-group.layers-open {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.sidebar-group-header {
+  padding: 11px 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  user-select: none;
+  transition: background 0.15s;
+}
+.sidebar-group-header:hover {
+  background: var(--panel2);
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.group-arrow {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* Documents body */
+.sidebar-group-body.docs-body {
+  display: none;
+  padding: 8px 10px 12px;
+}
+.sidebar-group.docs-open .docs-body {
+  display: block;
+}
+
+.doc-link {
+  display: block;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--accent);
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  background: var(--panel2);
+  transition: background 0.15s, border-color 0.15s;
+}
+.doc-link:hover {
+  background: rgba(59,158,255,0.08);
+  border-color: var(--accent);
+}
+
+/* Layers body */
+.sidebar-group-body.layers-body {
+  display: none;
+}
+.sidebar-group.layers-open .layers-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .layer-count {
@@ -306,6 +373,29 @@ html, body {
   color: white;
   font-size: 0.65rem;
   line-height: 1;
+}
+
+.layer-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.layer-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 4px;
+}
+
+.layer-expand-arrow {
+  font-size: 0.62rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.layer-details {
+  padding-top: 5px;
 }
 
 .layer-info {

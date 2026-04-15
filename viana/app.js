@@ -8,9 +8,8 @@
 
 // ── MAPA ─────────────────────────────────────────────────────
 const map = L.map("map", {
-  center: [41.694, -8.834],
-  zoom: 10,
-  minZoom: 10,
+  center: [39.5, -9.0],
+  zoom: 6,
   zoomControl: true
 });
 
@@ -121,7 +120,9 @@ function setOpacity(id, value) {
   if (activeLayers[id]) activeLayers[id].setOpacity(parseFloat(value));
 }
 
-// ── SIDEBAR — lista plana con indicador de origen ─────────────
+// ── SIDEBAR — items colapsables ───────────────────────────────
+const expandedLayers = new Set();
+
 function buildSidebar(filterText) {
   const panel = document.getElementById("layerPanel");
   panel.innerHTML = "";
@@ -138,30 +139,53 @@ function buildSidebar(filterText) {
   document.getElementById("layerCount").textContent = visible.length;
 
   visible.forEach(l => {
-    const isActive  = !!activeLayers[l.id];
-    const isEmodnet = l.type === "wms";
-    const srcClass  = isEmodnet ? "src-emodnet" : "src-dgrm";
-    const srcLabel  = isEmodnet ? "EMODnet" : "DGRM";
-    const opVal     = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
-    const inputId   = "range-" + l.id;
+    const isActive   = !!activeLayers[l.id];
+    const isEmodnet  = l.type === "wms";
+    const srcClass   = isEmodnet ? "src-emodnet" : "src-dgrm";
+    const isExpanded = expandedLayers.has(l.id);
+    const opVal      = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
+    const inputId    = "range-" + l.id;
 
     const item = document.createElement("div");
     item.className = `layer-item ${srcClass}${isActive ? " active" : ""}`;
     item.id = "item-" + l.id;
     item.innerHTML = `
       <div class="layer-toggle"></div>
-      <div class="layer-info">
-        <div class="layer-name">
-          ${l.name}
-          <span class="layer-status" id="status-${l.id}"></span>
+      <div class="layer-body">
+        <div class="layer-name-row">
+          <span class="layer-name">
+            ${l.name}
+            <span class="layer-status" id="status-${l.id}"></span>
+          </span>
+          <span class="layer-expand-arrow">${isExpanded ? "▾" : "▸"}</span>
         </div>
-        <div class="layer-cat-tag">${l.cat}</div>
-        <div class="layer-desc">${l.desc}</div>
+        <div class="layer-details" id="details-${l.id}" style="display:${isExpanded ? "block" : "none"}">
+          <div class="layer-cat-tag">${l.cat}</div>
+          <div class="layer-desc">${l.desc}</div>
+        </div>
       </div>
     `;
-    item.addEventListener("click", () => {
+
+    // Checkbox: activa/desactiva capa en el mapa
+    item.querySelector(".layer-toggle").addEventListener("click", e => {
+      e.stopPropagation();
       toggleLayer(l.id);
       buildSidebar(filterText);
+    });
+
+    // Nombre: expande/colapsa detalles sin reconstruir
+    item.querySelector(".layer-name-row").addEventListener("click", e => {
+      e.stopPropagation();
+      if (expandedLayers.has(l.id)) {
+        expandedLayers.delete(l.id);
+      } else {
+        expandedLayers.add(l.id);
+      }
+      const details = document.getElementById("details-" + l.id);
+      const arrow   = item.querySelector(".layer-expand-arrow");
+      const open    = expandedLayers.has(l.id);
+      details.style.display = open ? "block" : "none";
+      arrow.textContent     = open ? "▾" : "▸";
     });
 
     const opRow = document.createElement("div");
