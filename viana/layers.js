@@ -224,5 +224,26 @@ const LAYERS = [
     name: "Submarine Geological Events",
     desc: "Landslides, submarine volcanoes and other geological occurrences",
     url: EMOD_GEO, wmsLayers: "geological_events_and_probabilities" },
-
+{
+  id: "znt-portaria-298-2023",
+  label: "ZNT (Portaria n.º 298/2023, de 4 de outubro)",
+  source: "local",
+  layer: L.polygon(
+    [
+      [41.714696, -9.076452],  // A
+      [41.715072, -9.029607],  // B
+      [41.691253, -9.029613],  // C
+      [41.691254, -9.033455],  // D
+      [41.697934, -9.033549],  // E
+      [41.697503, -9.092869],  // F
+    ],
+    {
+      color:       "#00c9b1",   // trazo teal (mismo acento visual de la app)
+      weight:      2,
+      opacity:     0.9,
+      fill:        false,       // sin sombreado
+      dashArray:   "6 4",       // línea discontinua para distinguirlo de otras capas
+    }
+  )
+}
 ];
