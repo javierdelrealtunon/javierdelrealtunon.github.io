@@ -1,9 +1,10 @@
 /* ============================================================
    GEOPORTAL MAR PORTUGUÊS — DGRM + EMODnet
    app.js — Lógica del mapa, capas y sidebar
-   Soporta dos tipos de capa:
+   Soporta tres tipos de capa:
      type: "arcgis"  → L.esri.dynamicMapLayer  (DGRM)
      type: "wms"     → L.tileLayer.wms         (EMODnet)
+     type: "polygon" → L.polygon               (local)
    ============================================================ */
 
 // ── MAPA ─────────────────────────────────────────────────────
@@ -97,6 +98,11 @@ function toggleLayer(id) {
     });
     newLayer.on("load",      () => setLayerStatus(id, "ok"));
     newLayer.on("tileerror", () => setLayerStatus(id, "error"));
+
+  } else if (cfg.type === "polygon") {
+    // ── Polígono local (Leaflet) ──────────────────────────────
+    newLayer = L.polygon(cfg.coords, cfg.style);
+    setTimeout(() => setLayerStatus(id, "ok"), 100);
 
   } else {
     // ── ArcGIS REST (DGRM) ────────────────────────────────────
