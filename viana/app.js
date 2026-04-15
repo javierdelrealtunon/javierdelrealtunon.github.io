@@ -10,6 +10,7 @@
 const map = L.map("map", {
   center: [39.5, -9.0],
   zoom: 6,
+  minZoom: 6,
   maxZoom: 12,
   zoomControl: true
 });
@@ -24,7 +25,8 @@ const cartoLayer = L.tileLayer(
   }
 ).addTo(map);
 
-map.setMaxZoom(12); // fuerza el límite aunque el tile layer tenga maxZoom mayor
+map.setMinZoom(6);
+map.setMaxZoom(12);
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
