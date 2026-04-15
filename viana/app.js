@@ -8,8 +8,9 @@
 
 // ── MAPA ─────────────────────────────────────────────────────
 const map = L.map("map", {
-  center: [39.5, -9.0],
-  zoom: 6,
+  center: [41.694, -8.834],
+  zoom: 10,
+  minZoom: 10,
   zoomControl: true
 });
 
@@ -22,6 +23,8 @@ const cartoLayer = L.tileLayer(
       '&copy; <a href="https://carto.com/attributions">CARTO</a>'
   }
 ).addTo(map);
+
+map.setMinZoom(10); // fuerza el límite de alejamiento
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
