@@ -30,6 +30,13 @@ const LAYERS = [
     desc: "Version 1 of the TUPEM (maritime space use title) layer",
     url: BASE + "Tupem_geoportal1" + MS },
 
+  { cat: "📋 Planning & Zoning", id: "zlt-viana-castelo",
+    type: "wms",
+    name: "ZLT Viana do Castelo (Portaria n.º 298/2023)",
+    desc: "Zona Livre Tecnológica de Viana do Castelo — Instituto Hidrográfico (INSPIRE HVD)",
+    url: "https://webgeo4.hidrografico.pt/geoserver/administrative/zlt_vcastelo_polygon/ows",
+    wmsLayers: "administrative:zlt_vcastelo_polygon" },
+
   { cat: "📋 Planning & Zoning", id: "znt-portaria-298-2023",
     type: "polygon",
     name: "ZNT (Portaria n.º 298/2023, de 4 de outubro)",
