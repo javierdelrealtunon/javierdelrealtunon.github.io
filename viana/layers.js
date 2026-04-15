@@ -4,6 +4,7 @@
    Types:
      type: "arcgis"  → L.esri.dynamicMapLayer  (DGRM)
      type: "wms"     → L.tileLayer.wms         (EMODnet)
+     type: "polygon" → L.polygon               (local)
    ============================================================ */
 
 // ── DGRM — ArcGIS REST ────────────────────────────────────────
@@ -28,6 +29,21 @@ const LAYERS = [
     name: "TUPEM (v1)",
     desc: "Version 1 of the TUPEM (maritime space use title) layer",
     url: BASE + "Tupem_geoportal1" + MS },
+
+  { cat: "📋 Planning & Zoning", id: "znt-portaria-298-2023",
+    type: "polygon",
+    name: "ZNT (Portaria n.º 298/2023, de 4 de outubro)",
+    desc: "Zona de exclusão offshore — Portaria n.º 298/2023 de 4 de outubro",
+    coords: [
+      [41.714696, -9.076452],  // A
+      [41.715072, -9.029607],  // B
+      [41.691253, -9.029613],  // C
+      [41.691254, -9.033455],  // D
+      [41.697934, -9.033549],  // E
+      [41.697503, -9.092869],  // F
+    ],
+    style: { color: "#00c9b1", weight: 2, opacity: 0.9, fill: false, dashArray: "6 4" }
+  },
 
   // ── LIMITS & JURISDICTION ──────────────────────────────────
   { cat: "⚓ Limits & Jurisdiction", id: "limites",
@@ -224,27 +240,5 @@ const LAYERS = [
     name: "Submarine Geological Events",
     desc: "Landslides, submarine volcanoes and other geological occurrences",
     url: EMOD_GEO, wmsLayers: "geological_events_and_probabilities" },
-{ cat: "📋 Planning & Zoning", id: "znt-portaria-298-2023",
-  type: "polygon",
-  name: "ZNT (Portaria n.º 298/2023, de 4 de outubro)",
-  desc: "Zona de exclusão offshore — Portaria n.º 298/2023 de 4 de outubro",
-  coords: [
-    [41.714696, -9.076452],
-    [41.715072, -9.029607],
-    [41.691253, -9.029613],
-    [41.691254, -9.033455],
-    [41.697934, -9.033549],
-    [41.697503, -9.092869],
-  ],
-  style: { color: "#00c9b1", weight: 2, opacity: 0.9, fill: false, dashArray: "6 4" }
-},
-    {
-      color:       "#00c9b1",   // trazo teal (mismo acento visual de la app)
-      weight:      2,
-      opacity:     0.9,
-      fill:        false,       // sin sombreado
-      dashArray:   "6 4",       // línea discontinua para distinguirlo de otras capas
-    }
-  )
-}
+
 ];
