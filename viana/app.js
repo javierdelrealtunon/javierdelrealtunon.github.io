@@ -10,7 +10,7 @@
 const map = L.map("map", {
   center: [39.5, -9.0],
   zoom: 6,
-  maxZoom: 12,   // ← añadido
+  maxZoom: 10,   // ← añadido
   zoomControl: true
 });
 
