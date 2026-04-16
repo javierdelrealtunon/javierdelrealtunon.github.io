@@ -11,8 +11,8 @@
 const map = L.map("map", {
   center: [41.694, -8.834],
   zoom: 10,
-  minZoom: 10,
   zoomControl: true
+  // minZoom eliminado temporalmente para verificar contenido de capas
 });
 
 const cartoLayer = L.tileLayer(
@@ -25,7 +25,6 @@ const cartoLayer = L.tileLayer(
   }
 ).addTo(map);
 
-map.setMinZoom(10);
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
