@@ -58,7 +58,6 @@ html, body {
   white-space: nowrap;
 }
 
-/* Botones y enlace a la derecha */
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -314,7 +313,48 @@ html, body {
 .layer-scroll {
   overflow-y: auto;
   flex: 1;
-  padding: 6px 8px 12px;
+  padding: 4px 8px 12px;
+}
+
+/* ── CATEGORY HEADERS ─────────────────────────────────────── */
+.cat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px 5px 10px;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.cat-header:first-child { margin-top: 2px; }
+
+.cat-dgrm {
+  color: var(--dgrm);
+  border-left-color: var(--dgrm);
+  background: rgba(245, 158, 11, 0.06);
+}
+.cat-dgrm:hover { background: rgba(245, 158, 11, 0.13); }
+
+.cat-emodnet {
+  color: var(--emodnet);
+  border-left-color: var(--emodnet);
+  background: rgba(34, 211, 238, 0.06);
+}
+.cat-emodnet:hover { background: rgba(34, 211, 238, 0.13); }
+
+.cat-title { flex: 1; }
+
+.cat-arrow {
+  font-size: 0.62rem;
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 /* ── LAYER ITEM — lista plana ─────────────────────────────── */
@@ -332,13 +372,11 @@ html, body {
 .layer-item:hover {
   background: var(--panel2);
 }
-/* Active state — tint and outline, colour kept per source */
 .layer-item.active {
   outline: 1px solid rgba(255,255,255,0.1);
   outline-offset: -1px;
 }
 
-/* Source colour — left border + active background tint */
 .layer-item.src-dgrm              { border-left-color: var(--dgrm); }
 .layer-item.src-dgrm.active       { background: rgba(245,158,11, 0.09); }
 
@@ -398,20 +436,9 @@ html, body {
   padding-top: 5px;
 }
 
-.layer-info {
-  flex: 1;
-  min-width: 0;
-}
 .layer-name {
   font-size: 0.85rem;
   line-height: 1.35;
-}
-.layer-cat-tag {
-  font-size: 0.7rem;
-  color: #4a6a8a;
-  margin-top: 2px;
-  margin-bottom: 1px;
-  line-height: 1.25;
 }
 .layer-desc {
   font-size: 0.74rem;

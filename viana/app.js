@@ -25,12 +25,18 @@ const cartoLayer = L.tileLayer(
   }
 ).addTo(map);
 
-map.setMinZoom(10); // fuerza el límite de alejamiento
+map.setMinZoom(10);
 
 const orthoLayer = L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   { maxZoom: 19, attribution: "Tiles &copy; Esri" }
 );
+
+// ── Pane dedicado para la carta náutica ───────────────────────
+// zIndex 250 = entre tilePane (200) y overlayPane (400),
+// de modo que la ENC queda siempre por debajo de las capas temáticas.
+map.createPane("nauticalPane");
+map.getPane("nauticalPane").style.zIndex = 250;
 
 const ihptEnc = L.tileLayer.wms("https://enc.hidrografico.pt/?", {
   layers:      "ENC",
@@ -40,6 +46,7 @@ const ihptEnc = L.tileLayer.wms("https://enc.hidrografico.pt/?", {
   uppercase:   true,
   CSBOOL:      "2183",
   CSVALUE:     ",,,,,3",
+  pane:        "nauticalPane",          // ← siempre debajo de temáticas
   attribution: "Instituto Hidrográfico de Portugal (IHPT ENC WMS)"
 });
 
@@ -87,7 +94,7 @@ function toggleLayer(id) {
   let newLayer;
 
   if (cfg.type === "wms") {
-    // ── WMS (EMODnet) ─────────────────────────────────────────
+    // ── WMS (EMODnet / IH) ────────────────────────────────────
     newLayer = L.tileLayer.wms(cfg.url, {
       layers:      cfg.wmsLayers,
       format:      "image/png",
@@ -129,8 +136,9 @@ function setOpacity(id, value) {
   if (activeLayers[id]) activeLayers[id].setOpacity(parseFloat(value));
 }
 
-// ── SIDEBAR — items colapsables ───────────────────────────────
+// ── SIDEBAR — agrupada por categoría, colapsable ──────────────
 const expandedLayers = new Set();
+const collapsedCats  = new Set(); // categorías contraídas
 
 function buildSidebar(filterText) {
   const panel = document.getElementById("layerPanel");
@@ -147,72 +155,96 @@ function buildSidebar(filterText) {
 
   document.getElementById("layerCount").textContent = visible.length;
 
+  // ── Agrupar por cat manteniendo el orden de aparición ────────
+  const groups = new Map();
   visible.forEach(l => {
-    const isActive   = !!activeLayers[l.id];
-    const isEmodnet  = l.type === "wms";
-    const srcClass   = isEmodnet ? "src-emodnet" : "src-dgrm";
-    const isExpanded = expandedLayers.has(l.id);
-    const opVal      = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
-    const inputId    = "range-" + l.id;
+    if (!groups.has(l.cat)) groups.set(l.cat, []);
+    groups.get(l.cat).push(l);
+  });
 
-    const item = document.createElement("div");
-    item.className = `layer-item ${srcClass}${isActive ? " active" : ""}`;
-    item.id = "item-" + l.id;
-    item.innerHTML = `
-      <div class="layer-toggle"></div>
-      <div class="layer-body">
-        <div class="layer-name-row">
-          <span class="layer-name">
-            ${l.name}
-            <span class="layer-status" id="status-${l.id}"></span>
-          </span>
-          <span class="layer-expand-arrow">${isExpanded ? "▾" : "▸"}</span>
-        </div>
-        <div class="layer-details" id="details-${l.id}" style="display:${isExpanded ? "block" : "none"}">
-          <div class="layer-cat-tag">${l.cat}</div>
-          <div class="layer-desc">${l.desc}</div>
-        </div>
-      </div>
+  groups.forEach((layers, cat) => {
+    const isEmodnet   = cat.includes("EMODnet");
+    const isCollapsed = collapsedCats.has(cat);
+
+    // ── Cabecera de categoría ─────────────────────────────────
+    const catHeader = document.createElement("div");
+    catHeader.className = `cat-header ${isEmodnet ? "cat-emodnet" : "cat-dgrm"}`;
+    catHeader.innerHTML = `
+      <span class="cat-title">${cat}</span>
+      <span class="cat-arrow">${isCollapsed ? "▸" : "▾"}</span>
     `;
-
-    // Checkbox: activa/desactiva capa en el mapa
-    item.querySelector(".layer-toggle").addEventListener("click", e => {
-      e.stopPropagation();
-      toggleLayer(l.id);
+    catHeader.addEventListener("click", () => {
+      if (collapsedCats.has(cat)) collapsedCats.delete(cat);
+      else                        collapsedCats.add(cat);
       buildSidebar(filterText);
     });
+    panel.appendChild(catHeader);
 
-    // Nombre: expande/colapsa detalles sin reconstruir
-    item.querySelector(".layer-name-row").addEventListener("click", e => {
-      e.stopPropagation();
-      if (expandedLayers.has(l.id)) {
-        expandedLayers.delete(l.id);
-      } else {
-        expandedLayers.add(l.id);
+    if (isCollapsed) return; // omite los items si está contraído
+
+    // ── Items de la categoría ─────────────────────────────────
+    layers.forEach(l => {
+      const isActive   = !!activeLayers[l.id];
+      const srcClass   = isEmodnet ? "src-emodnet" : "src-dgrm";
+      const isExpanded = expandedLayers.has(l.id);
+      const opVal      = activeLayers[l.id] ? activeLayers[l.id].options.opacity : 0.75;
+      const inputId    = "range-" + l.id;
+
+      const item = document.createElement("div");
+      item.className = `layer-item ${srcClass}${isActive ? " active" : ""}`;
+      item.id = "item-" + l.id;
+      item.innerHTML = `
+        <div class="layer-toggle"></div>
+        <div class="layer-body">
+          <div class="layer-name-row">
+            <span class="layer-name">
+              ${l.name}
+              <span class="layer-status" id="status-${l.id}"></span>
+            </span>
+            <span class="layer-expand-arrow">${isExpanded ? "▾" : "▸"}</span>
+          </div>
+          <div class="layer-details" id="details-${l.id}" style="display:${isExpanded ? "block" : "none"}">
+            <div class="layer-desc">${l.desc}</div>
+          </div>
+        </div>
+      `;
+
+      // Checkbox: activa/desactiva capa en el mapa
+      item.querySelector(".layer-toggle").addEventListener("click", e => {
+        e.stopPropagation();
+        toggleLayer(l.id);
+        buildSidebar(filterText);
+      });
+
+      // Nombre: expande/colapsa descripción sin reconstruir todo
+      item.querySelector(".layer-name-row").addEventListener("click", e => {
+        e.stopPropagation();
+        if (expandedLayers.has(l.id)) expandedLayers.delete(l.id);
+        else                          expandedLayers.add(l.id);
+        const details = document.getElementById("details-" + l.id);
+        const arrow   = item.querySelector(".layer-expand-arrow");
+        const open    = expandedLayers.has(l.id);
+        details.style.display = open ? "block" : "none";
+        arrow.textContent     = open ? "▾" : "▸";
+      });
+
+      const opRow = document.createElement("div");
+      opRow.className = "opacity-row";
+      opRow.id = "op-" + l.id;
+      opRow.innerHTML = `
+        <label for="${inputId}">Opacidade</label>
+        <input id="${inputId}" type="range" min="0.1" max="1" step="0.05"
+          value="${opVal}"
+          oninput="setOpacity('${l.id}', this.value)" />
+      `;
+
+      panel.appendChild(item);
+      panel.appendChild(opRow);
+
+      if (isActive) {
+        requestAnimationFrame(() => setLayerStatus(l.id, "ok"));
       }
-      const details = document.getElementById("details-" + l.id);
-      const arrow   = item.querySelector(".layer-expand-arrow");
-      const open    = expandedLayers.has(l.id);
-      details.style.display = open ? "block" : "none";
-      arrow.textContent     = open ? "▾" : "▸";
     });
-
-    const opRow = document.createElement("div");
-    opRow.className = "opacity-row";
-    opRow.id = "op-" + l.id;
-    opRow.innerHTML = `
-      <label for="${inputId}">Opacidade</label>
-      <input id="${inputId}" type="range" min="0.1" max="1" step="0.05"
-        value="${opVal}"
-        oninput="setOpacity('${l.id}', this.value)" />
-    `;
-
-    panel.appendChild(item);
-    panel.appendChild(opRow);
-
-    if (isActive) {
-      requestAnimationFrame(() => setLayerStatus(l.id, "ok"));
-    }
   });
 }
 
