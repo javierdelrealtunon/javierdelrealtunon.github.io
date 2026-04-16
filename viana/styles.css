@@ -58,6 +58,7 @@ html, body {
   white-space: nowrap;
 }
 
+/* Botones y enlace a la derecha */
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -313,48 +314,7 @@ html, body {
 .layer-scroll {
   overflow-y: auto;
   flex: 1;
-  padding: 4px 8px 12px;
-}
-
-/* ── CATEGORY HEADERS ─────────────────────────────────────── */
-.cat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 8px 5px 10px;
-  margin-top: 8px;
-  margin-bottom: 2px;
-  border-radius: 8px;
-  cursor: pointer;
-  user-select: none;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  transition: background 0.15s;
-  border-left: 3px solid transparent;
-}
-.cat-header:first-child { margin-top: 2px; }
-
-.cat-dgrm {
-  color: var(--dgrm);
-  border-left-color: var(--dgrm);
-  background: rgba(245, 158, 11, 0.06);
-}
-.cat-dgrm:hover { background: rgba(245, 158, 11, 0.13); }
-
-.cat-emodnet {
-  color: var(--emodnet);
-  border-left-color: var(--emodnet);
-  background: rgba(34, 211, 238, 0.06);
-}
-.cat-emodnet:hover { background: rgba(34, 211, 238, 0.13); }
-
-.cat-title { flex: 1; }
-
-.cat-arrow {
-  font-size: 0.62rem;
-  opacity: 0.7;
-  flex-shrink: 0;
+  padding: 6px 8px 12px;
 }
 
 /* ── LAYER ITEM — lista plana ─────────────────────────────── */
@@ -372,11 +332,13 @@ html, body {
 .layer-item:hover {
   background: var(--panel2);
 }
+/* Active state — tint and outline, colour kept per source */
 .layer-item.active {
   outline: 1px solid rgba(255,255,255,0.1);
   outline-offset: -1px;
 }
 
+/* Source colour — left border + active background tint */
 .layer-item.src-dgrm              { border-left-color: var(--dgrm); }
 .layer-item.src-dgrm.active       { background: rgba(245,158,11, 0.09); }
 
@@ -436,9 +398,20 @@ html, body {
   padding-top: 5px;
 }
 
+.layer-info {
+  flex: 1;
+  min-width: 0;
+}
 .layer-name {
   font-size: 0.85rem;
   line-height: 1.35;
+}
+.layer-cat-tag {
+  font-size: 0.7rem;
+  color: #4a6a8a;
+  margin-top: 2px;
+  margin-bottom: 1px;
+  line-height: 1.25;
 }
 .layer-desc {
   font-size: 0.74rem;
@@ -506,4 +479,120 @@ html, body {
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 720px) {
   .sidebar { width: 260px; }
+}
+
+/* ── KML GROUP ────────────────────────────────────────────── */
+.sidebar-group-body.kml-body {
+  display: none;
+  padding: 10px 10px 12px;
+}
+.sidebar-group.kml-open .kml-body {
+  display: block;
+}
+
+.kml-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 8px 8px;
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.kml-upload-area:hover {
+  border-color: var(--accent);
+  background: rgba(59,158,255,0.04);
+}
+
+.kml-upload-btn {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  width: 100%;
+  transition: background 0.15s, border-color 0.15s;
+}
+.kml-upload-btn:hover {
+  background: rgba(59,158,255,0.1);
+  border-color: var(--accent);
+}
+
+.kml-hint {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* KML layer items */
+.kml-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--text);
+  transition: opacity 0.2s;
+}
+.kml-item:last-child { border-bottom: none; }
+.kml-item.kml-hidden { opacity: 0.45; }
+
+.kml-color-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.kml-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kml-status {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.kml-toggle-btn,
+.kml-remove-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: var(--muted);
+  transition: background 0.12s, color 0.12s;
+  line-height: 1;
+}
+.kml-toggle-btn:hover { background: var(--panel2); color: var(--accent); }
+.kml-remove-btn:hover { background: rgba(255,95,95,0.12); color: #ff5f5f; }
+
+/* Drag-over highlight on map */
+#map.drag-over::after {
+  content: "📂  Soltar KML / KMZ aqui";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(7,17,30,0.65);
+  border: 3px dashed var(--accent);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9000;
 }

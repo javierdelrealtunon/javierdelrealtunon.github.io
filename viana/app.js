@@ -261,3 +261,189 @@ document.getElementById("searchInput").addEventListener("input", e => {
 });
 
 buildSidebar();
+
+// ── KML / KMZ — carga interactiva ────────────────────────────
+// Pane propio para KML: siempre encima de capas temáticas
+map.createPane("kmlPane");
+map.getPane("kmlPane").style.zIndex = 310;
+
+const kmlLayers = {}; // id → { layer, name, visible }
+let kmlCounter  = 0;
+
+const KML_PALETTE = [
+  "#e05252", "#e08c52", "#d4c84a", "#52b052",
+  "#52a8e0", "#8052e0", "#e052b8", "#52e0d4"
+];
+
+/**
+ * Carga un fichero KML o KMZ desde un objeto File y lo añade al mapa.
+ */
+function loadKmlFile(file) {
+  const name = file.name.replace(/\.(kml|kmz)$/i, "");
+  const id   = "kml-" + (++kmlCounter);
+  const color = KML_PALETTE[(kmlCounter - 1) % KML_PALETTE.length];
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    let kmlString = e.target.result;
+
+    // KMZ es un ZIP — intentar descomprimir si la librería JSZip está presente
+    // Si no está disponible se avisa al usuario
+    if (file.name.toLowerCase().endsWith(".kmz")) {
+      if (typeof JSZip === "undefined") {
+        showKmlError(id, name, "KMZ requiere JSZip. Por favor convierte a KML primero.");
+        return;
+      }
+      JSZip.loadAsync(file).then(zip => {
+        const kmlFile = Object.values(zip.files).find(f => f.name.endsWith(".kml"));
+        if (!kmlFile) { showKmlError(id, name, "No se encontró .kml dentro del KMZ."); return; }
+        kmlFile.async("string").then(str => parseAndAddKml(str, name, id, color));
+      });
+      return;
+    }
+
+    parseAndAddKml(kmlString, name, id, color);
+  };
+
+  reader.onerror = () => showKmlError(id, name, "Error al leer el fichero.");
+
+  // Registrar entrada en sidebar antes de parsear (feedback inmediato)
+  addKmlEntry(id, name, color, "loading");
+
+  if (file.name.toLowerCase().endsWith(".kmz")) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file);
+  }
+}
+
+function parseAndAddKml(kmlString, name, id, color) {
+  try {
+    const layer = omnivore.kml.parse(kmlString, null,
+      L.geoJSON(null, {
+        pane: "kmlPane",
+        style: { color, weight: 2, opacity: 0.9, fillOpacity: 0.25 },
+        pointToLayer: (f, latlng) => L.circleMarker(latlng, {
+          pane:        "kmlPane",
+          radius:      6,
+          color,
+          fillColor:   color,
+          fillOpacity: 0.7,
+          weight:      2
+        }),
+        onEachFeature: (feature, featureLayer) => {
+          const props = feature.properties || {};
+          const label = props.name || props.Name || props.description || name;
+          if (label) featureLayer.bindPopup(`<b>${label}</b>`);
+        }
+      })
+    );
+
+    layer.addTo(map);
+    if (layer.getBounds && layer.getBounds().isValid()) {
+      map.fitBounds(layer.getBounds(), { padding: [30, 30] });
+    }
+
+    kmlLayers[id] = { layer, name, visible: true };
+    updateKmlEntry(id, "ok");
+
+  } catch (err) {
+    showKmlError(id, name, "Error al parsear el KML: " + err.message);
+  }
+}
+
+function addKmlEntry(id, name, color, status) {
+  const list = document.getElementById("kmlLayerList");
+
+  const item = document.createElement("div");
+  item.className = "kml-item";
+  item.id = "kml-item-" + id;
+  item.innerHTML = `
+    <span class="kml-color-dot" style="background:${color}"></span>
+    <span class="kml-name" title="${name}">${name}</span>
+    <span class="kml-status" id="kml-status-${id}">${
+      status === "loading" ? "⏳" : status === "ok" ? "" : "⚠"
+    }</span>
+    <button class="kml-toggle-btn" id="kml-toggle-${id}" title="Ocultar/mostrar">👁</button>
+    <button class="kml-remove-btn" id="kml-remove-${id}" title="Eliminar">✕</button>
+  `;
+
+  item.querySelector("#kml-toggle-" + id).addEventListener("click", () => toggleKmlLayer(id));
+  item.querySelector("#kml-remove-" + id).addEventListener("click", () => removeKmlLayer(id));
+
+  list.appendChild(item);
+}
+
+function updateKmlEntry(id, status) {
+  const statusEl = document.getElementById("kml-status-" + id);
+  if (statusEl) statusEl.textContent = status === "ok" ? "" : "⚠";
+}
+
+function showKmlError(id, name, msg) {
+  const statusEl = document.getElementById("kml-status-" + id);
+  if (statusEl) { statusEl.textContent = "⚠"; statusEl.title = msg; }
+  console.warn("KML error:", msg);
+}
+
+function toggleKmlLayer(id) {
+  const entry = kmlLayers[id];
+  if (!entry) return;
+  const btn = document.getElementById("kml-toggle-" + id);
+  const item = document.getElementById("kml-item-" + id);
+  if (entry.visible) {
+    map.removeLayer(entry.layer);
+    entry.visible = false;
+    item.classList.add("kml-hidden");
+    if (btn) btn.style.opacity = "0.35";
+  } else {
+    entry.layer.addTo(map);
+    entry.visible = true;
+    item.classList.remove("kml-hidden");
+    if (btn) btn.style.opacity = "";
+  }
+}
+
+function removeKmlLayer(id) {
+  const entry = kmlLayers[id];
+  if (!entry) return;
+  map.removeLayer(entry.layer);
+  delete kmlLayers[id];
+  const item = document.getElementById("kml-item-" + id);
+  if (item) item.remove();
+}
+
+// ── Botón de carga ────────────────────────────────────────────
+document.getElementById("kmlUploadBtn").addEventListener("click", () => {
+  document.getElementById("kmlFileInput").click();
+});
+
+document.getElementById("kmlFileInput").addEventListener("change", e => {
+  Array.from(e.target.files).forEach(loadKmlFile);
+  e.target.value = ""; // permite cargar el mismo fichero otra vez
+});
+
+// ── Drag & drop sobre el mapa ─────────────────────────────────
+const mapEl = document.getElementById("map");
+
+mapEl.addEventListener("dragover", e => {
+  e.preventDefault();
+  mapEl.classList.add("drag-over");
+});
+mapEl.addEventListener("dragleave", () => mapEl.classList.remove("drag-over"));
+mapEl.addEventListener("drop", e => {
+  e.preventDefault();
+  mapEl.classList.remove("drag-over");
+  const files = Array.from(e.dataTransfer.files)
+    .filter(f => /\.(kml|kmz)$/i.test(f.name));
+  if (files.length) {
+    // Abrir el grupo KML en el sidebar si estaba cerrado
+    const kmlGroup = document.getElementById("kmlGroup");
+    const kmlArrow = document.getElementById("kmlArrow");
+    if (!kmlGroup.classList.contains("kml-open")) {
+      kmlGroup.classList.add("kml-open");
+      kmlArrow.textContent = "▾";
+    }
+    files.forEach(loadKmlFile);
+  }
+});
+
