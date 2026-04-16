@@ -32,11 +32,17 @@ const orthoLayer = L.tileLayer(
   { maxZoom: 19, attribution: "Tiles &copy; Esri" }
 );
 
-// ── Pane dedicado para la carta náutica ───────────────────────
-// zIndex 250 = entre tilePane (200) y overlayPane (400),
-// de modo que la ENC queda siempre por debajo de las capas temáticas.
+// ── Panes de superposición — orden garantizado ────────────────
+// L.tileLayer.wms usa "tilePane" (z-index 200) por defecto,
+// igual que los mapas base. Se necesitan dos panes contiguos:
+//   nauticalPane  201  → carta náutica (encima del mapa base)
+//   thematicPane  202  → capas WMS/ArcGIS temáticas (encima de la náutica)
+// Los polígonos van al overlayPane nativo (400), siempre al frente.
 map.createPane("nauticalPane");
-map.getPane("nauticalPane").style.zIndex = 250;
+map.getPane("nauticalPane").style.zIndex = 201;
+
+map.createPane("thematicPane");
+map.getPane("thematicPane").style.zIndex = 202;
 
 const ihptEnc = L.tileLayer.wms("https://enc.hidrografico.pt/?", {
   layers:      "ENC",
@@ -94,13 +100,14 @@ function toggleLayer(id) {
   let newLayer;
 
   if (cfg.type === "wms") {
-    // ── WMS (EMODnet / IH) ────────────────────────────────────
+    // ── WMS (EMODnet / IH) — pane temático, encima de la náutica ─
     newLayer = L.tileLayer.wms(cfg.url, {
       layers:      cfg.wmsLayers,
       format:      "image/png",
       transparent: true,
       version:     "1.3.0",
       opacity:     0.75,
+      pane:        "thematicPane",
       attribution: "© EMODnet"
     });
     newLayer.on("load",      () => setLayerStatus(id, "ok"));
@@ -112,13 +119,14 @@ function toggleLayer(id) {
     setTimeout(() => setLayerStatus(id, "ok"), 100);
 
   } else {
-    // ── ArcGIS REST (DGRM) ────────────────────────────────────
+    // ── ArcGIS REST (DGRM) — pane temático, encima de la náutica ─
     newLayer = L.esri.dynamicMapLayer({
       url:         cfg.url,
       opacity:     0.75,
       f:           "image",
       transparent: true,
-      format:      "png32"
+      format:      "png32",
+      pane:        "thematicPane"
     });
     newLayer.on("load",  () => setLayerStatus(id, "ok"));
     newLayer.on("error", () => setLayerStatus(id, "error"));
