@@ -95,6 +95,11 @@ const LAYERS = [
     desc: "Maritime waste management facilities and areas",
     url: BASE + "Gest%C3%A3o_de_residuos_V4" + MS },
 
+  { cat: "⚡ Energy & Infrastructure", id: "cabos_sub",
+    name: "Submarine Cables (DGRM / EMODnet)",
+    desc: "Submarine telecommunication and power cables in Portuguese waters — EMODnet data hosted by DGRM",
+    url: BASE + "Cabos_submarinos_EMODnet" + MS },
+
   // ── MARITIME TRAFFIC ───────────────────────────────────────
   { cat: "🚢 Maritime Traffic", id: "sep_trafego",
     name: "Traffic Separation Schemes",
@@ -143,6 +148,16 @@ const LAYERS = [
     desc: "Zones authorised for disposal of dredged material",
     url: BASE + "PSOEM_AREASLOCAIS_IMERSAO" + MS },
 
+  { cat: "🛡️ Defence & Security", id: "ospar",
+    name: "OSPAR Protected Areas",
+    desc: "OSPAR Convention marine protected and managed areas in Portuguese waters — DGRM",
+    url: BASE + "OSPAR" + MS },
+
+  { cat: "🛡️ Defence & Security", id: "amps_dgrm",
+    name: "Marine Protected Areas — Portugal (DGRM)",
+    desc: "Portuguese Marine Protected Areas (AMPs) — national source via DGRM/PSOEM",
+    url: BASE + "AMPs_geoportalPSOEM" + MS },
+
   // ── RECREATION & TOURISM ───────────────────────────────────
   { cat: "🏖️ Recreation & Tourism", id: "patrimonio_orla",
     name: "Heritage & Restrictions — Maritime Shore",
@@ -182,9 +197,9 @@ const LAYERS = [
   // ── BENTHIC HABITATS ───────────────────────────────────────
   { cat: "🐚 [EMODnet] Benthic Habitats", id: "emod_euseamap",
     type: "wms",
-    name: "EUSeaMap — Pan-European Benthic Habitats",
-    desc: "Seabed habitat map (EUNIS classification) at European scale",
-    url: EMOD_HAB, wmsLayers: "emodnet_view:EUSeaMap_2021" },
+    name: "EUSeaMap 2023 — Pan-European Benthic Habitats",
+    desc: "Seabed habitat map (EUNIS 2019 classification) at European scale — updated 2023",
+    url: EMOD_HAB, wmsLayers: "eusm2023_eunis2019_group" },
 
   { cat: "🐚 [EMODnet] Benthic Habitats", id: "emod_hab_ospar",
     type: "wms",
@@ -199,12 +214,6 @@ const LAYERS = [
     desc: "Offshore wind farms: operational, under construction and planned",
     url: EMOD_HUM, wmsLayers: "windfarms" },
 
-  { cat: "🏭 [EMODnet] Human Activities", id: "emod_cables",
-    type: "wms",
-    name: "Submarine Cables",
-    desc: "Electrical and telecommunications cables on the seabed",
-    url: EMOD_HUM, wmsLayers: "cables" },
-
   { cat: "🏭 [EMODnet] Human Activities", id: "emod_pipelines",
     type: "wms",
     name: "Submarine Pipelines",
@@ -214,13 +223,13 @@ const LAYERS = [
   { cat: "🏭 [EMODnet] Human Activities", id: "emod_ais",
     type: "wms",
     name: "AIS Vessel Traffic Density",
-    desc: "Maritime traffic intensity based on AIS transponder data",
-    url: EMOD_HUM, wmsLayers: "ais_vessel_density" },
+    desc: "Annual average maritime traffic intensity (all vessel types) — AIS data 2017–2024",
+    url: EMOD_HUM, wmsLayers: "vesseldensity_01avg" },
 
   { cat: "🏭 [EMODnet] Human Activities", id: "emod_mpa",
     type: "wms",
-    name: "Marine Protected Areas (MPA)",
-    desc: "European network of Marine Protected Areas",
+    name: "Marine Protected Areas — Europe (EMODnet)",
+    desc: "European network of Marine Protected Areas (OSPAR, HELCOM, MAPAMED) — pan-European coverage",
     url: EMOD_HUM, wmsLayers: "MarineProtectedAreas" },
 
   { cat: "🏭 [EMODnet] Human Activities", id: "emod_aquaculture",
@@ -230,6 +239,8 @@ const LAYERS = [
     url: EMOD_HUM, wmsLayers: "aquaculture" },
 
   // ── SUBMARINE GEOLOGY ──────────────────────────────────────
+  // ⚠ VERIFICAR nombres de capa en:
+  // https://drive.emodnet-geology.eu/geoserver/bgr/wms?SERVICE=WMS&REQUEST=GetCapabilities
   { cat: "🗺️ [EMODnet] Submarine Geology", id: "emod_substrate_1m",
     type: "wms",
     name: "Seabed Substrate (1:1,000,000)",
