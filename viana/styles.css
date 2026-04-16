@@ -596,3 +596,119 @@ html, body {
   pointer-events: none;
   z-index: 9000;
 }
+
+/* ── DRAW GROUP ───────────────────────────────────────────── */
+.sidebar-group-body.draw-body {
+  display: none;
+  padding: 10px 10px 12px;
+}
+.sidebar-group.draw-open .draw-body {
+  display: block;
+}
+
+/* Tool buttons row */
+.draw-tools {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.draw-tool-btn {
+  flex: 1;
+  min-width: 30px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 4px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
+  text-align: center;
+}
+.draw-tool-btn:hover {
+  background: rgba(59,158,255,0.1);
+  border-color: var(--accent);
+}
+.draw-tool-btn.active {
+  background: rgba(59,158,255,0.18);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(59,158,255,0.25);
+}
+.draw-tool-btn.draw-tool-danger:hover {
+  background: rgba(255,95,95,0.12);
+  border-color: #ff5f5f;
+}
+
+.draw-hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  min-height: 1.4em;
+  line-height: 1.4;
+}
+
+/* Feature rows */
+.draw-feat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+.draw-feat-row:last-child { border-bottom: none; }
+
+.draw-feat-icon { flex-shrink: 0; font-size: 0.85rem; }
+.draw-feat-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+/* Export row */
+.draw-export-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.draw-export-btn {
+  flex: 1;
+  background: var(--panel2);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 7px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.draw-export-btn:hover {
+  background: rgba(59,158,255,0.12);
+}
+
+/* Override Leaflet.draw toolbar to match dark theme */
+.leaflet-draw-toolbar a {
+  background-color: var(--panel2) !important;
+  border-color: var(--border) !important;
+}
+.leaflet-draw-toolbar a:hover {
+  background-color: var(--panel) !important;
+}
+.leaflet-draw-actions a {
+  background-color: var(--panel2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Marker icon drawn */
+.draw-marker-icon { font-size: 20px; line-height: 1; }

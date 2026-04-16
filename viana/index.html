@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Analysis of ZLT de Viana do Castelo for Pre-Commercial Floating Offshore Wind developments</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -95,7 +96,31 @@
         </div>
       </div>
 
-      <!-- GROUP 3: LAYERS -->
+      <!-- GROUP 3: DRAW -->
+      <div class="sidebar-group" id="drawGroup">
+        <div class="sidebar-group-header" id="drawHeader">
+          <span class="group-title">✏️ Desenho</span>
+          <span class="group-arrow" id="drawArrow">▸</span>
+        </div>
+        <div class="sidebar-group-body draw-body" id="drawBody">
+          <div class="draw-tools">
+            <button class="draw-tool-btn" id="drawMarker"   title="Ponto">📍</button>
+            <button class="draw-tool-btn" id="drawLine"     title="Linha">📏</button>
+            <button class="draw-tool-btn" id="drawPolygon"  title="Polígono">⬡</button>
+            <button class="draw-tool-btn" id="drawRect"     title="Rectângulo">⬜</button>
+            <button class="draw-tool-btn" id="drawCircle"   title="Círculo">◯</button>
+            <button class="draw-tool-btn draw-tool-danger" id="drawClear" title="Apagar tudo">🗑</button>
+          </div>
+          <div class="draw-hint" id="drawHint">Selecciona una herramienta para empezar</div>
+          <div id="drawFeatureList"></div>
+          <div class="draw-export-row" id="drawExportRow" style="display:none">
+            <button class="draw-export-btn" id="exportKml">⬇ KML</button>
+            <button class="draw-export-btn" id="exportKmz">⬇ KMZ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROUP 4: LAYERS -->
       <div class="sidebar-group layers-group" id="layersGroup">
         <div class="sidebar-group-header" id="layersHeader">
           <span class="group-title">Camadas disponíveis <span class="layer-count" id="layerCount">0</span></span>
@@ -123,6 +148,8 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
 <script src="layers.js"></script>
 <script src="app.js"></script>
@@ -154,6 +181,7 @@
 
   setupGroupToggle("docsHeader",   "docsGroup",   "docsArrow",   "docs-open");
   setupGroupToggle("kmlHeader",    "kmlGroup",    "kmlArrow",    "kml-open");
+  setupGroupToggle("drawHeader",   "drawGroup",   "drawArrow",   "draw-open");
   setupGroupToggle("layersHeader", "layersGroup", "layersArrow", "layers-open");
 </script>
 </body>

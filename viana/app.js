@@ -447,3 +447,249 @@ mapEl.addEventListener("drop", e => {
   }
 });
 
+// ── HERRAMIENTAS DE DIBUJO ────────────────────────────────────
+// Pane para features dibujadas: encima de todo lo demás
+map.createPane("drawPane");
+map.getPane("drawPane").style.zIndex = 400;
+
+// FeatureGroup donde Leaflet.draw almacena los objetos
+const drawnItems  = new L.FeatureGroup([], { pane: "drawPane" }).addTo(map);
+let   drawCounter = 0;
+const drawFeatures = {}; // id → { layer, name, type }
+
+// Colores por defecto para elementos dibujados
+const DRAW_STYLE = {
+  color:       "#f59e0b",
+  fillColor:   "#f59e0b",
+  weight:      2.5,
+  opacity:     1,
+  fillOpacity: 0.25
+};
+const DRAW_STYLE_CIRCLE = { ...DRAW_STYLE, fillOpacity: 0.2 };
+
+// ── Handlers de los botones del sidebar ──────────────────────
+let activeDrawHandler = null;
+
+function activateDrawTool(handler, btnId) {
+  if (activeDrawHandler) {
+    activeDrawHandler.disable();
+    document.querySelectorAll(".draw-tool-btn").forEach(b => b.classList.remove("active"));
+  }
+  if (activeDrawHandler && activeDrawHandler === handler) {
+    activeDrawHandler = null;
+    setDrawHint("Selecciona una herramienta para empezar");
+    return;
+  }
+  activeDrawHandler = handler;
+  handler.enable();
+  document.getElementById(btnId).classList.add("active");
+}
+
+document.getElementById("drawMarker").addEventListener("click", () => {
+  activateDrawTool(new L.Draw.Marker(map, { icon: L.divIcon({ className: "draw-marker-icon", html: "📍", iconSize: [24,24], iconAnchor: [12,24] }) }), "drawMarker");
+  setDrawHint("Haz clic en el mapa para colocar un punto");
+});
+
+document.getElementById("drawLine").addEventListener("click", () => {
+  activateDrawTool(new L.Draw.Polyline(map, { shapeOptions: DRAW_STYLE }), "drawLine");
+  setDrawHint("Clic para añadir vértices · doble clic para terminar");
+});
+
+document.getElementById("drawPolygon").addEventListener("click", () => {
+  activateDrawTool(new L.Draw.Polygon(map, { shapeOptions: DRAW_STYLE }), "drawPolygon");
+  setDrawHint("Clic para añadir vértices · clic en el primero para cerrar");
+});
+
+document.getElementById("drawRect").addEventListener("click", () => {
+  activateDrawTool(new L.Draw.Rectangle(map, { shapeOptions: DRAW_STYLE }), "drawRect");
+  setDrawHint("Arrastra para dibujar el rectángulo");
+});
+
+document.getElementById("drawCircle").addEventListener("click", () => {
+  activateDrawTool(new L.Draw.Circle(map, { shapeOptions: DRAW_STYLE_CIRCLE }), "drawCircle");
+  setDrawHint("Clic y arrastra para definir el radio");
+});
+
+document.getElementById("drawClear").addEventListener("click", () => {
+  if (!Object.keys(drawFeatures).length) return;
+  if (!confirm("¿Eliminar todos los elementos dibujados?")) return;
+  drawnItems.clearLayers();
+  Object.keys(drawFeatures).forEach(id => delete drawFeatures[id]);
+  document.getElementById("drawFeatureList").innerHTML = "";
+  document.getElementById("drawExportRow").style.display = "none";
+  setDrawHint("Selecciona una herramienta para empezar");
+});
+
+function setDrawHint(text) {
+  document.getElementById("drawHint").textContent = text;
+}
+
+// ── Evento: objeto dibujado ───────────────────────────────────
+map.on(L.Draw.Event.CREATED, e => {
+  const layer = e.layer;
+  const type  = e.layerType;
+  const id    = "draw-" + (++drawCounter);
+  const name  = typeLabel(type) + " " + drawCounter;
+
+  // Estilo consistente
+  if (layer.setStyle) layer.setStyle(DRAW_STYLE);
+
+  drawnItems.addLayer(layer);
+  drawFeatures[id] = { layer, name, type };
+
+  // Popup editable con el nombre
+  layer.bindPopup(makePopupHtml(name, id));
+  layer.openPopup();
+
+  addDrawFeatureRow(id, name, type);
+  document.getElementById("drawExportRow").style.display = "flex";
+
+  // Desactivar herramienta tras dibujar
+  if (activeDrawHandler) {
+    activeDrawHandler.disable();
+    document.querySelectorAll(".draw-tool-btn").forEach(b => b.classList.remove("active"));
+    activeDrawHandler = null;
+    setDrawHint("Elemento añadido. Elige otra herramienta o exporta.");
+  }
+});
+
+function typeLabel(type) {
+  return { marker:"Ponto", polyline:"Linha", polygon:"Polígono",
+           rectangle:"Rectângulo", circle:"Círculo" }[type] || "Feature";
+}
+
+function makePopupHtml(name, id) {
+  return `<div style="min-width:160px">
+    <input id="popup-name-${id}" value="${name}"
+      style="width:100%;padding:3px 6px;border:1px solid #ccc;border-radius:4px;font-size:0.85rem;margin-bottom:5px"
+      onchange="renameDrawFeature('${id}', this.value)" />
+    <div style="font-size:0.72rem;color:#888">Edita el nombre y pulsa Enter</div>
+  </div>`;
+}
+
+function renameDrawFeature(id, newName) {
+  if (!drawFeatures[id] || !newName.trim()) return;
+  drawFeatures[id].name = newName.trim();
+  const row = document.getElementById("draw-row-" + id);
+  if (row) row.querySelector(".draw-feat-name").textContent = newName.trim();
+}
+
+// ── Lista de features en el sidebar ──────────────────────────
+function addDrawFeatureRow(id, name, type) {
+  const list = document.getElementById("drawFeatureList");
+  const icon = { marker:"📍", polyline:"📏", polygon:"⬡", rectangle:"⬜", circle:"◯" }[type] || "●";
+  const row  = document.createElement("div");
+  row.className = "draw-feat-row";
+  row.id = "draw-row-" + id;
+  row.innerHTML = `
+    <span class="draw-feat-icon">${icon}</span>
+    <span class="draw-feat-name">${name}</span>
+    <button class="kml-toggle-btn" title="Centrar" onclick="zoomToDrawFeature('${id}')">🎯</button>
+    <button class="kml-remove-btn" title="Eliminar" onclick="removeDrawFeature('${id}')">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function zoomToDrawFeature(id) {
+  const entry = drawFeatures[id];
+  if (!entry) return;
+  const l = entry.layer;
+  if (l.getBounds) map.fitBounds(l.getBounds(), { padding: [40, 40] });
+  else if (l.getLatLng) map.setView(l.getLatLng(), 14);
+}
+
+function removeDrawFeature(id) {
+  const entry = drawFeatures[id];
+  if (!entry) return;
+  drawnItems.removeLayer(entry.layer);
+  delete drawFeatures[id];
+  const row = document.getElementById("draw-row-" + id);
+  if (row) row.remove();
+  if (!Object.keys(drawFeatures).length) {
+    document.getElementById("drawExportRow").style.display = "none";
+    setDrawHint("Selecciona una herramienta para empezar");
+  }
+}
+
+// ── KML / KMZ export ─────────────────────────────────────────
+function escXml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function geomToKml(layer, type) {
+  if (type === "marker") {
+    const { lat, lng } = layer.getLatLng();
+    return `<Point><coordinates>${lng},${lat},0</coordinates></Point>`;
+  }
+  if (type === "circle") {
+    // Aproximar círculo como polígono de 64 puntos
+    const { lat, lng } = layer.getLatLng();
+    const R = layer.getRadius(); // metros
+    const pts = [];
+    for (let i = 0; i <= 64; i++) {
+      const a = (i / 64) * 2 * Math.PI;
+      const dLat = (R * Math.cos(a)) / 111320;
+      const dLng = (R * Math.sin(a)) / (111320 * Math.cos(lat * Math.PI / 180));
+      pts.push(`${(lng + dLng).toFixed(7)},${(lat + dLat).toFixed(7)},0`);
+    }
+    return `<Polygon><outerBoundaryIs><LinearRing>` +
+           `<coordinates>${pts.join(' ')}</coordinates>` +
+           `</LinearRing></outerBoundaryIs></Polygon>`;
+  }
+  if (type === "polyline") {
+    const coords = layer.getLatLngs().map(p => `${p.lng.toFixed(7)},${p.lat.toFixed(7)},0`).join(' ');
+    return `<LineString><coordinates>${coords}</coordinates></LineString>`;
+  }
+  // polygon / rectangle
+  const ring = layer.getLatLngs()[0];
+  const coords = [...ring, ring[0]].map(p => `${p.lng.toFixed(7)},${p.lat.toFixed(7)},0`).join(' ');
+  return `<Polygon><outerBoundaryIs><LinearRing>` +
+         `<coordinates>${coords}</coordinates>` +
+         `</LinearRing></outerBoundaryIs></Polygon>`;
+}
+
+function buildKmlString(docName) {
+  const placemarks = Object.values(drawFeatures).map(({ layer, name, type }) => `
+  <Placemark>
+    <name>${escXml(name)}</name>
+    <Style>
+      <LineStyle><color>ff0b9ef5</color><width>2</width></LineStyle>
+      <PolyStyle><color>400b9ef5</color></PolyStyle>
+      <IconStyle><color>ff0b9ef5</color></IconStyle>
+    </Style>
+    ${geomToKml(layer, type)}
+  </Placemark>`).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>${escXml(docName)}</name>
+${placemarks}
+</Document>
+</kml>`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+document.getElementById("exportKml").addEventListener("click", () => {
+  if (!Object.keys(drawFeatures).length) return;
+  const kml  = buildKmlString("Desenho Viana");
+  const blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
+  downloadBlob(blob, "viana_desenho.kml");
+});
+
+document.getElementById("exportKmz").addEventListener("click", async () => {
+  if (!Object.keys(drawFeatures).length) return;
+  const kml = buildKmlString("Desenho Viana");
+  const zip = new JSZip();
+  zip.file("doc.kml", kml);
+  const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+  downloadBlob(blob, "viana_desenho.kmz");
+});
