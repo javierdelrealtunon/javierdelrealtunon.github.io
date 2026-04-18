@@ -193,14 +193,15 @@
     });
   }
 
-  function buildPhotoPopup(row, tipo, fotoUrl) {
+  function buildPhotoPopup(row, tipo, fotoUrl, fotoThumb) {
     const title = escapeHTML(row.nombre) || '(sin nombre)';
     const notes = escapeHTML(row.notas);
     const author = escapeHTML(row.autor);
     const safeTipo = escapeHTML(row.tipo);
-    const image = fotoUrl
-      ? `<a href="${fotoUrl}" target="_blank" rel="noopener" style="display:block;margin:10px -4px 8px">
-          <img src="${fotoUrl}" alt="Foto de ${title}" loading="lazy" style="display:block;width:240px;max-width:100%;height:145px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.22);background:#07111e">
+    const imageUrl = fotoThumb || fotoUrl;
+    const image = imageUrl
+      ? `<a href="${fotoUrl || imageUrl}" target="_blank" rel="noopener" style="display:block;margin:10px -4px 8px">
+          <img src="${imageUrl}" alt="Foto de ${title}" loading="lazy" referrerpolicy="no-referrer" style="display:block;width:240px;max-width:100%;height:145px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.22);background:#07111e">
         </a>`
       : '';
     const openPhoto = fotoUrl
@@ -217,7 +218,7 @@
     `;
   }
 
-  function showSheetInfo(row, tipo, fotoUrl) {
+  function showSheetInfo(row, tipo, fotoUrl, fotoThumb) {
     document.getElementById('info-empty').style.display = 'none';
     const content = document.getElementById('info-content');
     content.style.display = 'block';
@@ -228,9 +229,10 @@
     document.getElementById('info-tag').innerHTML =
       `<span style="color:${tipo.color}">${tipo.icon}</span> ${escapeHTML(row.tipo)}${fotoUrl ? ' · foto' : ''}`;
     document.getElementById('info-name').textContent = row.nombre || '(sin nombre)';
+    const imageUrl = fotoThumb || fotoUrl;
     document.getElementById('info-desc').innerHTML = `
-      ${fotoUrl ? `<a href="${fotoUrl}" target="_blank" rel="noopener" style="display:block;margin-bottom:12px">
-        <img src="${fotoUrl}" alt="Foto de ${escapeHTML(row.nombre)}" loading="lazy" style="display:block;width:100%;max-height:210px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.18);background:#07111e">
+      ${imageUrl ? `<a href="${fotoUrl || imageUrl}" target="_blank" rel="noopener" style="display:block;margin-bottom:12px">
+        <img src="${imageUrl}" alt="Foto de ${escapeHTML(row.nombre)}" loading="lazy" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:210px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.18);background:#07111e">
       </a>` : ''}
       ${row.notas ? `<div>${escapeHTML(row.notas)}</div>` : '<div style="opacity:.7">Sin notas todavía.</div>'}
       ${row.autor ? `<div style="margin-top:10px;font-size:.78rem;opacity:.75">por ${escapeHTML(row.autor)}</div>` : ''}
@@ -251,11 +253,12 @@
 
           const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
           const fotoUrl = escapeHTML(row.foto_url);
+          const fotoThumb = escapeHTML(row.foto_thumb);
           const marker = L.marker([lat, lng], {
-            icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl)),
+            icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl || fotoThumb)),
           });
-          marker.bindPopup(buildPhotoPopup(row, tipo, fotoUrl), { maxWidth: 280 });
-          marker.on('click', () => showSheetInfo(row, tipo, fotoUrl));
+          marker.bindPopup(buildPhotoPopup(row, tipo, fotoUrl, fotoThumb), { maxWidth: 280 });
+          marker.on('click', () => showSheetInfo(row, tipo, fotoUrl, fotoThumb));
           sheetLayer.addLayer(marker);
         });
       })
@@ -322,7 +325,7 @@
       }
       setTimeout(loadSheetMarkers, 2000);
       if (result.photo_status === 'sent') {
-        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v8 ya está desplegado.');
+        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v7 ya está desplegado.');
       } else if (result.photo_status === 'failed') {
         alert('✓ Sitio guardado. No se pudo enviar la foto; revisamos ese paso después.');
       } else {
