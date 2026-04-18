@@ -75,39 +75,20 @@
   }
 
   async function patchedSaveSite(data) {
-    if (!selectedPhoto) {
-      const params = new URLSearchParams({
-        action: 'write',
-        nombre: data.nombre,
-        tipo: data.tipo,
-        lat: data.lat,
-        lng: data.lng,
-        notas: data.notas,
-        autor: data.autor,
-        foto_url: '',
-        coord_origen: data.coord_origen,
-      });
-      return fetch(`${SHEET_API}?${params}`).then(readJsonResponse);
-    }
-
-    const dataUrl = await resizePhotoForUpload(selectedPhoto);
-    const response = await fetch(SHEET_API, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'write',
-        ...data,
-        foto_nombre: selectedPhoto.name.replace(/\.[^.]+$/, '') + '.jpg',
-        foto_tipo: 'image/jpeg',
-        foto_base64: dataUrl.split(',')[1],
-      }),
+    const params = new URLSearchParams({
+      action: 'write',
+      nombre: data.nombre,
+      tipo: data.tipo,
+      lat: data.lat,
+      lng: data.lng,
+      notas: data.notas,
+      autor: data.autor,
+      foto_url: '',
+      coord_origen: data.coord_origen,
     });
 
-    // Apps Script no siempre expone cabeceras CORS en POST. En no-cors el
-    // navegador envía la foto, pero la respuesta queda opaca.
-    if (response.type === 'opaque') return { ok: true, opaque: true };
-    return readJsonResponse(response);
+    const savedSite = await fetch(`${SHEET_API}?${params}`).then(readJsonResponse);
+    return selectedPhoto ? { ...savedSite, photo_status: 'pending_backend' } : savedSite;
   }
 
   if (mapPickBtn) mapPickBtn.addEventListener('click', startMapPick);
@@ -163,7 +144,11 @@
         draftMarker = null;
       }
       setTimeout(loadSheetMarkers, 2000);
-      alert('✓ Sitio guardado correctamente');
+      if (result.photo_status === 'pending_backend') {
+        alert('✓ Sitio guardado. La foto queda pendiente hasta ajustar el Apps Script.');
+      } else {
+        alert('✓ Sitio guardado correctamente');
+      }
     } catch (err) {
       console.error('[save]', err);
       alert(
