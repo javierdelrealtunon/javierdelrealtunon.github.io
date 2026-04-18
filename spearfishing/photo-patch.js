@@ -232,7 +232,7 @@
     const imageUrl = fotoThumb || fotoUrl;
     document.getElementById('info-desc').innerHTML = `
       ${imageUrl ? `<a href="${fotoUrl || imageUrl}" target="_blank" rel="noopener" style="display:block;margin-bottom:12px">
-        <img src="${imageUrl}" alt="Foto de ${escapeHTML(row.nombre)}" loading="lazy" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:210px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.18);background:#07111e">
+        <img src="${imageUrl}" alt="Foto de ${escapeHTML(row.nombre)}" loading="lazy" referrerpolicy="no-referrer" style="display:block;width:100%;max-height:320px;object-fit:contain;border-radius:8px;border:1px solid rgba(100,181,255,.18);background:#07111e">
       </a>` : ''}
       ${row.notas ? `<div>${escapeHTML(row.notas)}</div>` : '<div style="opacity:.7">Sin notas todavía.</div>'}
       ${row.autor ? `<div style="margin-top:10px;font-size:.78rem;opacity:.75">por ${escapeHTML(row.autor)}</div>` : ''}
@@ -325,7 +325,7 @@
       }
       setTimeout(loadSheetMarkers, 2000);
       if (result.photo_status === 'sent') {
-        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v7 ya está desplegado.');
+        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v9 ya está desplegado.');
       } else if (result.photo_status === 'failed') {
         alert('✓ Sitio guardado. No se pudo enviar la foto; revisamos ese paso después.');
       } else {
