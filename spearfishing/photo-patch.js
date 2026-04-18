@@ -75,12 +75,13 @@
   }
 
   async function patchedSaveSite(data) {
+    const sheetCoordinate = value => String(value || '').replace('.', ',');
     const params = new URLSearchParams({
       action: 'write',
       nombre: data.nombre,
       tipo: data.tipo,
-      lat: data.lat,
-      lng: data.lng,
+      lat: sheetCoordinate(data.lat),
+      lng: sheetCoordinate(data.lng),
       notas: data.notas,
       autor: data.autor,
       foto_url: '',
@@ -90,6 +91,57 @@
     const savedSite = await fetch(`${SHEET_API}?${params}`).then(readJsonResponse);
     return selectedPhoto ? { ...savedSite, photo_status: 'pending_backend' } : savedSite;
   }
+
+  function parseSheetCoordinate(value, axis) {
+    if (value === null || value === undefined || value === '') return null;
+    let normalized = String(value).trim();
+    if (!normalized) return null;
+
+    if (normalized.includes(',') && normalized.includes('.')) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else if (normalized.includes(',')) {
+      normalized = normalized.replace(',', '.');
+    } else {
+      const parts = normalized.split('.');
+      if (parts.length > 2) normalized = `${parts[0]}.${parts.slice(1).join('')}`;
+    }
+
+    let coordinate = Number(normalized);
+    if (!Number.isFinite(coordinate)) return null;
+
+    const max = axis === 'lat' ? 90 : 180;
+    while (Math.abs(coordinate) > max && Math.abs(coordinate) >= 1000) coordinate /= 10;
+    return Math.abs(coordinate) <= max ? coordinate : null;
+  }
+
+  loadSheetMarkers = function loadSheetMarkersPatched() {
+    fetch(SHEET_API)
+      .then(r => r.json())
+      .then(rows => {
+        sheetLayer.clearLayers();
+        rows.forEach(row => {
+          const lat = parseSheetCoordinate(row.lat, 'lat');
+          const lng = parseSheetCoordinate(row.lng, 'lng');
+          if (lat === null || lng === null) return;
+
+          const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
+          const marker = L.marker([lat, lng], { icon: makeIcon(tipo.color) });
+          const fotoUrl = escapeHTML(row.foto_url);
+          const popupHTML = `
+            <strong style="font-size:.95rem">${escapeHTML(row.nombre) || '(sin nombre)'}</strong><br>
+            <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${escapeHTML(row.tipo)}</span>
+            ${row.notas ? `<br><span style="font-size:.82rem">${escapeHTML(row.notas)}</span>` : ''}
+            ${row.autor ? `<br><span style="font-size:.75rem;color:#999">por ${escapeHTML(row.autor)}</span>` : ''}
+            ${fotoUrl ? `<br><a href="${fotoUrl}" target="_blank" rel="noopener" style="font-size:.8rem">📷 Ver foto</a>` : ''}
+          `;
+          marker.bindPopup(popupHTML, { maxWidth: 260 });
+          sheetLayer.addLayer(marker);
+        });
+      })
+      .catch(err => console.warn('[sheet]', err.message));
+  };
+
+  loadSheetMarkers();
 
   if (mapPickBtn) mapPickBtn.addEventListener('click', startMapPick);
   latInput.addEventListener('change', syncMarkerFromInputs);
