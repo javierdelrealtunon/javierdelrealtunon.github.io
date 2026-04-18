@@ -150,27 +150,110 @@
     return Math.abs(coordinate) <= max ? coordinate : null;
   }
 
+  function getLayerCheckbox(layer) {
+    return document.querySelector(`#layer-list input[data-layer="${layer}"]`);
+  }
+
+  function getSheetLayerForTipo(tipo) {
+    if (tipo === 'Aparcamiento') return 'parking';
+    if (tipo === 'Punto de entrada') return 'entrada';
+    if (tipo === 'Foto') return 'fotos';
+    if (tipo === 'Sitio de pesca') return 'sitios';
+    return '';
+  }
+
+  function isSheetTipoVisible(tipo) {
+    const layer = getSheetLayerForTipo(tipo);
+    const checkbox = layer ? getLayerCheckbox(layer) : null;
+    return !checkbox || checkbox.checked;
+  }
+
+  function makePhotoAwareIcon(color, hasPhoto) {
+    if (!hasPhoto) return makeIcon(color);
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="40" viewBox="0 0 34 40">
+      <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21S26 22.75 26 13C26 5.82 20.18 0 13 0z"
+        fill="${color}" fill-opacity="0.94"/>
+      <circle cx="13" cy="13" r="5" fill="white" fill-opacity="0.9"/>
+      <g transform="translate(15 17)">
+        <circle cx="9" cy="9" r="8" fill="#07111e" stroke="white" stroke-opacity="0.9" stroke-width="1.4"/>
+        <path d="M4.8 7.1h2l.8-1.2h2.8l.8 1.2h2c.7 0 1.1.4 1.1 1.1v4.2c0 .7-.4 1.1-1.1 1.1H4.8c-.7 0-1.1-.4-1.1-1.1V8.2c0-.7.4-1.1 1.1-1.1z" fill="white" fill-opacity="0.92"/>
+        <circle cx="9" cy="10.3" r="1.8" fill="#07111e"/>
+      </g>
+    </svg>`;
+
+    return L.divIcon({
+      html: svg,
+      className: '',
+      iconSize: [34, 40],
+      iconAnchor: [13, 34],
+      popupAnchor: [0, -36],
+    });
+  }
+
+  function buildPhotoPopup(row, tipo, fotoUrl) {
+    const title = escapeHTML(row.nombre) || '(sin nombre)';
+    const notes = escapeHTML(row.notas);
+    const author = escapeHTML(row.autor);
+    const safeTipo = escapeHTML(row.tipo);
+    const image = fotoUrl
+      ? `<a href="${fotoUrl}" target="_blank" rel="noopener" style="display:block;margin:10px -4px 8px">
+          <img src="${fotoUrl}" alt="Foto de ${title}" loading="lazy" style="display:block;width:240px;max-width:100%;height:145px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.22);background:#07111e">
+        </a>`
+      : '';
+    const openPhoto = fotoUrl
+      ? `<a href="${fotoUrl}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:6px;color:#a8d4ff;font-size:.8rem;text-decoration:none">Abrir foto</a>`
+      : '';
+
+    return `
+      <strong style="font-size:.95rem">${title}</strong><br>
+      <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${safeTipo}${fotoUrl ? ' · con foto' : ''}</span>
+      ${image}
+      ${notes ? `<span style="display:block;font-size:.82rem;margin-top:6px">${notes}</span>` : ''}
+      ${author ? `<span style="display:block;font-size:.75rem;color:#999;margin-top:4px">por ${author}</span>` : ''}
+      ${openPhoto}
+    `;
+  }
+
+  function showSheetInfo(row, tipo, fotoUrl) {
+    document.getElementById('info-empty').style.display = 'none';
+    const content = document.getElementById('info-content');
+    content.style.display = 'block';
+    content.style.animation = 'none';
+    void content.offsetWidth;
+    content.style.animation = '';
+
+    document.getElementById('info-tag').innerHTML =
+      `<span style="color:${tipo.color}">${tipo.icon}</span> ${escapeHTML(row.tipo)}${fotoUrl ? ' · foto' : ''}`;
+    document.getElementById('info-name').textContent = row.nombre || '(sin nombre)';
+    document.getElementById('info-desc').innerHTML = `
+      ${fotoUrl ? `<a href="${fotoUrl}" target="_blank" rel="noopener" style="display:block;margin-bottom:12px">
+        <img src="${fotoUrl}" alt="Foto de ${escapeHTML(row.nombre)}" loading="lazy" style="display:block;width:100%;max-height:210px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,181,255,.18);background:#07111e">
+      </a>` : ''}
+      ${row.notas ? `<div>${escapeHTML(row.notas)}</div>` : '<div style="opacity:.7">Sin notas todavía.</div>'}
+      ${row.autor ? `<div style="margin-top:10px;font-size:.78rem;opacity:.75">por ${escapeHTML(row.autor)}</div>` : ''}
+    `;
+  }
+
   loadSheetMarkers = function loadSheetMarkersPatched() {
     fetch(SHEET_API)
       .then(r => r.json())
       .then(rows => {
         sheetLayer.clearLayers();
         rows.forEach(row => {
+          if (!isSheetTipoVisible(row.tipo)) return;
+
           const lat = parseSheetCoordinate(row.lat, 'lat');
           const lng = parseSheetCoordinate(row.lng, 'lng');
           if (lat === null || lng === null) return;
 
           const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
-          const marker = L.marker([lat, lng], { icon: makeIcon(tipo.color) });
           const fotoUrl = escapeHTML(row.foto_url);
-          const popupHTML = `
-            <strong style="font-size:.95rem">${escapeHTML(row.nombre) || '(sin nombre)'}</strong><br>
-            <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${escapeHTML(row.tipo)}</span>
-            ${row.notas ? `<br><span style="font-size:.82rem">${escapeHTML(row.notas)}</span>` : ''}
-            ${row.autor ? `<br><span style="font-size:.75rem;color:#999">por ${escapeHTML(row.autor)}</span>` : ''}
-            ${fotoUrl ? `<br><a href="${fotoUrl}" target="_blank" rel="noopener" style="font-size:.8rem">📷 Ver foto</a>` : ''}
-          `;
-          marker.bindPopup(popupHTML, { maxWidth: 260 });
+          const marker = L.marker([lat, lng], {
+            icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl)),
+          });
+          marker.bindPopup(buildPhotoPopup(row, tipo, fotoUrl), { maxWidth: 280 });
+          marker.on('click', () => showSheetInfo(row, tipo, fotoUrl));
           sheetLayer.addLayer(marker);
         });
       })
@@ -180,6 +263,10 @@
   loadSheetMarkers();
 
   if (mapPickBtn) mapPickBtn.addEventListener('click', startMapPick);
+  ['sitios', 'parking', 'entrada', 'fotos'].forEach(layer => {
+    const checkbox = getLayerCheckbox(layer);
+    if (checkbox) checkbox.addEventListener('change', () => setTimeout(loadSheetMarkers, 0));
+  });
   latInput.addEventListener('change', syncMarkerFromInputs);
   lngInput.addEventListener('change', syncMarkerFromInputs);
 
