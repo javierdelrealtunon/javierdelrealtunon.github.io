@@ -76,8 +76,10 @@
 
   async function patchedSaveSite(data) {
     const sheetCoordinate = value => String(value || '').replace('.', ',');
+    const registroId = makeRegistroId();
     const params = new URLSearchParams({
       action: 'write',
+      registro_id: registroId,
       nombre: data.nombre,
       tipo: data.tipo,
       lat: sheetCoordinate(data.lat),
@@ -89,7 +91,41 @@
     });
 
     const savedSite = await fetch(`${SHEET_API}?${params}`).then(readJsonResponse);
-    return selectedPhoto ? { ...savedSite, photo_status: 'pending_backend' } : savedSite;
+    if (!selectedPhoto) return savedSite;
+
+    try {
+      await uploadPhotoForSite(registroId);
+      return { ...savedSite, photo_status: 'sent' };
+    } catch (err) {
+      console.warn('[photo upload]', err);
+      return { ...savedSite, photo_status: 'failed' };
+    }
+  }
+
+  function makeRegistroId() {
+    const randomPart = window.crypto && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return `web-${randomPart}`;
+  }
+
+  async function uploadPhotoForSite(registroId) {
+    const dataUrl = await resizePhotoForUpload(selectedPhoto);
+    const response = await fetch(SHEET_API, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'attach_photo',
+        registro_id: registroId,
+        foto_nombre: selectedPhoto.name.replace(/\.[^.]+$/, '') + '.jpg',
+        foto_tipo: 'image/jpeg',
+        foto_base64: dataUrl.split(',')[1],
+      }),
+    });
+
+    if (response.type === 'opaque') return { ok: true };
+    return readJsonResponse(response);
   }
 
   function parseSheetCoordinate(value, axis) {
@@ -196,8 +232,10 @@
         draftMarker = null;
       }
       setTimeout(loadSheetMarkers, 2000);
-      if (result.photo_status === 'pending_backend') {
-        alert('✓ Sitio guardado. La foto queda pendiente hasta ajustar el Apps Script.');
+      if (result.photo_status === 'sent') {
+        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v7 ya está desplegado.');
+      } else if (result.photo_status === 'failed') {
+        alert('✓ Sitio guardado. No se pudo enviar la foto; revisamos ese paso después.');
       } else {
         alert('✓ Sitio guardado correctamente');
       }
