@@ -91,8 +91,9 @@
     }
 
     const dataUrl = await resizePhotoForUpload(selectedPhoto);
-    return fetch(SHEET_API, {
+    const response = await fetch(SHEET_API, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         action: 'write',
@@ -101,7 +102,12 @@
         foto_tipo: 'image/jpeg',
         foto_base64: dataUrl.split(',')[1],
       }),
-    }).then(readJsonResponse);
+    });
+
+    // Apps Script no siempre expone cabeceras CORS en POST. En no-cors el
+    // navegador envía la foto, pero la respuesta queda opaca.
+    if (response.type === 'opaque') return { ok: true, opaque: true };
+    return readJsonResponse(response);
   }
 
   if (mapPickBtn) mapPickBtn.addEventListener('click', startMapPick);
