@@ -1,21 +1,21 @@
 /* app.js — Spearfishing map */
 
-// ── API GOOGLE SHEET ───────────────────────────
+// ── API GOOGLE SHEET ──────────────────────────
 const SHEET_API = 'https://script.google.com/macros/s/AKfycbzLA4Vwx8P92lj7nsKXRrRUqwqZqzkmCgZWRYgVxvIn6CGotME2CiFQ0TjZkICma7jm_Q/exec';
 
-// ── CONFIG DE TIPOS ───────────────────────────
+// ── CONFIG DE TIPOS ──────────────────────────
 const TIPOS = {
   'Sitio de pesca':   { color: '#5baaff', icon: '🤿' },
   'Aparcamiento':     { color: '#62f0cf', icon: '🅿️' },
   'Punto de entrada': { color: '#f06262', icon: '🚩' },
 };
 
-// ── LAYER CONFIG KML ──────────────────────────
+// ── LAYER CONFIG KML ─────────────────────────
 const LAYER_CONFIG = {
   sitios: { file: 'kml/sitios.kml', color: '#5baaff', label: 'Sitio de pesca', icon: '🤿' },
 };
 
-// ── MAP INIT ──────────────────────────────────
+// ── MAP INIT ─────────────────────────────────
 const map = L.map('map', { center: [43.4633, -8.2389], zoom: 13 });
 
 // ── BASEMAPS ──────────────────────────────────
@@ -93,7 +93,7 @@ const NAUTICAL_ES = L.layerGroup([
 // Mantener compatibilidad con el toggle del sidebar (data-layer="nautico")
 const NAUTICAL_OVERLAY = NAUTICAL_ES;
 
-// ── NAUTICAL CONTROL (PT / ES) ────────────────
+// ── NAUTICAL CONTROL (PT / ES) ───────────────
 const NauticalControl = L.Control.extend({
   options: { position: 'bottomright' },
   onAdd() {
@@ -147,7 +147,7 @@ function showInfo(cfg, name, desc) {
   document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
 }
 
-// ── KML PARSER ───────────────────────────────
+// ── KML PARSER ──────────────────────────────
 function parseKML(xmlDoc, cfg) {
   const layer = L.layerGroup();
   const bounds = [];
@@ -254,8 +254,14 @@ keys.forEach(key => {
     .finally(() => loaded++);
 });
 
-// ── CARGAR SITIOS DE LA SHEET ─────────────────
+// ── CARGAR SITIOS DE LA SHEET ────────────────
 const sheetLayer = L.layerGroup().addTo(map);
+
+function escapeHTML(value) {
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
 
 function loadSheetMarkers() {
   fetch(SHEET_API)
@@ -268,12 +274,13 @@ function loadSheetMarkers() {
         if (isNaN(lat) || isNaN(lng)) return;
         const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
         const m = L.marker([lat, lng], { icon: makeIcon(tipo.color) });
+        const fotoUrl = escapeHTML(row.foto_url);
         const popupHTML = `
-          <strong style="font-size:.95rem">${row.nombre || '(sin nombre)'}</strong><br>
-          <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${row.tipo || ''}</span>
-          ${row.notas ? `<br><span style="font-size:.82rem">${row.notas}</span>` : ''}
-          ${row.autor ? `<br><span style="font-size:.75rem;color:#999">por ${row.autor}</span>` : ''}
-          ${row.foto_url ? `<br><a href="${row.foto_url}" target="_blank" style="font-size:.8rem">📷 Ver foto</a>` : ''}
+          <strong style="font-size:.95rem">${escapeHTML(row.nombre) || '(sin nombre)'}</strong><br>
+          <span style="color:#7a9bbf;font-size:.82rem">${tipo.icon} ${escapeHTML(row.tipo)}</span>
+          ${row.notas ? `<br><span style="font-size:.82rem">${escapeHTML(row.notas)}</span>` : ''}
+          ${row.autor ? `<br><span style="font-size:.75rem;color:#999">por ${escapeHTML(row.autor)}</span>` : ''}
+          ${fotoUrl ? `<br><a href="${fotoUrl}" target="_blank" rel="noopener" style="font-size:.8rem">📷 Ver foto</a>` : ''}
         `;
         m.bindPopup(popupHTML, { maxWidth: 260 });
         sheetLayer.addLayer(m);
@@ -293,6 +300,13 @@ const gpsBtn = document.getElementById('btn-gps');
 const latInput = document.getElementById('form-lat');
 const lngInput = document.getElementById('form-lng');
 const gpsStatus = document.getElementById('gps-status');
+const photoInput = document.getElementById('form-foto');
+const photoPreview = document.getElementById('photo-preview');
+const photoPreviewImg = document.getElementById('photo-preview-img');
+const photoStatus = document.getElementById('photo-status');
+
+let selectedPhoto = null;
+let coordSource = '';
 
 fabBtn.addEventListener('click', () => {
   modal.classList.add('open');
@@ -304,6 +318,7 @@ formClose.addEventListener('click', () => modal.classList.remove('open'));
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
 
 gpsBtn.addEventListener('click', obtenerGPS);
+photoInput.addEventListener('change', handlePhotoSelected);
 
 function obtenerGPS() {
   if (!navigator.geolocation) {
@@ -315,6 +330,7 @@ function obtenerGPS() {
     pos => {
       latInput.value = pos.coords.latitude.toFixed(6);
       lngInput.value = pos.coords.longitude.toFixed(6);
+      coordSource = 'gps_movil';
       gpsStatus.textContent = `✓ Posición obtenida (±${Math.round(pos.coords.accuracy)}m)`;
     },
     err => {
@@ -325,7 +341,165 @@ function obtenerGPS() {
   );
 }
 
-addForm.addEventListener('submit', e => {
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function resizePhotoForUpload(file) {
+  const originalDataUrl = await readFileAsDataURL(file);
+  const img = await loadImage(originalDataUrl);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
+function getExifGps(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(parseExifGps(reader.result));
+    reader.onerror = () => resolve(null);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function parseExifGps(buffer) {
+  const view = new DataView(buffer);
+  if (view.getUint16(0, false) !== 0xFFD8) return null;
+
+  let offset = 2;
+  while (offset < view.byteLength) {
+    if (view.getUint16(offset, false) === 0xFFE1) {
+      const exifStart = offset + 4;
+      if (view.getUint32(exifStart, false) !== 0x45786966) return null;
+      return readGpsFromTiff(view, exifStart + 6);
+    }
+    offset += 2 + view.getUint16(offset + 2, false);
+  }
+  return null;
+}
+
+function readGpsFromTiff(view, tiffStart) {
+  const little = view.getUint16(tiffStart, false) === 0x4949;
+  const firstIfd = tiffStart + view.getUint32(tiffStart + 4, little);
+  const entries = view.getUint16(firstIfd, little);
+  let gpsIfd = 0;
+
+  for (let i = 0; i < entries; i++) {
+    const entry = firstIfd + 2 + i * 12;
+    if (view.getUint16(entry, little) === 0x8825) {
+      gpsIfd = tiffStart + view.getUint32(entry + 8, little);
+      break;
+    }
+  }
+  if (!gpsIfd) return null;
+
+  const gps = {};
+  const gpsEntries = view.getUint16(gpsIfd, little);
+  for (let i = 0; i < gpsEntries; i++) {
+    const entry = gpsIfd + 2 + i * 12;
+    const tag = view.getUint16(entry, little);
+    const type = view.getUint16(entry + 2, little);
+    const count = view.getUint32(entry + 4, little);
+    const valueOffset = entry + 8;
+    const valuePtr = count > 4 ? tiffStart + view.getUint32(valueOffset, little) : valueOffset;
+
+    if (tag === 1 || tag === 3) gps[tag] = String.fromCharCode(view.getUint8(valuePtr));
+    if ((tag === 2 || tag === 4) && type === 5 && count === 3) {
+      gps[tag] = [0, 1, 2].map(n => {
+        const p = valuePtr + n * 8;
+        return view.getUint32(p, little) / view.getUint32(p + 4, little);
+      });
+    }
+  }
+
+  if (!gps[1] || !gps[2] || !gps[3] || !gps[4]) return null;
+  const lat = dmsToDecimal(gps[2], gps[1]);
+  const lng = dmsToDecimal(gps[4], gps[3]);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+}
+
+function dmsToDecimal(dms, ref) {
+  const value = dms[0] + dms[1] / 60 + dms[2] / 3600;
+  return (ref === 'S' || ref === 'W') ? -value : value;
+}
+
+async function handlePhotoSelected() {
+  const file = photoInput.files && photoInput.files[0];
+  selectedPhoto = null;
+  photoPreview.classList.remove('visible');
+  photoPreviewImg.removeAttribute('src');
+
+  if (!file) {
+    photoStatus.textContent = 'Si la foto tiene ubicación, se usarán esas coordenadas.';
+    return;
+  }
+
+  selectedPhoto = file;
+  photoPreviewImg.src = URL.createObjectURL(file);
+  photoPreview.classList.add('visible');
+  photoStatus.textContent = 'Revisando ubicación de la foto...';
+
+  const gps = await getExifGps(file);
+  if (gps) {
+    latInput.value = gps.lat.toFixed(6);
+    lngInput.value = gps.lng.toFixed(6);
+    coordSource = 'exif_foto';
+    photoStatus.textContent = '✓ Coordenadas leídas desde la foto';
+    gpsStatus.textContent = 'Coordenadas tomadas de la foto. Puedes ajustarlas a mano.';
+  } else {
+    photoStatus.textContent = 'Esta foto no trae GPS. Puedes usar el GPS del móvil o escribir coordenadas.';
+  }
+}
+
+async function saveSite(data) {
+  if (!selectedPhoto) {
+    const params = new URLSearchParams({
+      action: 'write',
+      nombre: data.nombre,
+      tipo: data.tipo,
+      lat: data.lat,
+      lng: data.lng,
+      notas: data.notas,
+      autor: data.autor,
+      foto_url: '',
+      coord_origen: data.coord_origen,
+    });
+    return fetch(`${SHEET_API}?${params}`).then(r => r.json());
+  }
+
+  const dataUrl = await resizePhotoForUpload(selectedPhoto);
+  return fetch(SHEET_API, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'write',
+      ...data,
+      foto_nombre: selectedPhoto.name.replace(/\.[^.]+$/, '') + '.jpg',
+      foto_tipo: 'image/jpeg',
+      foto_base64: dataUrl.split(',')[1],
+    }),
+  }).then(r => r.json());
+}
+
+addForm.addEventListener('submit', async e => {
   e.preventDefault();
   const submitBtn = addForm.querySelector('button[type="submit"]');
   submitBtn.textContent = 'Guardando...';
@@ -338,27 +512,20 @@ addForm.addEventListener('submit', e => {
     lng:      lngInput.value,
     notas:    document.getElementById('form-notas').value.trim(),
     autor:    document.getElementById('form-autor').value.trim(),
-    foto_url: '',
+    coord_origen: coordSource || 'manual',
   };
 
-  const params = new URLSearchParams({
-    action:   'write',
-    nombre:   data.nombre,
-    tipo:     data.tipo,
-    lat:      data.lat,
-    lng:      data.lng,
-    notas:    data.notas,
-    autor:    data.autor,
-    foto_url: '',
-  });
-
-  fetch(`${SHEET_API}?${params}`)
-    .then(r => r.json())
+  saveSite(data)
     .then(result => {
       if (!result.ok) throw new Error('respuesta not ok');
       modal.classList.remove('open');
       addForm.reset();
       gpsStatus.textContent = '';
+      photoStatus.textContent = 'Si la foto tiene ubicación, se usarán esas coordenadas.';
+      photoPreview.classList.remove('visible');
+      photoPreviewImg.removeAttribute('src');
+      selectedPhoto = null;
+      coordSource = '';
       submitBtn.textContent = 'Guardar sitio';
       submitBtn.disabled = false;
       setTimeout(loadSheetMarkers, 2000);

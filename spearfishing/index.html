@@ -157,6 +157,60 @@
       min-height: 18px;
     }
 
+    /* ── Foto ── */
+    .photo-input {
+      position: relative;
+    }
+    .photo-input input[type="file"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .photo-picker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 44px;
+      background: #111827;
+      border: 1px dashed #3a4f70;
+      border-radius: 10px;
+      color: #a8d4ff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .photo-picker:hover {
+      background: #142033;
+      border-color: #5baaff;
+    }
+    .photo-preview {
+      display: none;
+      margin-top: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #2a3550;
+      background: #111827;
+    }
+    .photo-preview.visible { display: block; }
+    .photo-preview img {
+      display: block;
+      width: 100%;
+      max-height: 190px;
+      object-fit: cover;
+    }
+    #photo-status {
+      display: block;
+      font-size: .78rem;
+      color: #8899bb;
+      margin-top: 6px;
+      min-height: 18px;
+    }
+
     /* ── Botón guardar ── */
     .btn-save {
       width: 100%;
@@ -339,6 +393,16 @@
         <div class="form-group">
           <label for="form-notas">Notas</label>
           <textarea id="form-notas" placeholder="Fondo, corrientes, acceso..."></textarea>
+        </div>
+
+        <div class="form-group photo-input">
+          <label for="form-foto">Foto</label>
+          <input id="form-foto" type="file" accept="image/*" capture="environment" />
+          <label class="photo-picker" for="form-foto">📷 Hacer o elegir foto</label>
+          <div class="photo-preview" id="photo-preview">
+            <img id="photo-preview-img" alt="Previsualización de la foto" />
+          </div>
+          <span id="photo-status">Si la foto tiene ubicación, se usarán esas coordenadas.</span>
         </div>
 
         <div class="form-group">
