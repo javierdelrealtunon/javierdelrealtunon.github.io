@@ -128,17 +128,22 @@
     .form-group textarea { resize: vertical; min-height: 70px; }
     .form-group select option { background: #1a2035; }
 
-    /* ── Fila coordenadas + GPS ── */
+    /* ── Fila coordenadas + GPS / mapa ── */
     .coords-row {
       display: flex;
       gap: 10px;
       align-items: flex-end;
     }
     .coords-row .form-group { flex: 1; margin-bottom: 0; }
-    #btn-gps {
+    .coords-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .coord-btn {
       background: #2a3550;
       border: 1px solid #3a4f70;
-      border-radius: 10px;
+      border-radius: 8px;
       color: #5baaff;
       padding: 11px 14px;
       cursor: pointer;
@@ -146,15 +151,23 @@
       font-family: 'DM Sans', sans-serif;
       white-space: nowrap;
       transition: background .2s;
-      flex-shrink: 0;
     }
-    #btn-gps:hover { background: #334060; }
+    .coord-btn:hover { background: #334060; }
+    .coord-btn.active {
+      border-color: #f0b962;
+      color: #f0b962;
+    }
     #gps-status {
       display: block;
       font-size: .78rem;
       color: #8899bb;
       margin-top: 6px;
       min-height: 18px;
+    }
+    @media (max-width: 520px) {
+      .coords-row { flex-wrap: wrap; }
+      .coords-actions { width: 100%; }
+      .coord-btn { flex: 1; }
     }
 
     /* ── Foto ── */
@@ -373,6 +386,7 @@
             <option value="Sitio de pesca">🤿 Sitio de pesca</option>
             <option value="Aparcamiento">🅿️ Aparcamiento</option>
             <option value="Punto de entrada">🚩 Punto de entrada</option>
+            <option value="Foto">📷 Foto</option>
           </select>
         </div>
 
@@ -385,7 +399,10 @@
             <div class="form-group">
               <input id="form-lng" type="number" step="any" placeholder="Longitud" required />
             </div>
-            <button type="button" id="btn-gps">📡 GPS</button>
+            <div class="coords-actions">
+              <button type="button" id="btn-map-pick" class="coord-btn">📍 Mapa</button>
+              <button type="button" id="btn-gps" class="coord-btn">📡 GPS</button>
+            </div>
           </div>
           <span id="gps-status"></span>
         </div>
@@ -417,6 +434,7 @@
   </div>
 
   <script src="app.js"></script>
+  <script src="photo-patch.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/spearfishing/sw.js')
