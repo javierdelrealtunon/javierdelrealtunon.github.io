@@ -1,4 +1,5 @@
 (function () {
+  const PHOTO_API = 'https://script.google.com/macros/s/AKfycbwM4miDG1ERYgKh3Sz5yUKWmvzULRhHsJZeCzqbRufDjamiUQiIBQs5zGgSbW8PwrkMqA/exec';
   const fotoTipo = { color: '#f0b962', icon: '📷' };
   TIPOS.Foto = fotoTipo;
 
@@ -90,7 +91,7 @@
       coord_origen: data.coord_origen,
     });
 
-    const savedSite = await fetch(`${SHEET_API}?${params}`).then(readJsonResponse);
+    const savedSite = await fetch(`${PHOTO_API}?${params}`).then(readJsonResponse);
     if (!selectedPhoto) return savedSite;
 
     try {
@@ -111,17 +112,18 @@
 
   async function uploadPhotoForSite(registroId) {
     const dataUrl = await resizePhotoForUpload(selectedPhoto);
-    const response = await fetch(SHEET_API, {
+    const body = new URLSearchParams({
+      action: 'attach_photo',
+      registro_id: registroId,
+      foto_nombre: selectedPhoto.name.replace(/\.[^.]+$/, '') + '.jpg',
+      foto_tipo: 'image/jpeg',
+      foto_base64: dataUrl.split(',')[1],
+    });
+
+    const response = await fetch(PHOTO_API, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'attach_photo',
-        registro_id: registroId,
-        foto_nombre: selectedPhoto.name.replace(/\.[^.]+$/, '') + '.jpg',
-        foto_tipo: 'image/jpeg',
-        foto_base64: dataUrl.split(',')[1],
-      }),
+      body,
     });
 
     if (response.type === 'opaque') return { ok: true };
@@ -236,7 +238,7 @@
   }
 
   loadSheetMarkers = function loadSheetMarkersPatched() {
-    fetch(SHEET_API)
+    fetch(PHOTO_API)
       .then(r => r.json())
       .then(rows => {
         sheetLayer.clearLayers();
@@ -320,7 +322,7 @@
       }
       setTimeout(loadSheetMarkers, 2000);
       if (result.photo_status === 'sent') {
-        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v7 ya está desplegado.');
+        alert('✓ Sitio guardado. Foto enviada; aparecerá si Apps Script v8 ya está desplegado.');
       } else if (result.photo_status === 'failed') {
         alert('✓ Sitio guardado. No se pudo enviar la foto; revisamos ese paso después.');
       } else {
