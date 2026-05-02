@@ -26,6 +26,8 @@ const triangleCount = document.querySelector("#triangleCount");
 const materialCount = document.querySelector("#materialCount");
 const modelSize = document.querySelector("#modelSize");
 
+const DEFAULT_MODEL_URL = "./models/nave.glb";
+
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -219,6 +221,24 @@ function updateAnimationControls() {
   togglePlay.disabled = false;
 }
 
+function addLoadedModel(gltf, modelName) {
+  currentRoot = gltf.scene;
+  clips = gltf.animations || [];
+  scene.add(currentRoot);
+  mixer = clips.length ? new THREE.AnimationMixer(currentRoot) : null;
+  updateAnimationControls();
+  if (clips.length) {
+    playClip(0);
+  }
+  collectStats(currentRoot);
+  frameModel(currentRoot);
+  applyWireframe(wireframe.checked);
+  boundsHelper.visible = showBounds.checked;
+  emptyState.style.display = "none";
+  fileStatus.textContent = modelName;
+  showToast("Modelo cargado.");
+}
+
 function playClip(index) {
   if (!mixer || !clips[index]) {
     return;
@@ -263,20 +283,7 @@ function loadFiles(fileList) {
   loader.load(
     fileUrl,
     (gltf) => {
-      currentRoot = gltf.scene;
-      clips = gltf.animations || [];
-      scene.add(currentRoot);
-      mixer = clips.length ? new THREE.AnimationMixer(currentRoot) : null;
-      updateAnimationControls();
-      if (clips.length) {
-        playClip(0);
-      }
-      collectStats(currentRoot);
-      frameModel(currentRoot);
-      applyWireframe(wireframe.checked);
-      boundsHelper.visible = showBounds.checked;
-      emptyState.style.display = "none";
-      showToast("Modelo cargado.");
+      addLoadedModel(gltf, modelFile.name);
     },
     undefined,
     (error) => {
@@ -285,6 +292,21 @@ function loadFiles(fileList) {
       resetStats();
       emptyState.style.display = "";
       showToast("No he podido abrir el modelo. Revisa que el archivo GLB/GLTF sea valido.", true);
+    },
+  );
+}
+
+function loadDefaultModel() {
+  loader.manager = THREE.DefaultLoadingManager;
+  loader.load(
+    DEFAULT_MODEL_URL,
+    (gltf) => {
+      clearModel();
+      addLoadedModel(gltf, "nave.glb");
+    },
+    undefined,
+    () => {
+      showToast("Pon tu modelo en models/nave.glb para cargarlo automaticamente.");
     },
   );
 }
@@ -407,6 +429,7 @@ resizeObserver = new ResizeObserver(resizeRenderer);
 resizeObserver.observe(viewerWrap);
 resizeRenderer();
 createIntroModel();
+loadDefaultModel();
 animate();
 window.lucide?.createIcons();
 window.addEventListener("load", () => window.lucide?.createIcons());

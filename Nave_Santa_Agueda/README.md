@@ -4,9 +4,11 @@ Web estatica para ver archivos `.glb` y `.gltf` en el navegador con Three.js.
 
 ## Uso
 
-1. Abre `index.html` desde GitHub Pages.
-2. Arrastra un archivo `.glb` al visor o usa el boton para elegirlo.
-3. Para `.gltf`, selecciona a la vez el `.gltf`, su `.bin` y sus texturas.
+1. Mete tu modelo en `models/nave.glb`.
+2. Abre `index.html` desde GitHub Pages.
+3. La web cargara automaticamente `nave.glb`.
+
+Tambien puedes arrastrar otro `.glb` al visor o usar el boton para elegirlo.
 
 ## Publicar en GitHub Pages
 
@@ -15,6 +17,7 @@ Web estatica para ver archivos `.glb` y `.gltf` en el navegador con Three.js.
    - `styles.css`
    - `viewer.js`
    - `README.md`
+   - `models/nave.glb`
 2. En GitHub entra en `Settings > Pages`.
 3. En `Build and deployment`, elige `Deploy from a branch`.
 4. Selecciona la rama `main` y la carpeta `/root`.
