@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visor GLB</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="side-panel" aria-label="Controles del visor">
+        <header class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <i data-lucide="box"></i>
+          </div>
+          <div>
+            <h1>Visor GLB</h1>
+            <p id="fileStatus">Sin archivo cargado</p>
+          </div>
+        </header>
+
+        <section class="upload-zone" id="dropZone">
+          <input id="fileInput" type="file" multiple accept=".glb,.gltf,.bin,.png,.jpg,.jpeg,.webp,model/gltf-binary,model/gltf+json,image/*" />
+          <div class="upload-icon" aria-hidden="true">
+            <i data-lucide="upload-cloud"></i>
+          </div>
+          <h2>Suelta tu modelo</h2>
+          <p>GLB directo, o GLTF con sus .bin y texturas seleccionados a la vez.</p>
+          <button class="primary-action" type="button" id="chooseFile">
+            <i data-lucide="folder-open"></i>
+            Elegir archivo
+          </button>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-title">
+            <i data-lucide="sliders-horizontal"></i>
+            <h2>Escena</h2>
+          </div>
+          <label class="control-row">
+            <span>Fondo</span>
+            <select id="backgroundMode">
+              <option value="studio">Estudio</option>
+              <option value="graphite">Grafito</option>
+              <option value="light">Claro</option>
+            </select>
+          </label>
+          <label class="control-row">
+            <span>Exposicion</span>
+            <input id="exposure" type="range" min="0.4" max="2" step="0.05" value="1" />
+          </label>
+          <label class="control-row">
+            <span>Luz</span>
+            <input id="lightIntensity" type="range" min="0" max="5" step="0.1" value="2.2" />
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-title">
+            <i data-lucide="move-3d"></i>
+            <h2>Modelo</h2>
+          </div>
+          <div class="toggle-grid">
+            <label class="toggle-control">
+              <input id="showGrid" type="checkbox" checked />
+              <span>Grid</span>
+            </label>
+            <label class="toggle-control">
+              <input id="autoRotate" type="checkbox" />
+              <span>Giro</span>
+            </label>
+            <label class="toggle-control">
+              <input id="wireframe" type="checkbox" />
+              <span>Malla</span>
+            </label>
+            <label class="toggle-control">
+              <input id="showBounds" type="checkbox" />
+              <span>Limites</span>
+            </label>
+          </div>
+          <label class="control-row">
+            <span>Animacion</span>
+            <select id="animationSelect" disabled>
+              <option value="">Sin animaciones</option>
+            </select>
+          </label>
+          <div class="action-grid">
+            <button class="tool-button" type="button" id="resetCamera" title="Centrar camara">
+              <i data-lucide="scan"></i>
+            </button>
+            <button class="tool-button" type="button" id="togglePlay" title="Reproducir o pausar animacion" disabled>
+              <i data-lucide="play"></i>
+            </button>
+            <button class="tool-button" type="button" id="clearScene" title="Limpiar escena">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel-section stats-panel">
+          <div class="section-title">
+            <i data-lucide="bar-chart-3"></i>
+            <h2>Datos</h2>
+          </div>
+          <dl>
+            <div>
+              <dt>Vertices</dt>
+              <dd id="vertexCount">0</dd>
+            </div>
+            <div>
+              <dt>Triangulos</dt>
+              <dd id="triangleCount">0</dd>
+            </div>
+            <div>
+              <dt>Materiales</dt>
+              <dd id="materialCount">0</dd>
+            </div>
+            <div>
+              <dt>Tamano</dt>
+              <dd id="modelSize">-</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+
+      <section class="viewer-wrap" id="viewerWrap">
+        <canvas id="viewerCanvas" aria-label="Lienzo 3D del visor GLB"></canvas>
+        <div class="empty-state" id="emptyState">
+          <i data-lucide="cuboid"></i>
+          <h2>Carga un GLB para inspeccionarlo</h2>
+          <p>Orbita con el raton, usa la rueda para acercarte y arrastra otro archivo cuando quieras cambiar de modelo.</p>
+        </div>
+        <div class="status-toast" id="toast" role="status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./viewer.js"></script>
+  </body>
+</html>
