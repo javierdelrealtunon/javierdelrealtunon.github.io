@@ -9,11 +9,13 @@ const toast = document.querySelector("#toast");
 const autoRotate = document.querySelector("#autoRotate");
 const exposure = document.querySelector("#exposure");
 const shadowIntensity = document.querySelector("#shadowIntensity");
+const zoomLevel = document.querySelector("#zoomLevel");
 const resetCamera = document.querySelector("#resetCamera");
 const clearScene = document.querySelector("#clearScene");
 const debugStatus = document.querySelector("#debugStatus");
 
 let objectUrl = "";
+let baseCameraDistance = 700;
 
 function showToast(message, isError = false) {
   toast.textContent = message;
@@ -37,6 +39,13 @@ function setModel(src, name) {
   }
   modelViewer.src = src;
   fileStatus.textContent = name;
+}
+
+function applyCameraZoom() {
+  const distance = Math.max(baseCameraDistance * Number(zoomLevel.value), 0.1);
+  modelViewer.cameraOrbit = `45deg 65deg ${distance}m`;
+  modelViewer.fieldOfView = "22deg";
+  modelViewer.jumpCameraToGoal();
 }
 
 function loadLocalFile(file) {
@@ -82,10 +91,11 @@ shadowIntensity.addEventListener("input", () => {
   modelViewer.shadowIntensity = Number(shadowIntensity.value);
 });
 
+zoomLevel.addEventListener("input", applyCameraZoom);
+
 resetCamera.addEventListener("click", () => {
-  modelViewer.cameraOrbit = "45deg 65deg auto";
-  modelViewer.fieldOfView = "30deg";
-  modelViewer.jumpCameraToGoal();
+  zoomLevel.value = "0.45";
+  applyCameraZoom();
 });
 
 clearScene.addEventListener("click", () => {
@@ -94,6 +104,10 @@ clearScene.addEventListener("click", () => {
 
 modelViewer.addEventListener("load", () => {
   fileStatus.textContent = fileStatus.textContent || "nave.glb";
+  const dimensions = modelViewer.getDimensions();
+  const maxDimension = Math.max(dimensions.x, dimensions.y, dimensions.z);
+  baseCameraDistance = Math.max(maxDimension * 1.2, 1);
+  applyCameraZoom();
   writeDebug("OK: modelo cargado en el visor.");
   showToast("Modelo cargado.");
 });
