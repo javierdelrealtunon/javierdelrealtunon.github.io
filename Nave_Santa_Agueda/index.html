@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visor GLB - Nave Santa Agueda</title>
+    <link rel="stylesheet" href="./styles.css?v=4" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="side-panel">
+        <header class="brand">
+          <div class="brand-mark" aria-hidden="true">3D</div>
+          <div>
+            <h1>Visor GLB</h1>
+            <p id="fileStatus">nave.glb</p>
+          </div>
+        </header>
+
+        <section class="upload-zone" id="dropZone">
+          <input id="fileInput" type="file" accept=".glb,model/gltf-binary" />
+          <div class="upload-icon" aria-hidden="true">GLB</div>
+          <h2>Suelta tu modelo</h2>
+          <p>La web carga automaticamente <strong>models/nave.glb</strong>. Tambien puedes probar otro GLB desde tu equipo.</p>
+          <button class="primary-action" type="button" id="chooseFile">Elegir archivo</button>
+        </section>
+
+        <section class="panel-section">
+          <h2>Escena</h2>
+          <label class="control-row">
+            <span>Exposicion</span>
+            <input id="exposure" type="range" min="0.2" max="2" step="0.05" value="1" />
+          </label>
+          <label class="control-row">
+            <span>Sombra</span>
+            <input id="shadowIntensity" type="range" min="0" max="1" step="0.05" value="0.35" />
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <h2>Modelo</h2>
+          <label class="toggle-control">
+            <input id="autoRotate" type="checkbox" checked />
+            <span>Giro automatico</span>
+          </label>
+          <div class="action-grid">
+            <button class="tool-button" type="button" id="resetCamera">Centrar</button>
+            <button class="tool-button" type="button" id="clearScene">nave.glb</button>
+          </div>
+        </section>
+
+        <section class="panel-section debug-panel">
+          <h2>Diagnostico</h2>
+          <p id="debugStatus">Comprobando models/nave.glb...</p>
+          <a href="./models/nave.glb" target="_blank" rel="noreferrer">Abrir nave.glb</a>
+        </section>
+      </aside>
+
+      <section class="viewer-wrap">
+        <model-viewer
+          id="modelViewer"
+          src="./models/nave.glb"
+          camera-controls
+          auto-rotate
+          ar
+          shadow-intensity="0.35"
+          exposure="1"
+          interaction-prompt="auto"
+          camera-orbit="45deg 65deg auto"
+          field-of-view="30deg"
+          alt="Modelo 3D nave.glb"
+        >
+          <div class="poster" slot="poster">
+            <h2>Cargando nave.glb</h2>
+            <p>Si no aparece, revisa que exista en models/nave.glb.</p>
+          </div>
+          <div class="progress" slot="progress-bar">
+            <div class="progress-bar"></div>
+          </div>
+        </model-viewer>
+        <div class="status-toast" id="toast" role="status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script src="./viewer.js?v=4" defer></script>
+  </body>
+</html>
