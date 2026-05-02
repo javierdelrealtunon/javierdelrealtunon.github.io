@@ -10,6 +10,14 @@ Web estatica para ver archivos `.glb` y `.gltf` en el navegador con Three.js.
 
 Tambien puedes arrastrar otro `.glb` al visor o usar el boton para elegirlo.
 
+La ruta y el nombre tienen que coincidir exactamente:
+
+```text
+models/nave.glb
+```
+
+En GitHub Pages importan las mayusculas. `Nave.glb`, `nave.GLB` o `Models/nave.glb` no son lo mismo.
+
 ## Publicar en GitHub Pages
 
 1. Sube estos archivos a un repositorio:

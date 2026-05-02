@@ -1,6 +1,6 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as THREE from "https://unpkg.com/three@0.164.1/build/three.module.js";
+import { OrbitControls } from "https://unpkg.com/three@0.164.1/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "https://unpkg.com/three@0.164.1/examples/jsm/loaders/GLTFLoader.js";
 
 const canvas = document.querySelector("#viewerCanvas");
 const viewerWrap = document.querySelector("#viewerWrap");
