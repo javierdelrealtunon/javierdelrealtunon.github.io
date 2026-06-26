@@ -1,0 +1,6 @@
+[
+  { "radius": "100 m", "population": 420, "households": 185, "avgAge": 44.1, "notes": "Área inmediata residencial con comercio de proximidad." },
+  { "radius": "250 m", "population": 1780, "households": 790, "avgAge": 43.6, "notes": "Base local suficiente para servicios recurrentes." },
+  { "radius": "500 m", "population": 6240, "households": 2810, "avgAge": 44.8, "notes": "Radio principal para demanda cotidiana." },
+  { "radius": "1.000 m", "population": 21400, "households": 9600, "avgAge": 45.2, "notes": "Área ampliada con mayor competencia y equipamientos." }
+]
