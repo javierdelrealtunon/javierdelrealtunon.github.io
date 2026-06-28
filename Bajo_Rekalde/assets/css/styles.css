@@ -703,6 +703,38 @@ body.reading-mode .table-wrap {
   box-shadow: var(--panel-shadow);
 }
 
+.property-plan {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.property-plan .section-header {
+  margin-bottom: 0;
+}
+
+.property-plan__figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.property-plan__figure img {
+  width: 100%;
+  aspect-ratio: 16 / 9.25;
+  object-fit: contain;
+  background: #fff;
+}
+
+.property-plan__figure figcaption {
+  padding: 0.62rem 0.82rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .property-hero__copy {
   display: grid;
   gap: 0.82rem;
