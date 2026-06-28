@@ -149,7 +149,7 @@
 .page-title h1 {
   position: absolute;
   left: clamp(0.78rem, 2vw, 1.25rem);
-  right: 4.25rem;
+  right: 11.5rem;
   bottom: clamp(0.7rem, 1.8vw, 1.1rem);
   margin: 0;
   max-width: 920px;
@@ -158,6 +158,32 @@
   letter-spacing: 0;
   color: #fffaf0;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.42), 0 1px 1px rgba(0, 0, 0, 0.34);
+}
+
+.banner-contact-button {
+  position: absolute;
+  top: 0.62rem;
+  right: 3.35rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid rgba(217, 225, 220, 0.92);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--brand-strong);
+  font-size: 0.9rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(30, 50, 45, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.banner-contact-button:hover,
+.banner-contact-button:focus-visible {
+  background: #fff1cc;
+  border-color: #fff1cc;
+  color: #3c2500;
 }
 
 .banner-home-link {
@@ -207,6 +233,103 @@
 .banner-home-link:focus-visible {
   background: rgba(255, 255, 255, 0.96);
   color: var(--brand);
+}
+
+.contact-modal[hidden] {
+  display: none;
+}
+
+.contact-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.contact-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(8, 18, 17, 0.62);
+}
+
+.contact-modal__backdrop:hover {
+  background: rgba(8, 18, 17, 0.68);
+}
+
+.contact-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  padding: 1.15rem;
+  border: 1px solid rgba(217, 225, 220, 0.96);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.contact-modal__panel h2 {
+  margin: 0.2rem 2.5rem 1rem 0;
+  color: var(--brand-strong);
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.contact-modal__actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.contact-modal__actions a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.68rem 0.78rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-muted);
+  color: var(--brand-strong);
+  font-weight: 900;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.contact-modal__actions a:hover,
+.contact-modal__actions a:focus-visible {
+  border-color: var(--brand);
+  background: #fff1cc;
+  color: #3c2500;
+}
+
+.contact-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  min-height: 0;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--brand-strong);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.contact-modal__close:hover {
+  background: var(--surface-muted);
+}
+
+body.has-contact-modal {
+  overflow: hidden;
 }
 
 .section-header p {
@@ -1078,9 +1201,17 @@ body.map-expanded {
   }
 
   .page-title h1 {
-    right: 3.6rem;
+    right: 0.9rem;
     bottom: 0.72rem;
     font-size: clamp(1.9rem, 10vw, 3rem);
+  }
+
+  .banner-contact-button {
+    top: 0.55rem;
+    right: 3.25rem;
+    min-height: 2.15rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.82rem;
   }
 
   .bar {

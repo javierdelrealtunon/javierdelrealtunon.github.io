@@ -31,11 +31,65 @@ function buildShell() {
     <a class="skip-link" href="#contenido">Saltar al contenido principal</a>`;
 
   document.querySelectorAll(".page-title").forEach((title) => {
-    if (title.querySelector(".banner-home-link")) return;
-    title.insertAdjacentHTML("beforeend", `
+    if (!title.querySelector(".banner-contact-button")) {
+      title.insertAdjacentHTML("beforeend", `
+      <button class="banner-contact-button no-print" type="button" data-contact-open>
+        Contacto
+      </button>`);
+    }
+    if (!title.querySelector(".banner-home-link")) {
+      title.insertAdjacentHTML("beforeend", `
       <a class="banner-home-link no-print" href="index.html" aria-label="Volver a la portada">
         <span class="visually-hidden">Volver a la portada</span>
       </a>`);
+    }
+  });
+
+  if (!document.querySelector("[data-contact-modal]")) {
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="contact-modal no-print" data-contact-modal hidden>
+        <button class="contact-modal__backdrop" type="button" data-contact-close aria-label="Cerrar contacto"></button>
+        <section class="contact-modal__panel" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+          <button class="contact-modal__close" type="button" data-contact-close aria-label="Cerrar contacto">×</button>
+          <p class="property-eyebrow">Contacto</p>
+          <h2 id="contact-modal-title">Bajo en Rekalde en alquiler</h2>
+          <div class="contact-modal__actions">
+            <a href="mailto:javierdelrealtunon@gmail.com">javierdelrealtunon@gmail.com</a>
+            <a href="tel:+34628611388">628 611 388</a>
+          </div>
+        </section>
+      </div>`);
+  }
+}
+
+function wireContactModal() {
+  const modal = document.querySelector("[data-contact-modal]");
+  if (!modal || modal.dataset.contactReady === "true") return;
+
+  let previousFocus = null;
+  modal.dataset.contactReady = "true";
+
+  const closeModal = () => {
+    modal.hidden = true;
+    document.body.classList.remove("has-contact-modal");
+    if (previousFocus) previousFocus.focus();
+  };
+
+  document.querySelectorAll("[data-contact-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      previousFocus = button;
+      modal.hidden = false;
+      document.body.classList.add("has-contact-modal");
+      modal.querySelector(".contact-modal__close")?.focus();
+    });
+  });
+
+  modal.querySelectorAll("[data-contact-close]").forEach((button) => {
+    button.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) closeModal();
   });
 }
 
@@ -143,6 +197,7 @@ async function initSharedData() {
 }
 
 buildShell();
+wireContactModal();
 wireGlobalControls();
 wireExportButtons();
 initSharedData();
