@@ -34,7 +34,7 @@ function buildShell() {
     if (!title.querySelector(".banner-contact-button")) {
       title.insertAdjacentHTML("beforeend", `
       <button class="banner-contact-button no-print" type="button" data-contact-open>
-        Contacto
+        Contactar
       </button>`);
     }
     if (!title.querySelector(".banner-home-link")) {
@@ -49,13 +49,26 @@ function buildShell() {
     document.body.insertAdjacentHTML("beforeend", `
       <div class="contact-modal no-print" data-contact-modal hidden>
         <button class="contact-modal__backdrop" type="button" data-contact-close aria-label="Cerrar contacto"></button>
-        <section class="contact-modal__panel" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+        <section class="contact-modal__panel" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" aria-describedby="contact-modal-description">
           <button class="contact-modal__close" type="button" data-contact-close aria-label="Cerrar contacto">×</button>
-          <p class="property-eyebrow">Contacto</p>
-          <h2 id="contact-modal-title">Bajo en Rekalde en alquiler</h2>
+          <div class="contact-modal__header">
+            <p class="property-eyebrow">Contacto directo</p>
+            <h2 id="contact-modal-title">Bajo en Rekalde en alquiler</h2>
+            <p id="contact-modal-description">Disponible inmediatamente para alquiler. Condiciones negociables.</p>
+          </div>
+          <div class="contact-modal__status" aria-label="Disponibilidad">
+            <span>Disponibilidad inmediata</span>
+            <strong>Alquiler · condiciones negociables</strong>
+          </div>
           <div class="contact-modal__actions">
-            <a href="mailto:javierdelrealtunon@gmail.com">javierdelrealtunon@gmail.com</a>
-            <a href="tel:+34628611388">628 611 388</a>
+            <a href="mailto:javierdelrealtunon@gmail.com">
+              <span>Escribir email</span>
+              <strong>javierdelrealtunon@gmail.com</strong>
+            </a>
+            <a href="tel:+34628611388">
+              <span>Llamar por teléfono</span>
+              <strong>628 611 388</strong>
+            </a>
           </div>
         </section>
       </div>`);
@@ -90,6 +103,20 @@ function wireContactModal() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !modal.hidden) closeModal();
+    if (event.key !== "Tab" || modal.hidden) return;
+
+    const focusable = [...modal.querySelectorAll("button, a")].filter((node) => !node.disabled);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
 }
 
