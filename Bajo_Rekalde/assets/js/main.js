@@ -61,9 +61,9 @@ function buildShell() {
             <strong>Alquiler · condiciones negociables</strong>
           </div>
           <div class="contact-modal__actions">
-            <a href="mailto:javierdelrealtunon@gmail.com">
+            <a href="mailto:bajorekalde@zuloaga.com">
               <span>Escribir email</span>
-              <strong>javierdelrealtunon@gmail.com</strong>
+              <strong>bajorekalde@zuloaga.com</strong>
             </a>
             <a href="tel:+34628611388">
               <span>Llamar por teléfono</span>
