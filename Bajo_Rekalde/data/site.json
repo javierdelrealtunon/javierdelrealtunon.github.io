@@ -1,0 +1,46 @@
+﻿{
+    "updatedAt":  "20/06/2026",
+    "dataVersion":  "v0.2 - OSM enriquecido",
+    "property":  {
+                     "name":  "Bajo Rekalde",
+                     "surface":  "162 m²",
+                     "height":  "5 m",
+                     "location":  "Rekalde, Bilbao",
+                     "currentUse":  "Local comercial en análisis",
+                     "status":  "Inventario enriquecido y pendiente de validacion parcial"
+                 },
+    "kpis":  {
+                 "activities":  334,
+                 "comparables":  27,
+                 "avgRent":  12.5,
+                 "population500":  6240,
+                 "population1000":  21400,
+                 "alerts":  3
+             },
+    "priceEvolution":  [
+                           {
+                               "month":  "Ene",
+                               "rent":  12.1
+                           },
+                           {
+                               "month":  "Feb",
+                               "rent":  12.3
+                           },
+                           {
+                               "month":  "Mar",
+                               "rent":  12.4
+                           },
+                           {
+                               "month":  "Abr",
+                               "rent":  12.5
+                           },
+                           {
+                               "month":  "May",
+                               "rent":  12.6
+                           },
+                           {
+                               "month":  "Jun",
+                               "rent":  12.5
+                           }
+                       ]
+}

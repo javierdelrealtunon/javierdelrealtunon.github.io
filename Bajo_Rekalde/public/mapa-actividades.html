@@ -1,0 +1,109 @@
+﻿<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mapa de actividades - Bajo Rekalde</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=20260627-title-banner">
+  </head>
+  <body>
+    <header data-shell></header>
+    <main id="contenido" class="page">
+      <header class="page-title">
+        <h1>Mapa de actividades</h1>
+      </header>
+      <section class="section">
+        <div class="activity-filter-row" aria-label="Filtros de actividades">
+          <div class="form-field">
+            <label for="activity-filter">Actividad</label>
+            <input id="activity-filter" type="search" placeholder="Nombre, categoría o dirección" data-activity-filter>
+          </div>
+          <div class="form-field">
+            <label for="category-filter">Categoría</label>
+            <div class="multi-select" data-category-filter>
+              <button id="category-filter" class="multi-select__button" type="button" aria-haspopup="true" aria-expanded="false" data-category-filter-button>
+                <span data-category-filter-summary>Todas</span>
+              </button>
+              <div class="multi-select__menu" data-category-filter-menu hidden></div>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="activity-type-filter">Actividades</label>
+            <div class="multi-select" data-activity-type-filter>
+              <button id="activity-type-filter" class="multi-select__button" type="button" aria-haspopup="true" aria-expanded="false" data-activity-type-filter-button>
+                <span data-activity-type-filter-summary>Todas</span>
+              </button>
+              <div class="multi-select__menu" data-activity-type-filter-menu hidden></div>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="walking-distance-filter">Distancia mínima a pie al local</label>
+            <select id="walking-distance-filter" data-walking-distance-filter>
+              <option value="todas">Todas</option>
+              <option value="100">Hasta 100 m</option>
+              <option value="250">Hasta 250 m</option>
+              <option value="500">Hasta 500 m</option>
+              <option value="1000">Hasta 1.000 m</option>
+              <option value="1250">Hasta 1.250 m</option>
+            </select>
+          </div>
+          <div class="actions no-print">
+            <button type="button" data-export="#activities-table" data-filename="actividades-rekalde.csv">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="map-panel" data-map-panel>
+          <div class="map-frame">
+            <div class="map" data-map></div>
+            <button type="button" class="map-expand-control no-print" data-map-expand aria-label="Ampliar mapa" title="Ampliar mapa">
+              <span class="visually-hidden">Ampliar mapa</span>
+            </button>
+            <div class="map-layer-control no-print">
+              <span class="map-layer-control__icon" aria-hidden="true"></span>
+              <label class="visually-hidden" for="base-layer">Base cartográfica</label>
+              <select id="base-layer" aria-label="Base cartográfica" data-base-layer>
+                <option value="street">Callejero</option>
+                <option value="ortho">Ortofotografía</option>
+              </select>
+            </div>
+            <div class="map-radius-control no-print" aria-label="Radio de análisis" data-map-radius-control>
+              <span class="map-radius-control__label">Radio de análisis</span>
+              <button type="button" data-radius="100 m">100 m</button>
+              <button type="button" data-radius="250 m">250 m</button>
+              <button type="button" data-radius="500 m" class="is-active">500 m</button>
+              <button type="button" data-radius="1.000 m">1.000 m</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Inventario visible</h2>
+        <div class="table-wrap">
+          <table id="activities-table">
+            <colgroup>
+              <col class="activities-table__name">
+              <col class="activities-table__category">
+              <col class="activities-table__type">
+              <col class="activities-table__status">
+              <col class="activities-table__confidence">
+              <col class="activities-table__distance">
+              <col class="activities-table__time">
+              <col class="activities-table__detail">
+            </colgroup>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="source-line">Fuente: base SQLite consolidada a partir de los GeoJSON aportados, OSM/Overpass y revisión de actividades de mercado.</p>
+      </section>
+    </main>
+    <footer class="footer"><div class="footer__inner">Última actualización: <span data-updated>20/06/2026</span>.</div></footer>
+    <script src="../assets/js/main.js?v=20260626-public-profile-2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="../assets/js/maps.js?v=20260626-public-profile-2"></script>
+  </body>
+</html>
+
+
+
+
