@@ -60,4 +60,48 @@ function initUseCarousels() {
   });
 }
 
+function initPropertyLightbox() {
+  const lightbox = document.querySelector("[data-property-lightbox]");
+  if (!lightbox || lightbox.dataset.lightboxReady === "true") return;
+
+  const image = lightbox.querySelector("[data-lightbox-image]");
+  const caption = lightbox.querySelector("[data-lightbox-caption]");
+  const closeButtons = lightbox.querySelectorAll("[data-lightbox-close]");
+  if (!image || !caption) return;
+
+  let previousFocus = null;
+  lightbox.dataset.lightboxReady = "true";
+
+  function closeLightbox() {
+    lightbox.hidden = true;
+    document.body.classList.remove("has-property-lightbox");
+    image.removeAttribute("src");
+    image.alt = "";
+    if (previousFocus) previousFocus.focus();
+  }
+
+  function openLightbox(trigger) {
+    previousFocus = trigger;
+    image.src = trigger.dataset.lightboxSrc;
+    image.alt = trigger.querySelector("img")?.alt || "";
+    caption.textContent = trigger.dataset.lightboxTitle || "";
+    lightbox.hidden = false;
+    document.body.classList.add("has-property-lightbox");
+    lightbox.querySelector(".property-lightbox__close")?.focus();
+  }
+
+  document.querySelectorAll("[data-lightbox-src]").forEach((trigger) => {
+    trigger.addEventListener("click", () => openLightbox(trigger));
+  });
+
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", closeLightbox);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !lightbox.hidden) closeLightbox();
+  });
+}
+
 initUseCarousels();
+initPropertyLightbox();

@@ -14,14 +14,32 @@
       </header>
 
       <section class="property-hero section" aria-labelledby="property-claim">
-        <div class="property-hero__media" aria-label="Fotografías de la ficha comercial">
+        <div class="property-hero__media" aria-label="Fotografías y plano de la ficha comercial">
           <figure class="property-main-image">
-            <img src="../assets/img/ficha/ficha-01.webp" alt="Fachada del bajo comercial en esquina en Rekalde">
+            <button class="property-media-button" type="button" data-lightbox-src="../assets/img/ficha/ficha-01.webp" data-lightbox-title="Esquina calle Biarritz con calle Camilo Villabaso">
+              <img src="../assets/img/ficha/ficha-01.webp" alt="Fachada del bajo comercial en esquina en Rekalde">
+            </button>
             <figcaption>Esquina calle Biarritz con calle Camilo Villabaso</figcaption>
           </figure>
           <div class="property-photo-strip">
-            <img src="../assets/img/ficha/ficha-02.webp" alt="Vista interior del local en bruto">
-            <img src="../assets/img/ficha/ficha-03.webp" alt="Vista vertical del volumen interior del local">
+            <figure class="property-thumb">
+              <button class="property-media-button" type="button" data-lightbox-src="../assets/img/ficha/ficha-02.webp" data-lightbox-title="Vista interior del local en bruto">
+                <img src="../assets/img/ficha/ficha-02.webp" alt="Vista interior del local en bruto">
+              </button>
+              <figcaption>Interior en bruto</figcaption>
+            </figure>
+            <figure class="property-thumb">
+              <button class="property-media-button" type="button" data-lightbox-src="../assets/img/ficha/ficha-03.webp" data-lightbox-title="Vista vertical del volumen interior del local">
+                <img src="../assets/img/ficha/ficha-03.webp" alt="Vista vertical del volumen interior del local">
+              </button>
+              <figcaption>Volumen interior</figcaption>
+            </figure>
+            <figure class="property-thumb property-thumb--plan">
+              <button class="property-media-button" type="button" data-lightbox-src="../assets/img/ficha/plano-final.png" data-lightbox-title="Plano orientativo de parcela unificada. Superficie total indicada: 170,360 m².">
+                <img src="../assets/img/ficha/plano-final.png" alt="Plano de parcela unificada del bajo Rekalde con superficie total de 170,360 metros cuadrados">
+              </button>
+              <figcaption>Plano · 170,360 m²</figcaption>
+            </figure>
           </div>
         </div>
 
@@ -52,19 +70,6 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <section class="property-plan section" aria-labelledby="plan-title">
-        <div class="section-header">
-          <div>
-            <p class="property-eyebrow">Plano</p>
-            <h2 id="plan-title">Parcela unificada</h2>
-          </div>
-        </div>
-        <figure class="property-plan__figure">
-          <img src="../assets/img/ficha/plano-final.png" alt="Plano de parcela unificada del bajo Rekalde con superficie total de 170,360 metros cuadrados">
-          <figcaption>Plano orientativo de parcela unificada. Superficie total indicada: 170,360 m².</figcaption>
-        </figure>
       </section>
 
       <section class="property-commercial section" aria-labelledby="commercial-title">
@@ -234,6 +239,14 @@
           </article>
         </div>
       </section>
+      <div class="property-lightbox" data-property-lightbox hidden>
+        <button class="property-lightbox__backdrop" type="button" data-lightbox-close aria-label="Cerrar imagen ampliada"></button>
+        <figure class="property-lightbox__figure" role="dialog" aria-modal="true" aria-labelledby="property-lightbox-caption">
+          <button class="property-lightbox__close" type="button" data-lightbox-close aria-label="Cerrar imagen ampliada">×</button>
+          <img data-lightbox-image alt="">
+          <figcaption id="property-lightbox-caption" data-lightbox-caption></figcaption>
+        </figure>
+      </div>
     </main>
     <script src="../assets/js/main.js?v=20260627-carousel-uses"></script>
     <script src="../assets/js/property-gallery.js?v=20260627-carousel-uses"></script>

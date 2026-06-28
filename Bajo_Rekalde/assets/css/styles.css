@@ -665,8 +665,34 @@ body.reading-mode .table-wrap {
   box-shadow: var(--shadow);
 }
 
-.property-main-image img {
+.property-media-button {
+  display: block;
   width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  cursor: zoom-in;
+}
+
+.property-media-button:hover {
+  background: transparent;
+}
+
+.property-media-button:focus-visible {
+  outline: 3px solid #e2a046;
+  outline-offset: -4px;
+}
+
+.property-main-image img,
+.property-thumb img {
+  display: block;
+  width: 100%;
+}
+
+.property-main-image img {
   aspect-ratio: 16 / 7.1;
   object-fit: cover;
 }
@@ -689,50 +715,135 @@ body.reading-mode .table-wrap {
 
 .property-photo-strip {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-.property-photo-strip img {
-  width: 100%;
-  aspect-ratio: 1.26 / 1;
-  object-fit: cover;
+.property-thumb {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-muted);
   box-shadow: var(--panel-shadow);
 }
 
-.property-plan {
-  display: grid;
-  gap: 0.75rem;
+.property-thumb img {
+  aspect-ratio: 1.26 / 1;
+  object-fit: cover;
 }
 
-.property-plan .section-header {
-  margin-bottom: 0;
-}
-
-.property-plan__figure {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.property-thumb--plan {
   background: #fff;
-  box-shadow: var(--shadow);
 }
 
-.property-plan__figure img {
-  width: 100%;
-  aspect-ratio: 16 / 9.25;
+.property-thumb--plan img {
+  padding: 0.4rem;
   object-fit: contain;
   background: #fff;
 }
 
-.property-plan__figure figcaption {
-  padding: 0.62rem 0.82rem;
+.property-thumb figcaption {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  max-width: calc(100% - 1rem);
+  padding: 0.3rem 0.48rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--brand-strong);
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.2;
+  box-shadow: 0 8px 18px rgba(30, 50, 45, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.property-lightbox[hidden] {
+  display: none;
+}
+
+.property-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+}
+
+.property-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(8, 18, 17, 0.78);
+  cursor: zoom-out;
+}
+
+.property-lightbox__backdrop:hover {
+  background: rgba(8, 18, 17, 0.82);
+}
+
+.property-lightbox__figure {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, 100%);
+  max-height: min(84vh, 860px);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.property-lightbox__figure img {
+  display: block;
+  width: 100%;
+  max-height: calc(84vh - 3.4rem);
+  object-fit: contain;
+  background: #fff;
+}
+
+.property-lightbox__figure figcaption {
+  padding: 0.7rem 0.9rem;
   border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.92rem;
+  color: var(--brand-strong);
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.property-lightbox__close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  display: inline-grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  min-height: 0;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(217, 225, 220, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--brand-strong);
+  font-size: 1.45rem;
+  line-height: 1;
+  box-shadow: 0 8px 20px rgba(30, 50, 45, 0.16);
+}
+
+.property-lightbox__close:hover {
+  background: #fff;
+}
+
+body.has-property-lightbox {
+  overflow: hidden;
 }
 
 .property-hero__copy {
@@ -1095,7 +1206,8 @@ body.reading-mode .table-wrap {
     aspect-ratio: 16 / 10;
   }
 
-  .property-main-image figcaption {
+  .property-main-image figcaption,
+  .property-thumb figcaption {
     position: static;
     max-width: none;
     border: 0;
