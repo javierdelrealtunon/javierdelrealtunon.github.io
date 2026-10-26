@@ -1,5 +1,8 @@
 (function () {
   const PHOTO_API = 'https://script.google.com/macros/s/AKfycbwM4miDG1ERYgKh3Sz5yUKWmvzULRhHsJZeCzqbRufDjamiUQiIBQs5zGgSbW8PwrkMqA/exec';
+  function safePhotoURL(value) {
+    try { const u = new URL(value); return u.protocol === 'https:' ? escapeHTML(u.href) : ''; } catch { return ''; }
+  }
   const fotoTipo = { color: '#f0b962', icon: '📷' };
   TIPOS.Foto = fotoTipo;
 
@@ -252,8 +255,8 @@
           if (lat === null || lng === null) return;
 
           const tipo = TIPOS[row.tipo] || { color: '#aaaaaa', icon: '📍' };
-          const fotoUrl = escapeHTML(row.foto_url);
-          const fotoThumb = escapeHTML(row.foto_thumb);
+          const fotoUrl = safePhotoURL(row.foto_url);
+          const fotoThumb = safePhotoURL(row.foto_thumb);
           const marker = L.marker([lat, lng], {
             icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl || fotoThumb)),
           });

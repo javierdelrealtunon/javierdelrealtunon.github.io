@@ -1,0 +1,19 @@
+name = "spearfishing-forecast"
+main = "worker/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://javierdelrealtunon.github.io"
+PUBLIC_APP_URL = "https://javierdelrealtunon.github.io/spearfishing/"
+# Set MAIL_FROM after verifying your sending domain in Resend.
+MAIL_FROM = ""
+WORKER_URL = ""
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spearfishing"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "worker/migrations"
+
+[triggers]
+crons = ["0 */3 * * *"]

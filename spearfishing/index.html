@@ -15,6 +15,9 @@
 
   <link rel="stylesheet" href="style.css" />
 
+  <link rel="stylesheet" href="marine/marine.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0a1628" />
@@ -433,8 +436,9 @@
     </div>
   </div>
 
-  <script src="app.js?v=2"></script>
-  <script src="photo-patch.js?v=6"></script>
+  <script src="app.js?v=3"></script>
+  <script src="photo-patch.js?v=7"></script>
+  <script type="module" src="marine/ui.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/spearfishing/sw.js')

@@ -1,0 +1,5 @@
+{
+  "name": "spearfishing-forecast", "private": true, "type": "module", "version": "1.0.0",
+  "scripts": {"test": "node --test --test-isolation=none tests/*.test.mjs", "dev": "node scripts/serve.mjs", "probe": "node scripts/probe.mjs", "worker:dev": "wrangler dev", "deploy:worker": "wrangler deploy"},
+  "devDependencies": {"wrangler": "^4.0.0"}
+}

@@ -1,0 +1,118 @@
+{
+  "checkedAt": "2026-10-25T20:47:54.824Z",
+  "spot": {
+    "id": "mundaka-pilot",
+    "lat": 43.416,
+    "lon": -2.7005
+  },
+  "sources": [
+    {
+      "provider": "Open-Meteo",
+      "model": "meteofrance_wave",
+      "kind": "wave",
+      "runCycle": null,
+      "generatedAt": null,
+      "downloadedAt": "2026-10-25T20:47:54.824Z",
+      "cell": {
+        "lat": 43.541664,
+        "lon": -2.7083282,
+        "distanceKm": 13.98746763395787,
+        "selection": "sea",
+        "verifiedWater": null
+      },
+      "nativeResolution": "~8 km / 3 h",
+      "outputResolution": "1 h",
+      "temporallyInterpolated": true,
+      "units": {
+        "time": "unixtime",
+        "wave_height": "m",
+        "wave_direction": "°",
+        "wave_period": "s",
+        "wave_peak_period": "undefined",
+        "wind_wave_height": "m",
+        "wind_wave_direction": "°",
+        "wind_wave_period": "s",
+        "swell_wave_height": "m",
+        "swell_wave_direction": "°",
+        "swell_wave_period": "s",
+        "swell_wave_peak_period": "undefined",
+        "secondary_swell_wave_height": "m",
+        "secondary_swell_wave_direction": "°",
+        "secondary_swell_wave_period": "s"
+      }
+    },
+    {
+      "provider": "Open-Meteo",
+      "model": "meteofrance_currents / SMOC",
+      "kind": "ocean",
+      "runCycle": null,
+      "generatedAt": null,
+      "downloadedAt": "2026-10-25T20:47:54.824Z",
+      "cell": {
+        "lat": 43.458336,
+        "lon": -2.7083282,
+        "distanceKm": 4.749791150672208,
+        "selection": "sea",
+        "verifiedWater": null
+      },
+      "nativeResolution": "~8 km / 1 h (SST 6 h)",
+      "outputResolution": "1 h",
+      "temporallyInterpolated": false,
+      "units": {
+        "time": "unixtime",
+        "ocean_current_velocity": "km/h",
+        "ocean_current_direction": "°",
+        "sea_level_height_msl": "m",
+        "sea_surface_temperature": "°C"
+      }
+    },
+    {
+      "provider": "Open-Meteo",
+      "model": "best_match",
+      "kind": "weather",
+      "runCycle": null,
+      "generatedAt": null,
+      "downloadedAt": "2026-10-25T20:47:54.824Z",
+      "cell": {
+        "lat": 43.41,
+        "lon": -2.71,
+        "distanceKm": 1.01683185329526,
+        "selection": "land",
+        "verifiedWater": null
+      },
+      "nativeResolution": "best_match: resolución variable; ciclo no publicado",
+      "outputResolution": "1 h",
+      "temporallyInterpolated": false,
+      "units": {
+        "time": "unixtime",
+        "wind_speed_10m": "m/s",
+        "wind_direction_10m": "°",
+        "wind_gusts_10m": "m/s",
+        "precipitation": "mm",
+        "is_day": ""
+      }
+    }
+  ],
+  "regional": {
+    "provider": "EuskOOS / Euskalmet-AZTI",
+    "model": "EuskalmetWAMBasqueCoast",
+    "kind": "wave",
+    "runCycle": null,
+    "generatedAt": null,
+    "coverageStart": "2026-10-25T01:00:00Z",
+    "coverageEnd": "2026-10-29T00:00:00Z",
+    "downloadedAt": "2026-10-25T20:47:55.417Z",
+    "cell": {
+      "lat": 43.44,
+      "lon": -2.7,
+      "distanceKm": 2.6689836737480888,
+      "selection": "nearest valid wave cell; northward search ≤0.04°",
+      "verifiedWater": "valid model wave mask"
+    },
+    "nativeResolution": "0.02° (~2 km); tiempos nativos irregulares ~1 h",
+    "outputResolution": "tiempos nativos",
+    "temporallyInterpolated": false
+  },
+  "regionalCount": 96,
+  "errors": []
+}

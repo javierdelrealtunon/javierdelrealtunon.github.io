@@ -16,7 +16,7 @@ const LAYER_CONFIG = {
 };
 
 // ── MAP INIT ─────────────────────────────────
-const map = L.map('map', { center: [43.4633, -8.2389], zoom: 13 });
+const map = L.map('map', { center: [43.416, -2.7005], zoom: 13 });
 
 // ── BASEMAPS ──────────────────────────────────
 const BASEMAPS = {
@@ -40,8 +40,9 @@ const BASEMAPS = {
   }
 };
 
-let activeBasemap = 'light';
-BASEMAPS.light.layer.addTo(map);
+let activeBasemap = 'osm';
+BASEMAPS.osm.layer.addTo(map);
+window.spearfishingMap = map;
 
 const BasemapControl = L.Control.extend({
   options: { position: 'bottomright' },
@@ -143,7 +144,7 @@ function showInfo(cfg, name, desc) {
   document.getElementById('info-tag').innerHTML = `<span style="color:${cfg.color}">${cfg.icon}</span> ${cfg.label}`;
   document.getElementById('info-name').textContent = name || '(sin nombre)';
   const tmp = document.createElement('div');
-  tmp.innerHTML = desc;
+  tmp.textContent = desc;
   document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
 }
 
@@ -181,7 +182,7 @@ function parseKML(xmlDoc, cfg) {
     const name = getText(pm, 'name');
     const desc = getText(pm, 'description');
     const popup = name
-      ? `<strong style="font-size:.95rem">${name}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${desc}</span>` : ''}`
+      ? `<strong style="font-size:.95rem">${escapeHTML(name)}</strong>${desc ? `<br><span style="color:#7a9bbf;font-size:.82rem">${escapeHTML(desc)}</span>` : ''}`
       : null;
 
     let pts = Array.from(pm.getElementsByTagNameNS(NS, 'Point'));
@@ -289,7 +290,7 @@ function loadSheetMarkers() {
     .catch(err => console.warn('[sheet]', err.message));
 }
 
-loadSheetMarkers();
+// Initial loading is owned by photo-patch.js.
 
 // ── FORMULARIO AÑADIR SITIO ───────────────────
 const modal = document.getElementById('add-modal');
@@ -375,7 +376,7 @@ async function resizePhotoForUpload(file) {
 function getExifGps(file) {
   return new Promise(resolve => {
     const reader = new FileReader();
-    reader.onload = () => resolve(parseExifGps(reader.result));
+    reader.onload = () => { try { resolve(parseExifGps(reader.result)); } catch { resolve(null); } };
     reader.onerror = () => resolve(null);
     reader.readAsArrayBuffer(file);
   });
