@@ -1,0 +1,4 @@
+# Explicit build-script policy for the reviewed versions in pnpm-lock.yaml.
+allowBuilds:
+  esbuild@0.28.2: true
+  workerd@1.20261019.1: true
