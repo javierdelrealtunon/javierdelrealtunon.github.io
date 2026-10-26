@@ -1,0 +1,16 @@
+import {finite} from '../marine/core.js';
+export const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>finite(n)?n.toFixed(2):'—';
+const local=t=>new Intl.DateTimeFormat('es-ES',{timeZone:'Europe/Madrid',dateStyle:'short',timeStyle:'short'}).format(new Date(t));
+export function mailPayload({spot,window,run,unsubscribeUrl,appUrl}){
+ const rows=window.rows.slice(0,24),name=escapeHTML(spot.name),mode=window.type||'opportunity',heading=({daily:'Resumen diario',weekly:'Resumen semanal',deterioration:'Empeoramiento previsto',opportunity:'Ventana favorable según umbrales'})[mode];
+ const table=rows.map(r=>`<tr><td>${local(r.time)}</td><td>${fmt(r.hs)}</td><td>${fmt(r.tp??r.tm)} / ${fmt(r.waveDirection)}°</td><td>${fmt(r.wind)} / ${fmt(r.gust)}</td><td>${fmt(r.current)}</td><td>${fmt(r.level)}</td></tr>`).join('');
+ const bars=rows.map(r=>`<span title="Hs ${fmt(r.hs)} m" style="display:inline-block;vertical-align:bottom;width:8px;margin:1px;height:${Math.max(1,Math.min(70,(r.hs??0)*35))}px;background:#259e9b"></span>`).join('');
+ return {subject:`Spearfishing | ${heading} · ${spot.name}`,html:`<!doctype html><html lang="es"><body style="font:15px Arial;background:#edf5f7;padding:16px;color:#133044"><main style="max-width:650px;margin:auto;background:white;padding:24px;border-radius:12px"><p>SPEARFISHING · PREVISIÓN REGIONAL</p><h1>${name}</h1><h2>${heading}</h2><p>${local(window.start)} – ${local(window.end)} · ${window.hours} h · índice ${window.score}/100</p><p>${mode==='opportunity'?'Se cumplen los umbrales configurados de Hs, viento, rachas, corriente, periodo y luz diurna.':'Resumen de previsión según los criterios configurados; consulta la valoración por hora en el dashboard.'} Favorabilidad no significa seguridad.</p><div aria-label="Altura de oleaje">${bars}</div><div style="overflow:auto"><table cellpadding="7" style="border-collapse:collapse;font-size:12px"><thead><tr><th>Madrid</th><th>Hs m</th><th>Periodo s / de °</th><th>Viento / racha m/s</th><th>Corriente m/s</th><th>Nivel MSL m</th></tr></thead><tbody>${table}</tbody></table></div><p>Fuentes: ${escapeHTML(run.sources.map(s=>s.provider+' '+s.model).join('; '))}. Descarga ${local(run.downloadedAt)}. Ciclo no publicado. Corrientes regionales: el canal de Urdaibai no está resuelto. No se calcula atenuación local sin validación.</p><p><a href="${escapeHTML(appUrl)}#spot=${encodeURIComponent(spot.id)}">Abrir previsiones</a></p><p>Contrastar información oficial, rompientes, accesos y restricciones legales. Las condiciones pueden cambiar rápidamente.</p><a href="${escapeHTML(unsubscribeUrl)}">Gestionar baja</a></main></body></html>`};
+}
+export async function sendMail(env,payload,key,fetcher=fetch){
+ if(!env.RESEND_API_KEY || !env.MAIL_FROM) throw new Error('Correo sin configurar: RESEND_API_KEY / MAIL_FROM');
+ const r=await fetcher('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify({from:env.MAIL_FROM,...payload}),signal:AbortSignal.timeout(15000)});
+ if(!r.ok)throw new Error(`Resend HTTP ${r.status}`);
+ const b=await r.json();if(!b.id)throw new Error('Resend no confirmó aceptación');return b.id;
+}
