@@ -41,6 +41,8 @@ La aplicación original no se ha sustituido. `app.js` sigue gestionando Leaflet,
 
 ## Persistencia
 
+Desde el 7/11/2026 las ubicaciones compartidas usan la base Google Sheets existente mediante `marine/forecast-store.js`. Cada creación, edición y baja añade un evento versionado de tipo `Ubicación de previsión`; la lectura conserva el último evento de cada identificador. No se reescriben registros de pesca, fotografías o accesos. El cliente verifica la escritura con una lectura independiente. El modelo permite sustituir el adaptador por D1 (`spotStorage:'worker'`) y rechaza las fichas privadas en el adaptador público. Los antiguos puntos locales se mantienen como pendientes de sincronizar hasta que su propietario confirma compartirlos.
+
 Migración `worker/migrations/0001_initial.sql`: contiene todas las entidades solicitadas y sus índices. Los lugares de previsión y los puntos originales están separados. La ficha piloto referencia `kml/sitios.kml`, `placemark:7` (índice cero), sin añadir un polígono duplicado al KML.
 
 `forecast_runs.payload` conserva respuesta normalizada y procedencia. `forecast_values` se llena con valores individuales, unidad SI y fuente por variable; `forecast_quality` conserva incidencias. `local_estimates` registra explícitamente ausencia de estimación local calibrada. Sectores y parámetros se conservan dentro de la ficha JSON; las tablas de sectores/geometrías/parámetros están preparadas para su próxima normalización completa. `providers` y `admin_users` están reservadas: la versión inicial usa registro de proveedores en código y una credencial administrativa única de servidor.

@@ -1,5 +1,13 @@
 # API v1
 
+## Adaptador de ubicaciones compartidas
+
+La configuración inicial `spotStorage:'sheets'` utiliza la URL Apps Script ya existente. Lectura: GET sin acción, con respuesta de filas en orden de inserción. Escritura: GET `action=write`, `registro_id=forecast-event-UUID`, `tipo=Ubicación de previsión`, nombre, coordenadas, notas JSON y metadatos de origen. No requiere cambios de esquema en la hoja actual. Se conserva este contrato heredado; el resto de rutas de esta página corresponde al Worker opcional.
+
+Las notas incluyen `schema:spearfishing.forecast.v1`, identificador lógico estable, revisión, visibilidad pública, referencias de origen y `deleted`. Una edición o baja añade un evento nuevo y no modifica los originales. El lector filtra exclusivamente este tipo y reduce sus eventos por identificador. Los errores de escritura o verificación se muestran y no se presentan como un guardado local exitoso. Las fichas privadas se rechazan antes de realizar una petición al adaptador público.
+
+Los registros de este adaptador son visibles para todos los usuarios del visor. Las listas de correo, secretos y destinatarios nunca se guardan en él. D1 conserva sus controles de acceso para operaciones privadas.
+
 JSON UTF-8, `Cache-Control: no-store`. Identificadores estables; el código SQL usa parámetros. Rutas administrativas requieren `Authorization: Bearer <ADMIN_TOKEN>` y origen permitido; nunca colocar token en URL. Límite: 60 solicitudes por IP y primer segmento de ruta por minuto. Errores JSON con `error`, estados 400/401/403/404/429/503.
 
 | Método / ruta | Contrato |

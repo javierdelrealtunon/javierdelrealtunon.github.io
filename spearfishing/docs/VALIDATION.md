@@ -1,5 +1,7 @@
 # Validación de la primera versión
 
+Ampliación de sincronización del 7/11/2026: 44 pruebas automatizadas. Guardadas y releídas 36 ubicaciones reales en la base compartida: 9 fichas de pesca y 27 zonas KML, con el piloto reutilizado. La base pasó de 86 a 122 registros mediante 36 eventos nuevos; los 86 registros de otros tipos se conservan. Se verifican dos clientes independientes, reducción de versiones sin duplicados, bajas sin alterar originales, bloqueo de coordenadas privadas en el adaptador público y normalización de microgrados. El panel lateral incorpora capa general, listado activable y casillas por ubicación. Se retiró el encabezado lateral solicitado.
+
 Actualización del 7 de noviembre de 2026: 37 pruebas correctas. Añadida selección manual de ubicaciones sobre el mapa, almacenamiento local privado, edición del punto y comprobación de persistencia tras recargar. El adaptador regional rechaza ubicaciones fuera de su cobertura. El viento dispone de acceso directo, conteo de horas disponibles y un reintento acotado ante fallos transitorios. Las unidades de las gráficas de viento y corriente siguen el selector. Al cambiar de ubicación se retiran los valores de la selección anterior mientras llegan los nuevos datos.
 
 Comprobaciones del 25–26 de octubre de 2026. No se ha activado producción ni enviado correo a destinatarios reales.

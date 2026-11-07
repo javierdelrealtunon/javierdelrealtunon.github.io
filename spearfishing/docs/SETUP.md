@@ -66,7 +66,20 @@ Rollback frontend: volver al commit anterior desde GitHub, o restaurar los archi
 
 ## Añadir un lugar / proveedor
 
-Consulta local sin backend: en el visor, **Añadir ubicación de previsión** → tocar el punto → asignar nombre → **Guardar y ver previsión**. La ficha queda únicamente en el almacenamiento de este navegador y aparece en el selector y el comparador. **Editar ubicación local** permite cambiar el nombre o volver a elegir el punto sobre el mapa. No modifica Google Sheets ni publica coordenadas en el repositorio. Para habilitar alertas, guardar la ficha en el servidor mediante el formulario administrativo del párrafo siguiente.
+Base compartida operativa: en el visor, **Añadir ubicación de previsión** → tocar el punto → asignar nombre → confirmar **Compartir ubicación en este visor** → **Guardar en la base y ver previsión**. Se escribe un registro de tipo `Ubicación de previsión` en el Apps Script/Google Sheets que ya utiliza la aplicación y se verifica su lectura antes de confirmar. Otras instalaciones de esta versión leen esa misma base sin depender del almacenamiento local. **Editar ubicación** permite cambiar el nombre o volver a elegir el punto. Las ubicaciones antiguas locales se conservan como pendientes; guardarlas requiere confirmar que se comparten.
+
+La capa general **Ubicaciones de previsión**, el interruptor **Mostrar listado de previsiones** y cada casilla individual controlan la visibilidad. La búsqueda y el botón de centrar no descargan series de todos los sitios. Las preferencias de capas son locales; los puntos son compartidos.
+
+Importación reproducible de los sitios existentes:
+
+```sh
+python scripts/prepare-forecast-sites.py
+node scripts/seed-forecasts.mjs
+```
+
+El primer paso deriva puntos interiores de las 27 zonas KML, reutilizando el piloto comprobado. El segundo lee las 9 fichas de pesca actuales y crea solo los identificadores que no existen en la base; no reemplaza ediciones manuales ni restaura ubicaciones eliminadas. Los puntos derivados de polígonos necesitan comprobación marina local y son ajustables en el visor. Se conservan las coordenadas originales de las fichas, normalizando el formato antiguo de microgrados cuando existe. Los nombres originales y los datos de acceso/fotos no se modifican.
+
+Para datos privados y alertas automáticas se mantiene D1: configurar `spotStorage:'worker'` y la API autenticada. La base Sheets heredada es pública; no admite guardar una ficha marcada como privada. Las reglas y destinatarios continúan exclusivamente en el backend autenticado.
 
 Lugar: Administración → nueva ficha → identificador estable, coordenadas, notas y visibilidad explícita. Verificar el punto en ortofoto y costa antes de usarlo. Sectores manuales: `localParameters.sectors`, objetos con `bearing` (grados), `fetchM`, `classification` y `censored`, acompañados de método y fuente. Sin geometría disponible se muestra incertidumbre. Se pueden conservar en el JSON geometría, profundidad, acceso, restricciones e identificadores originales. No guardar puntos privados en `data/spots.json`.
 

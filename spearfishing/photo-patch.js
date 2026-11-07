@@ -246,8 +246,12 @@
     fetch(PHOTO_API)
       .then(r => r.json())
       .then(rows => {
+        // Forecast locations use their own layer/list and never become generic pins.
+        window.spearfishingRecords=rows;
+        window.dispatchEvent(new CustomEvent('spearfishing:records-loaded',{detail:{rows}}));
         sheetLayer.clearLayers();
         rows.forEach(row => {
+          if(row.tipo==='Ubicación de previsión')return;
           if (!isSheetTipoVisible(row.tipo)) return;
 
           const lat = parseSheetCoordinate(row.lat, 'lat');

@@ -1,0 +1,464 @@
+[
+  {
+    "id": "forecast-kml-4bbde02ac621",
+    "name": "Zona de pesca KML 01 — Previsión",
+    "lat": 43.56197816,
+    "lon": -8.30193273,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:0"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:0"
+  },
+  {
+    "id": "forecast-kml-fcd813fad640",
+    "name": "Zona de pesca KML 02 — Previsión",
+    "lat": 43.41357704,
+    "lon": -2.67856713,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:1"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:1"
+  },
+  {
+    "id": "forecast-kml-92791cd59173",
+    "name": "Zona de pesca KML 03 — Previsión",
+    "lat": 43.41209751,
+    "lon": -2.65266521,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:2"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:2"
+  },
+  {
+    "id": "forecast-kml-3f0502cec947",
+    "name": "Zona de pesca KML 04 — Previsión",
+    "lat": 43.45083339,
+    "lon": -2.74631176,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:3"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:3"
+  },
+  {
+    "id": "forecast-kml-7584bc2e3cd6",
+    "name": "Zona de pesca KML 05 — Previsión",
+    "lat": 43.43693524,
+    "lon": -2.88493157,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:4"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:4"
+  },
+  {
+    "id": "forecast-kml-d1fa9155da40",
+    "name": "Zona de pesca KML 06 — Previsión",
+    "lat": 43.36106627,
+    "lon": -3.07428566,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:5"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:5"
+  },
+  {
+    "id": "forecast-kml-8c92a0605917",
+    "name": "Zona de pesca KML 07 — Previsión",
+    "lat": 43.42194269,
+    "lon": -2.70989556,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:6"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:6"
+  },
+  {
+    "id": "mundaka-pilot",
+    "name": "Mundaka — Zona piloto",
+    "lat": 43.416,
+    "lon": -2.7005,
+    "public": true,
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:7",
+    "description": "Punto de evaluación regional dentro del polígono KML existente. Corrientes estuarinas sin resolver.",
+    "depthM": null,
+    "access": null,
+    "restrictions": "Consultar normativa y restricciones oficiales de Urdaibai antes de la salida.",
+    "localConfidence": "sin calibración",
+    "thresholds": null,
+    "pointMethod": "punto piloto comprobado frente a costa OSM",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:7"
+    ]
+  },
+  {
+    "id": "forecast-kml-020e5668b8ba",
+    "name": "Zona de pesca KML 09 — Previsión",
+    "lat": 43.4466939,
+    "lon": -8.30624559,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:8"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:8"
+  },
+  {
+    "id": "forecast-kml-1229e785bbdd",
+    "name": "Zona de pesca KML 10 — Previsión",
+    "lat": 43.46318499,
+    "lon": -8.28463349,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:9"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:9"
+  },
+  {
+    "id": "forecast-kml-302275d8f032",
+    "name": "Zona de pesca KML 11 — Previsión",
+    "lat": 43.47445268,
+    "lon": -8.34160507,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:10"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:10"
+  },
+  {
+    "id": "forecast-kml-c740f621744c",
+    "name": "Zona de pesca KML 12 — Previsión",
+    "lat": 43.56102188,
+    "lon": -8.2819444,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:11"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:11"
+  },
+  {
+    "id": "forecast-kml-96e18a84b3dc",
+    "name": "Zona de pesca KML 13 — Previsión",
+    "lat": 43.51196,
+    "lon": -8.33934295,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:12"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:12"
+  },
+  {
+    "id": "forecast-kml-c380de3379b3",
+    "name": "Zona de pesca KML 14 — Previsión",
+    "lat": 43.57011497,
+    "lon": -8.3062827,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:13"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:13"
+  },
+  {
+    "id": "forecast-kml-b32662514efa",
+    "name": "Zona de pesca KML 15 — Previsión",
+    "lat": 43.51256643,
+    "lon": -8.33268315,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:14"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:14"
+  },
+  {
+    "id": "forecast-kml-8424a62e656c",
+    "name": "Zona de pesca KML 16 — Previsión",
+    "lat": 43.44385468,
+    "lon": -8.31727526,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:15"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:15"
+  },
+  {
+    "id": "forecast-kml-1a059ac2b490",
+    "name": "Zona de pesca KML 17 — Previsión",
+    "lat": 43.45288982,
+    "lon": -8.31398937,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:16"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:16"
+  },
+  {
+    "id": "forecast-kml-1a4f3d0bc7df",
+    "name": "Zona de pesca KML 18 — Previsión",
+    "lat": 43.46499961,
+    "lon": -8.34838324,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:17"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:17"
+  },
+  {
+    "id": "forecast-kml-c31720a39af8",
+    "name": "Zona de pesca KML 19 — Previsión",
+    "lat": 43.41974206,
+    "lon": -8.25898985,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:18"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:18"
+  },
+  {
+    "id": "forecast-kml-c73cea53caf6",
+    "name": "Zona de pesca KML 20 — Previsión",
+    "lat": 43.42387505,
+    "lon": -8.26148177,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:19"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:19"
+  },
+  {
+    "id": "forecast-kml-8f4d39ed406a",
+    "name": "Zona de pesca KML 21 — Previsión",
+    "lat": 43.5260199,
+    "lon": -8.31973803,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:20"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:20"
+  },
+  {
+    "id": "forecast-kml-7429ab25b039",
+    "name": "Zona de pesca KML 22 — Previsión",
+    "lat": 43.50598966,
+    "lon": -8.32969127,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:21"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:21"
+  },
+  {
+    "id": "forecast-kml-8e6002535c19",
+    "name": "Zona de pesca KML 23 — Previsión",
+    "lat": 43.61423919,
+    "lon": -8.19384186,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:22"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:22"
+  },
+  {
+    "id": "forecast-kml-8b77b6e9cfc0",
+    "name": "Zona de pesca KML 24 — Previsión",
+    "lat": 43.61993646,
+    "lon": -8.19006202,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:23"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:23"
+  },
+  {
+    "id": "forecast-kml-7734267adc83",
+    "name": "Zona de pesca KML 25 — Previsión",
+    "lat": 43.42469494,
+    "lon": -2.71957316,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:24"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:24"
+  },
+  {
+    "id": "forecast-kml-a3127a3dae6c",
+    "name": "Zona de pesca KML 26 — Previsión",
+    "lat": 43.40698531,
+    "lon": -3.29282635,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:25"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:25"
+  },
+  {
+    "id": "forecast-kml-547f481ac303",
+    "name": "Zona de pesca KML 27 — Previsión",
+    "lat": 43.46200419,
+    "lon": -8.27556881,
+    "public": true,
+    "description": "Punto interior de la zona de pesca KML para consultar modelos regionales. Posición marina y acceso pendientes de comprobación local.",
+    "localConfidence": "sin calibración; punto derivado de polígono",
+    "thresholds": null,
+    "pointMethod": "punto interior por barrido de polígono",
+    "generated": true,
+    "sourceRefs": [
+      "kml/sitios.kml#placemark:26"
+    ],
+    "originalSource": "kml/sitios.kml",
+    "originalId": "placemark:26"
+  }
+]

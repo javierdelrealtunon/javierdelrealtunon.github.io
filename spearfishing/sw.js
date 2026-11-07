@@ -1,7 +1,7 @@
 // Only explicit same-origin shell files may enter this cache. APIs always use network.
-const CACHE='spearfishing-shell-v5';
+const CACHE='spearfishing-shell-v6';
 const ROOT=new URL('./',self.location).pathname;
-const FILES=['','index.html','app.js','photo-patch.js','style.css','marine/marine.css','marine/ui.js','marine/core.js','marine/providers.js','marine/regional.js','marine/exposure.js','marine/conditions.js','marine/wind.js','marine/locations.js','config.js','manifest.json','icon-192.png','icon-512.png','kml/sitios.kml','data/spots.json','data/coast.geojson'].map(p=>ROOT+p);
+const FILES=['','index.html','app.js','photo-patch.js','style.css','marine/marine.css','marine/ui.js','marine/core.js','marine/providers.js','marine/regional.js','marine/exposure.js','marine/conditions.js','marine/wind.js','marine/locations.js','marine/forecast-store.js','marine/fishing-sites.js','config.js','manifest.json','icon-192.png','icon-512.png','kml/sitios.kml','data/spots.json','data/coast.geojson','data/forecast-sites.json'].map(p=>ROOT+p);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&(k.startsWith('sdc-')||k.startsWith('spearfishing-shell-'))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

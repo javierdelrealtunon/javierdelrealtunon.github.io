@@ -6,6 +6,7 @@ import {defaults,validateThresholds,evaluate,assess} from './conditions.js';
 import {exposureSectors,localEstimate,waterSide} from './exposure.js';
 import {windCoverage} from './wind.js';
 import {localSpot,readLocalSpots,writeLocalSpots,mergeSpots,nearbySpot} from './locations.js';
+import {ForecastStore,validateForecastSpot} from './forecast-store.js';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=(v,n=2)=>finite(v)?v.toFixed(n):'—';
 const local=(t,opts={dateStyle:'short',timeStyle:'short'})=>new Intl.DateTimeFormat('es-ES',{timeZone:'Europe/Madrid',...opts}).format(new Date(t));
@@ -13,6 +14,11 @@ const labels={favorable:'Favorable según umbrales',unfavorable:'Desfavorable',u
 let spots=[],spot,run,geography,exposure,token='',adminState=null,charts=[],requestId=0;
 let chartFilter='all';
 let localSpots=[],serverSpots=[],pickingForecast=false;
+let sharedSpots=[],backendSpots=[],kmlSources=[];
+let deletedForecastIds=new Set();
+let forecastLayers={enabled:true,listVisible:true,hiddenIds:[]};
+try{forecastLayers={...forecastLayers,...JSON.parse(localStorage.getItem('marine.forecastLayers.v1')||'{}')};if(!Array.isArray(forecastLayers.hiddenIds))forecastLayers.hiddenIds=[];}catch{}
+const forecastMarkers=new Map();
 const runs=new Map();
 let apiBase=config.apiBase||localStorage.getItem('marine.apiBase')||'';
 let rules=defaults;
@@ -38,26 +44,63 @@ document.body.append(root);
 const header=document.createElement('header');header.id='marine-nav';header.innerHTML=`<a class="marine-brand" href="#map">◉ <span>SPEARFISHING<small>FORECAST & ALERTS</small></span></a><nav aria-label="Secciones principales">${[['map','Mapa'],['forecast','Previsiones'],['compare','Comparador'],['alerts','Alertas'],['admin','Administración']].map(([id,label])=>`<button data-view="${id}" ${id==='map'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;document.body.prepend(header);
 const locationDialog=document.createElement('dialog');
 locationDialog.className='marine-wrap marine-location-dialog';locationDialog.setAttribute('aria-labelledby','marine-location-title');
-locationDialog.innerHTML=`<h2 id="marine-location-title">Nueva ubicación de previsión</h2><p>El punto se elige directamente en el visor. Esta ubicación se guarda solo en este navegador.</p><form id="marine-location-form" class="marine-form"><input name="id" type="hidden"><input name="lat" type="hidden"><input name="lon" type="hidden"><label>Nombre de la ubicación<input name="name" maxlength="160" required placeholder="Ej.: Punta de…"></label><label>Notas<textarea name="description" maxlength="2000" placeholder="Referencia del lugar o acceso"></textarea></label><p id="marine-location-coordinates"></p><p id="marine-location-error" role="alert"></p><button type="button" id="marine-location-pick">Cambiar punto en el mapa</button><button type="submit">Guardar y ver previsión</button><button type="button" id="marine-location-remove" hidden>Eliminar esta ubicación local</button><button type="button" id="marine-location-cancel">Cancelar</button><p>Para avisos automáticos, guarda también la ficha y sus reglas en el backend desde Administración.</p></form>`;
+locationDialog.innerHTML=`<h2 id="marine-location-title">Nueva ubicación de previsión</h2><p>Elige el punto en el visor. Se guardará en la base de datos para consultarlo desde otros dispositivos.</p><form id="marine-location-form" class="marine-form"><input name="id" type="hidden"><input name="lat" type="hidden"><input name="lon" type="hidden"><label>Nombre de la ubicación<input name="name" maxlength="160" required placeholder="Ej.: Punta de…"></label><label>Notas<textarea name="description" maxlength="2000" placeholder="Referencia del lugar o acceso"></textarea></label><label><input name="shared" type="checkbox"> Compartir ubicación en este visor</label><p>La base compartida es visible para quienes acceden a este visor. Las ubicaciones privadas requieren el backend autenticado.</p><p id="marine-location-coordinates"></p><p id="marine-location-error" role="alert"></p><button type="button" id="marine-location-pick">Cambiar punto en el mapa</button><button type="submit">Guardar en la base y ver previsión</button><button type="button" id="marine-location-remove" hidden>Eliminar ubicación de previsión</button><button type="button" id="marine-location-cancel">Cancelar</button></form>`;
 document.body.append(locationDialog);
 const locationForm=$('marine-location-form');
 const pickBanner=document.createElement('div');pickBanner.className='marine-pick-banner';pickBanner.hidden=true;pickBanner.setAttribute('role','status');pickBanner.innerHTML='<span>Toca el mapa para situar la ubicación de previsión.</span><button type="button">Cancelar</button>';document.body.append(pickBanner);
 const addLocationButton=document.createElement('button');addLocationButton.id='marine-add-location';addLocationButton.textContent='＋ Añadir ubicación';addLocationButton.onclick=()=>startForecastPick(true);
-const editLocationButton=document.createElement('button');editLocationButton.id='marine-edit-location';editLocationButton.textContent='Editar ubicación local';editLocationButton.hidden=true;editLocationButton.onclick=()=>editForecastLocation();
+const editLocationButton=document.createElement('button');editLocationButton.id='marine-edit-location';editLocationButton.textContent='Editar ubicación';editLocationButton.hidden=true;editLocationButton.onclick=()=>editForecastLocation();
 root.querySelector('.marine-toolbar').append(addLocationButton,editLocationButton);
+const forecastLayerPanel=document.createElement('section');forecastLayerPanel.className='forecast-layer-section';forecastLayerPanel.setAttribute('aria-label','Capas de previsión');
+forecastLayerPanel.innerHTML=`<div class="forecast-layer-heading"><span class="section-label">Previsiones <span id="forecast-layer-count"></span></span><button type="button" id="forecast-list-refresh" aria-label="Actualizar ubicaciones desde la base">↻</button></div><label class="layer-item"><span class="layer-dot" style="background:#43e1bb"></span><span class="layer-name">Ubicaciones de previsión</span><input id="forecast-layer-enabled" type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><label class="forecast-list-switch"><input id="forecast-list-enabled" type="checkbox"> Mostrar listado de previsiones</label><p id="forecast-database-state" role="status">Conectando con la base compartida…</p><div id="forecast-location-list"><label class="forecast-search-label">Buscar ubicación<input id="forecast-location-search" type="search" placeholder="Nombre del sitio…"></label><div id="forecast-location-items"></div></div>`;
+document.getElementById('info-panel').before(forecastLayerPanel);
+$('forecast-layer-enabled').checked=forecastLayers.enabled;$('forecast-list-enabled').checked=forecastLayers.listVisible;
+$('forecast-layer-enabled').onchange=event=>{forecastLayers.enabled=event.target.checked;persistForecastLayers();applyForecastVisibility();renderForecastList();};
+$('forecast-list-enabled').onchange=event=>{forecastLayers.listVisible=event.target.checked;persistForecastLayers();renderForecastList();};
+$('forecast-location-search').oninput=()=>renderForecastList();
+$('forecast-list-refresh').onclick=async()=>{try{await refreshForecastSpots();message('Ubicaciones actualizadas desde la base compartida.');}catch(error){$('forecast-database-state').textContent=error.message;message(error);}};
+
+function persistForecastLayers(){try{localStorage.setItem('marine.forecastLayers.v1',JSON.stringify(forecastLayers));}catch{}}
+function renderForecastList(){
+ $('forecast-layer-count').textContent=`(${spots.length})`;$('forecast-location-list').hidden=!forecastLayers.listVisible;
+ const search=$('forecast-location-search').value.toLocaleLowerCase('es');
+ const visible=spots.filter(s=>s.name.toLocaleLowerCase('es').includes(search));
+ $('forecast-location-items').innerHTML=visible.map(s=>`<div class="forecast-location-row"><input type="checkbox" data-forecast-visible="${esc(s.id)}" aria-label="Mostrar previsión de ${esc(s.name)}" ${forecastLayers.hiddenIds.includes(s.id)?'':'checked'} ${forecastLayers.enabled?'':'disabled'}><button class="forecast-location-open" data-forecast-open="${esc(s.id)}">${esc(s.name)}<small>${s.local?'Pendiente de guardar en la base':s.database==='sheets'?'Base compartida':s.database==='d1'?'Base de datos':'Sin sincronizar'}</small></button><button class="forecast-location-locate" data-forecast-locate="${esc(s.id)}" aria-label="Centrar ${esc(s.name)} en el mapa">⌖</button></div>`).join('')||'<p class="forecast-empty">No hay ubicaciones con ese nombre.</p>';
+ $('forecast-location-items').querySelectorAll('[data-forecast-visible]').forEach(box=>box.onchange=()=>{const id=box.dataset.forecastVisible;forecastLayers.hiddenIds=forecastLayers.hiddenIds.filter(x=>x!==id);if(!box.checked)forecastLayers.hiddenIds.push(id);persistForecastLayers();applyForecastVisibility();});
+ $('forecast-location-items').querySelectorAll('[data-forecast-open]').forEach(button=>button.onclick=()=>{selectSpot(button.dataset.forecastOpen);view('forecast');});
+ $('forecast-location-items').querySelectorAll('[data-forecast-locate]').forEach(button=>button.onclick=()=>{const s=spots.find(s=>s.id===button.dataset.forecastLocate);if(!s)return;view('map');window.spearfishingMap.setView([s.lat,s.lon],15);});
+}
+function combineForecastSpots(){
+ const previous=spot;
+ serverSpots=mergeSpots(sharedSpots,backendSpots.filter(s=>!deletedForecastIds.has(s.id)));spots=mergeSpots(serverSpots,localSpots.filter(s=>!deletedForecastIds.has(s.id))).sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));
+ spot=spots.find(s=>s.id===previous?.id)||spots.find(s=>s.id==='mundaka-pilot')||spots[0];renderSpotOptions();mapMarkers();
+ if(previous&&spot&&(spot.id!==previous.id||spot.lat!==previous.lat||spot.lon!==previous.lon)){runs.delete(spot.id);run=null;clearForecastForSelection();if(!root.hidden&&!root.querySelector('[data-marine-view="forecast"]').hidden)load();}
+}
+async function refreshForecastSpots(){
+ const button=$('forecast-list-refresh');button.disabled=true;
+ try{const snapshot=await forecastStore.load();sharedSpots=snapshot.spots;deletedForecastIds=new Set(snapshot.records.filter(s=>s.deleted).map(s=>s.id));combineForecastSpots();$('forecast-database-state').textContent=`Base compartida · ${sharedSpots.length} ubicaciones guardadas`;return snapshot;}
+ finally{button.disabled=false;}
+}
+function applyForecastVisibility(){
+ const map=window.spearfishingMap,group=window.marineSpotsLayer;if(!group)return;
+ for(const [id,marker] of forecastMarkers){if(forecastLayers.hiddenIds.includes(id))group.removeLayer(marker);else if(!group.hasLayer(marker))group.addLayer(marker);}
+ if(forecastLayers.enabled){if(!map.hasLayer(group))group.addTo(map);}else group.remove();
+ if(run&&spot&&run.spotId===spot.id)updateMapVectors(visibleRows()[0]||{});else vectorLayer?.remove();
+}
 
 function renderSpotOptions(){
  $('marine-spot').innerHTML=spots.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}${s.local?' · este navegador':s.public?'':' · privado'}</option>`).join('');
  if(spot&&spots.some(s=>s.id===spot.id))$('marine-spot').value=spot.id;
- editLocationButton.hidden=!spot?.local;
+ editLocationButton.hidden=!spot||(!spot.local&&!spot.database);renderForecastList();
 }
 function resetLocationForm(){
  locationForm.reset();locationForm.elements.id.value='';locationForm.elements.lat.value='';locationForm.elements.lon.value='';
  $('marine-location-title').textContent='Nueva ubicación de previsión';$('marine-location-error').textContent='';$('marine-location-remove').hidden=true;
 }
 function editForecastLocation(){
- if(!spot?.local)return;resetLocationForm();
+ if(!spot)return;resetLocationForm();
  for(const key of ['id','name','description','lat','lon'])locationForm.elements[key].value=spot[key]??'';
+ locationForm.elements.shared.checked=spot.public===true;
  $('marine-location-title').textContent='Editar ubicación de previsión';$('marine-location-remove').hidden=false;showLocationDialog();
 }
 function showLocationDialog(){
@@ -74,24 +117,33 @@ function stopForecastPick(){pickingForecast=false;pickBanner.hidden=true;documen
 pickBanner.querySelector('button').onclick=()=>{stopForecastPick();if(locationForm.elements.lat.value!=='')showLocationDialog();};
 $('marine-location-pick').onclick=()=>startForecastPick();
 $('marine-location-cancel').onclick=()=>locationDialog.close();
-locationForm.onsubmit=event=>{
+locationForm.onsubmit=async event=>{
  event.preventDefault();
+ const button=locationForm.querySelector('[type="submit"]');button.disabled=true;$('marine-location-error').textContent='Guardando en la base de datos…';
  try{
   const value=Object.fromEntries(new FormData(locationForm));if(!value.id)delete value.id;
-  const candidate=localSpot({...value,thresholds:rules}),duplicate=nearbySpot(candidate,spots);
-  if(duplicate)throw new Error(`Ya existe «${duplicate.name}» a menos de 30 m. Selecciona otro punto o utiliza esa ubicación.`);
-  const updated=localSpots.filter(s=>s.id!==candidate.id);updated.push(candidate);
-  localSpots=writeLocalSpots(localStorage,updated);spots=mergeSpots(serverSpots,localSpots);renderSpotOptions();runs.delete(candidate.id);mapMarkers();
-  locationDialog.close();selectSpot(candidate.id);window.spearfishingMap.setView([candidate.lat,candidate.lon],15);view('forecast');message('Ubicación guardada en este navegador.');
- }catch(error){$('marine-location-error').textContent=error.message;}
+  if(value.lat===''||value.lon==='')throw new Error('Selecciona primero el punto en el mapa.');
+  const previous=spots.find(s=>s.id===value.id)||{};
+  const candidate=validateForecastSpot({...previous,...value,id:value.id||`forecast-${crypto.randomUUID()}`,lat:Number(value.lat),lon:Number(value.lon),public:locationForm.elements.shared.checked,thresholds:rules,pointMethod:'selección manual en el visor'}),duplicate=nearbySpot(candidate,spots);
+  if(duplicate&&(!previous.id||candidate.lat!==previous.lat||candidate.lon!==previous.lon))throw new Error(`Ya existe «${duplicate.name}» a menos de 30 m. Selecciona otro punto o utiliza esa ubicación.`);
+  const saved=await forecastStore.save(candidate);
+  deletedForecastIds.delete(saved.id);
+  sharedSpots=sharedSpots.filter(s=>s.id!==saved.id);sharedSpots.push(saved);
+  if(localSpots.some(s=>s.id===saved.id)){try{localSpots=writeLocalSpots(localStorage,localSpots.filter(s=>s.id!==saved.id));}catch{/* The confirmed server record takes precedence over an old local copy. */}}
+  combineForecastSpots();runs.delete(saved.id);$('forecast-database-state').textContent=`Base compartida · ${sharedSpots.length} ubicaciones guardadas`;
+  locationDialog.close();selectSpot(saved.id);window.spearfishingMap.setView([saved.lat,saved.lon],15);view('forecast');message('Ubicación guardada y verificada en la base de datos. Disponible desde otros dispositivos.');
+ }catch(error){$('marine-location-error').textContent=error.message;}finally{button.disabled=false;}
 };
-$('marine-location-remove').onclick=()=>{
+$('marine-location-remove').onclick=async()=>{
+ const button=$('marine-location-remove');button.disabled=true;
  try{
-  const id=locationForm.elements.id.value;localSpots=writeLocalSpots(localStorage,localSpots.filter(s=>s.id!==id));spots=mergeSpots(serverSpots,localSpots);runs.delete(id);
-  locationDialog.close();spot=spots[0];renderSpotOptions();mapMarkers();if(spot){selectSpot(spot.id);view('forecast');}else{run=null;view('map');}message('Ubicación local eliminada.');
- }catch(error){$('marine-location-error').textContent=error.message;}
+  const id=locationForm.elements.id.value,current=spots.find(s=>s.id===id);
+  if(current?.database){await forecastStore.remove(current);deletedForecastIds.add(id);sharedSpots=sharedSpots.filter(s=>s.id!==id);backendSpots=backendSpots.filter(s=>s.id!==id);}
+  localSpots=writeLocalSpots(localStorage,localSpots.filter(s=>s.id!==id));runs.delete(id);combineForecastSpots();
+  locationDialog.close();if(spot){selectSpot(spot.id);view('forecast');}else{run=null;view('map');}message('Ubicación de previsión eliminada; el sitio de pesca original se conserva.');
+ }catch(error){$('marine-location-error').textContent=error.message;}finally{button.disabled=false;}
 };
-function serverSpotId(){if(spot?.local)throw new Error('Guarda primero esta ubicación en el backend desde Administración para configurar alertas automáticas.');return spot.id;}
+function serverSpotId(){if(!backendSpots.some(s=>s.id===spot?.id&&s.database==='d1'))throw new Error('La ubicación está en la base compartida. Para alertas automáticas, importa su ficha al backend D1 desde Administración.');return spot.id;}
 
 function view(name){
  if(name!=='map'&&pickingForecast)stopForecastPick();
@@ -120,10 +172,12 @@ async function api(path,{method='GET',data,auth=true}={}){
  const r=await fetch(apiBase.replace(/\/$/,'')+path,{method,cache:'no-store',headers:{...(data?{'Content-Type':'application/json'}:{}),...(auth?{Authorization:`Bearer ${token}`}:{})},...(data?{body:JSON.stringify(data)}:{})});
  const b=await r.json();if(!r.ok)throw new Error(b.error||`HTTP ${r.status}`);return b;
 }
+const forecastStore=new ForecastStore({mode:config.spotStorage||'sheets',api});
+locationForm.elements.shared.required=forecastStore.mode==='sheets';
 async function fetchRun(s,force=false){
  if(!force&&runs.has(s.id)&&fresh(runs.get(s.id),Date.now(),3))return runs.get(s.id);
  let r;
- if(apiBase&&!s.local)r=force&&token?await api('/admin/refresh',{method:'POST',data:{spotId:s.id}}):await api((s.public?'/forecast':'/admin/forecast')+'?spot='+encodeURIComponent(s.id),{auth:!s.public});
+ if(apiBase&&s.database==='d1')r=force&&token?await api('/admin/refresh',{method:'POST',data:{spotId:s.id}}):await api((s.public?'/forecast':'/admin/forecast')+'?spot='+encodeURIComponent(s.id),{auth:!s.public});
  else {r=await getForecast(s);try{r.comparison=await getRegionalWave(s);}catch(e){r.errors.push({kind:'WAM',message:e.message});}}
  runs.set(s.id,r);return r;
 }
@@ -192,6 +246,7 @@ function initThresholds(){
 let vectorLayer;
 function updateMapVectors(r){
  const m=window.spearfishingMap;if(!m)return;vectorLayer?.remove();vectorLayer=L.layerGroup();
+ if(!forecastLayers.enabled||!spot||forecastLayers.hiddenIds.includes(spot.id))return;
  for(const [direction,label,from,offset] of [[r.waveDirection,'Oleaje',true,0],[r.windDirection,'Viento',true,.001],[r.currentDirection,'Corriente',false,-.001]]){
   if(!finite(direction))continue;
   L.marker([spot.lat+offset,spot.lon+.0015],{interactive:false,icon:L.divIcon({className:'marine-vector',html:`<span style="transform:rotate(${direction+(from?180:0)}deg)">↑</span><small>${label} ${format(direction,0)}° ${from?'de':'hacia'}</small>`,iconSize:[90,40]})}).addTo(vectorLayer);
@@ -200,12 +255,12 @@ function updateMapVectors(r){
 }
 function mapMarkers(){
  const m=window.spearfishingMap;if(!m)return;
- window.marineSpotsLayer?.remove();const layer=L.layerGroup();
- for(const s of spots){L.circleMarker([s.lat,s.lon],{radius:10,color:'#43e1bb',fillOpacity:.9}).bindTooltip(esc(s.name)).on('click',()=>{selectSpot(s.id);view('forecast');}).addTo(layer);}
- window.marineSpotsLayer=layer.addTo(m);
+ window.marineSpotsLayer?.remove();forecastMarkers.clear();const layer=L.layerGroup();
+ for(const s of spots){const marker=L.circleMarker([s.lat,s.lon],{radius:8,color:'#43e1bb',fillOpacity:.85}).bindTooltip(esc(s.name)).on('click',()=>{if(pickingForecast)return;selectSpot(s.id);view('forecast');});forecastMarkers.set(s.id,marker);if(!forecastLayers.hiddenIds.includes(s.id))marker.addTo(layer);}
+ window.marineSpotsLayer=layer;if(forecastLayers.enabled)layer.addTo(m);
  if(!window.marineCoastLayer && geography?.features?.length)window.marineCoastLayer=L.geoJSON(geography,{style:{color:'#62f0cf',weight:2,opacity:.7}}).addTo(m);
- const bathymetry=L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms',{layers:'emodnet:mean_atlas_land',format:'image/png',transparent:true,opacity:.6,attribution:'EMODnet Bathymetry (visualización; no análisis numérico)'});
- if(window.marineLayerControl)window.marineLayerControl.remove();window.marineLayerControl=L.control.layers({}, {'Batimetría EMODnet (visual)':bathymetry,'Lugares de previsión':layer},{position:'topright'}).addTo(m);
+ const bathymetry=window.marineBathymetry||L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms',{layers:'emodnet:mean_atlas_land',format:'image/png',transparent:true,opacity:.6,attribution:'EMODnet Bathymetry (visualización; no análisis numérico)'});window.marineBathymetry=bathymetry;
+ if(window.marineLayerControl)window.marineLayerControl.remove();window.marineLayerControl=L.control.layers({}, {'Batimetría EMODnet (visual)':bathymetry},{position:'topright'}).addTo(m);applyForecastVisibility();
 }
 function initForecastMap(){
  const map=window.spearfishingMap;
@@ -242,7 +297,7 @@ async function refreshAdmin(){
  $('marine-subscribers').querySelectorAll('[data-test]').forEach(b=>b.onclick=async()=>{try{const r=await api('/admin/test-email',{method:'POST',data:{subscriberId:b.dataset.test}});message('Proveedor aceptó el mensaje '+r.providerId+'. Confirma recepción en el buzón.');}catch(e){message(e);}});
  $('marine-subscribers').querySelectorAll('[data-unsubscribe]').forEach(b=>b.onclick=async()=>{try{await api('/admin/subscribers',{method:'DELETE',data:{id:b.dataset.unsubscribe}});await refreshAdmin();}catch(e){message(e);}});
  $('marine-alert-state').querySelectorAll('[data-toggle-rule]').forEach(b=>b.onclick=async()=>{try{const r=adminState.rules.find(r=>r.id===b.dataset.toggleRule);await api('/admin/rules',{method:'POST',data:{id:r.id,spotId:r.spot_id,listId:r.list_id,enabled:!r.enabled,...JSON.parse(r.configuration)}});await refreshAdmin();}catch(e){message(e);}});
- serverSpots=adminState.spots;spots=mergeSpots(serverSpots,localSpots);if(!spots.some(s=>s.id===spot?.id))spot=spots[0];if(spot){spot=spots.find(s=>s.id===spot.id);editFields();}renderSpotOptions();
+ backendSpots=adminState.spots.map(s=>({...s,database:'d1'}));combineForecastSpots();if(spot)editFields();
 }
 function formAction(id,path,transform=x=>x){$(id).onsubmit=async e=>{e.preventDefault();try{const data=transform(Object.fromEntries(new FormData(e.target)));await api(path,{method:'POST',data});await refreshAdmin();runs.clear();mapMarkers();if(spot)exposure=spot.localParameters?.sectors?.length?spot.localParameters:exposureSectors(spot,geography);message('Guardado en el servidor.');}catch(err){message(err);}};}
 $('marine-login').onsubmit=async e=>{e.preventDefault();try{const url=new URL($('marine-api').value);if(url.protocol!=='https:'&&!['localhost','127.0.0.1'].includes(url.hostname))throw new Error('HTTPS requerido');apiBase=url.origin;token=$('marine-token').value;$('marine-token').value='';await refreshAdmin();localStorage.setItem('marine.apiBase',apiBase);$('marine-diagnostics').textContent=JSON.stringify(await api('/health',{auth:false}),null,2);message('Sesión administrativa conectada.');}catch(err){token='';message(err);}};
@@ -259,12 +314,13 @@ for(const id of ['marine-date','marine-hours','marine-unit'])$(id).onchange=()=>
 window.addEventListener('resize',()=>charts.forEach(c=>c.resize()));setInterval(()=>{if(run&&!fresh(run))render();},60000);
 async function boot(){
  try{
-  const [s,g]=await Promise.all([fetch('data/spots.json').then(r=>r.json()),fetch('data/coast.geojson').then(r=>r.json())]);spots=s;geography=g;
-  if(apiBase)try{spots=await api('/spots',{auth:false});}catch(e){message(e);}
-  serverSpots=spots;localSpots=readLocalSpots(localStorage);spots=mergeSpots(serverSpots,localSpots);$('marine-api').value=apiBase;renderSpotOptions();
-  spot=spots.find(s=>s.id===new URLSearchParams(location.hash.slice(1)).get('spot'))||spots[0];
+  const [s,g,kml]=await Promise.all([fetch('data/spots.json').then(r=>r.json()),fetch('data/coast.geojson').then(r=>r.json()),fetch('data/forecast-sites.json').then(r=>r.json())]);backendSpots=s.map(s=>({...s,database:null}));geography=g;kmlSources=kml;
+  if(apiBase)try{backendSpots=(await api('/spots',{auth:false})).map(s=>({...s,database:'d1'}));}catch(e){message(e);}
+  localSpots=readLocalSpots(localStorage);$('marine-api').value=apiBase;
+  try{await refreshForecastSpots();}catch(error){$('forecast-database-state').textContent='Base compartida no disponible. Pulsa ↻ para reintentar.';message(error);combineForecastSpots();}
+  spot=spots.find(s=>s.id===new URLSearchParams(location.hash.slice(1)).get('spot'))||spots.find(s=>s.id==='mundaka-pilot')||spots[0];
   exposure=spot?exposureSectors(spot,geography):{sectors:[],method:'Sin ubicación'};if(spot){$('marine-spot').value=spot.id;editFields();}renderSpotOptions();mapMarkers();initThresholds();initForecastMap();
-  const btn=document.createElement('button');btn.className='marine-pilot-button';btn.textContent='◉ Mundaka · ver previsiones';btn.onclick=()=>view('forecast');document.querySelector('.sidebar-header').append(btn);
+  window.addEventListener('focus',()=>{if(!locationDialog.open&&!pickingForecast)refreshForecastSpots().catch(error=>{$('forecast-database-state').textContent='No se pudo actualizar la base compartida.';});});
   if(location.hash.includes('spot='))view('forecast');
  }catch(e){message(e);}
 }

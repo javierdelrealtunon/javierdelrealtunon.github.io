@@ -6,7 +6,7 @@ target=repo/'.pages-release'
 if target.exists():
     raise SystemExit('Output already exists; review or move .pages-release before packaging again.')
 files=subprocess.check_output(['git','ls-files','-z'],cwd=repo).decode().split('\0')
-allowed={'index.html','app.js','photo-patch.js','style.css','manifest.json','sw.js','icon-192.png','icon-512.png','config.js','data/spots.json','data/coast.geojson'}
+allowed={'index.html','app.js','photo-patch.js','style.css','manifest.json','sw.js','icon-192.png','icon-512.png','config.js','data/spots.json','data/coast.geojson','data/forecast-sites.json'}
 count=0
 for item in filter(None,files):
     path=Path(item)
