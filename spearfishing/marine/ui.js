@@ -60,7 +60,7 @@ const addLocationButton=document.createElement('button');addLocationButton.id='m
 const editLocationButton=document.createElement('button');editLocationButton.id='marine-edit-location';editLocationButton.textContent='Editar ubicación';editLocationButton.hidden=true;editLocationButton.onclick=()=>editForecastLocation();
 root.querySelector('.marine-toolbar').append(addLocationButton,editLocationButton);
 const forecastLayerPanel=document.createElement('section');forecastLayerPanel.className='forecast-layer-section';forecastLayerPanel.setAttribute('aria-label','Capas de previsión');
-forecastLayerPanel.innerHTML=`<div class="forecast-layer-heading"><span class="section-label">Previsiones <span id="forecast-layer-count"></span></span><button type="button" id="forecast-list-refresh" aria-label="Actualizar ubicaciones desde la base">↻</button></div><label class="layer-item"><span class="layer-dot" style="background:#43e1bb"></span><span class="layer-name">Ubicaciones de previsión</span><input id="forecast-layer-enabled" type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><label class="forecast-list-switch"><input id="forecast-list-enabled" type="checkbox"> Mostrar listado de previsiones</label><p id="forecast-database-state" role="status">Conectando con la base compartida…</p><div id="forecast-location-list"><label class="forecast-search-label">Buscar ubicación<input id="forecast-location-search" type="search" placeholder="Nombre del sitio…"></label><div id="forecast-location-items"></div></div>`;
+forecastLayerPanel.innerHTML=`<div class="forecast-layer-heading"><span class="section-label">Previsiones <span id="forecast-layer-count"></span></span><button type="button" id="forecast-list-refresh" aria-label="Actualizar ubicaciones desde la base">↻</button></div><label class="layer-item"><span class="map-layer-symbol" aria-hidden="true">${window.MapSymbols.key('forecast')}</span><span class="layer-name">Ubicaciones de previsión</span><input id="forecast-layer-enabled" type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><label class="forecast-list-switch"><input id="forecast-list-enabled" type="checkbox"> Mostrar listado de previsiones</label><p id="forecast-database-state" role="status">Conectando con la base compartida…</p><div id="forecast-location-list"><label class="forecast-search-label">Buscar ubicación<input id="forecast-location-search" type="search" placeholder="Nombre del sitio…"></label><div id="forecast-location-items"></div></div>`;
 document.getElementById('info-panel').before(forecastLayerPanel);
 $('forecast-layer-enabled').checked=forecastLayers.enabled;$('forecast-list-enabled').checked=forecastLayers.listVisible;
 $('forecast-layer-enabled').onchange=event=>{forecastLayers.enabled=event.target.checked;persistForecastLayers();applyForecastVisibility();renderForecastList();};
@@ -99,7 +99,7 @@ function applyForecastVisibility(){
 function renderSpotOptions(){
  $('marine-spot').innerHTML=spots.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}${s.local?' · este navegador':s.public?'':' · privado'}</option>`).join('');
  if(spot&&spots.some(s=>s.id===spot.id))$('marine-spot').value=spot.id;
- editLocationButton.hidden=!spot||(!spot.local&&!spot.database);renderForecastList();
+ editLocationButton.hidden=!spot||(!spot.local&&!spot.database);renderForecastList();for(const [id,marker] of forecastMarkers)marker.setIcon(window.MapSymbols.icon('forecast',{active:id===spot?.id}));
 }
 function resetLocationForm(){
  locationForm.reset();locationForm.elements.id.value='';locationForm.elements.lat.value='';locationForm.elements.lon.value='';
@@ -158,7 +158,7 @@ function view(name){
  if(name!=='map'&&featureEditor.isOpen)featureEditor.cancel();
  if(name!=='map'&&pickingForecast)stopForecastPick();
  root.hidden=name==='map';document.body.classList.toggle('marine-open',name!=='map');
- document.getElementById('map').inert=name!=='map';document.getElementById('sidebar').inert=name!=='map';
+ document.getElementById('map').inert=name!=='map';document.getElementById('sidebar').inert=name!=='map'||(innerWidth<=680&&!document.getElementById('sidebar').classList.contains('open'));
  document.querySelectorAll('[data-marine-view]').forEach(s=>s.hidden=s.dataset.marineView!==name);
  header.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'page':'false'));
  $('marine-title').textContent=({zones:'Zonas de pesca',forecast:'Previsión del lugar',compare:'Elegir la próxima salida',alerts:'Oportunidades y alertas',admin:'Administración'})[name]||'Mapa';
@@ -260,18 +260,18 @@ let vectorLayer;
 function updateMapVectors(r){
  const m=window.spearfishingMap;if(!m)return;vectorLayer?.remove();vectorLayer=L.layerGroup();
  if(!forecastLayers.enabled||!spot||forecastLayers.hiddenIds.includes(spot.id))return;
- for(const [direction,label,from,offset] of [[r.waveDirection,'Oleaje',true,0],[r.windDirection,'Viento',true,.001],[r.currentDirection,'Corriente',false,-.001]]){
+ for(const [direction,label,from,offset,color] of [[r.waveDirection,'Oleaje',true,0,window.MapSymbols.kinds.fishing.color],[r.windDirection,'Viento',true,.001,window.MapSymbols.kinds.forecast.color],[r.currentDirection,'Corriente',false,-.001,window.MapSymbols.kinds.parking.color]]){
   if(!finite(direction))continue;
-  L.marker([spot.lat+offset,spot.lon+.0015],{interactive:false,icon:L.divIcon({className:'marine-vector',html:`<span style="transform:rotate(${direction+(from?180:0)}deg)">↑</span><small>${label} ${format(direction,0)}° ${from?'de':'hacia'}</small>`,iconSize:[90,40]})}).addTo(vectorLayer);
+  L.marker([spot.lat+offset,spot.lon+.0015],{interactive:false,icon:L.divIcon({className:'marine-vector',html:`<span class="map-vector-arrow" style="color:${color};transform:rotate(${direction+(from?180:0)}deg)">${window.MapSymbols.glyph('navigation-2')}</span><small>${label} ${format(direction,0)}° ${from?'de':'hacia'}</small>`,iconSize:[90,40]})}).addTo(vectorLayer);
  }
  vectorLayer.addTo(m);
 }
 function mapMarkers(){
  const m=window.spearfishingMap;if(!m)return;
  window.marineSpotsLayer?.remove();forecastMarkers.clear();const layer=L.layerGroup();
- for(const s of spots){const marker=L.circleMarker([s.lat,s.lon],{radius:8,color:'#43e1bb',fillOpacity:.85}).bindTooltip(esc(s.name)).on('click',()=>{if(pickingForecast)return;selectSpot(s.id);view('forecast');});forecastMarkers.set(s.id,marker);if(!forecastLayers.hiddenIds.includes(s.id))marker.addTo(layer);}
+ for(const s of spots){const marker=L.marker([s.lat,s.lon],{icon:window.MapSymbols.icon('forecast',{active:s.id===spot?.id}),title:'Previsión: '+s.name,alt:'Previsión: '+s.name,riseOnHover:true}).bindTooltip(esc(s.name)+'<br><small>Previsión meteorológica y marina</small>').on('click',()=>{if(pickingForecast)return;selectSpot(s.id);view('forecast');});forecastMarkers.set(s.id,marker);if(!forecastLayers.hiddenIds.includes(s.id))marker.addTo(layer);}
  window.marineSpotsLayer=layer;if(forecastLayers.enabled)layer.addTo(m);
- if(!window.marineCoastLayer && geography?.features?.length)window.marineCoastLayer=L.geoJSON(geography,{style:{color:'#62f0cf',weight:2,opacity:.7}}).addTo(m);
+ if(!window.marineCoastLayer && geography?.features?.length)window.marineCoastLayer=L.geoJSON(geography,{style:{color:'#718595',weight:1.1,opacity:.4,fillOpacity:0,dashArray:'2 5',className:'map-reference-coast'},interactive:false}).addTo(m);
  const bathymetry=window.marineBathymetry||L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms',{layers:'emodnet:mean_atlas_land',format:'image/png',transparent:true,opacity:.6,attribution:'EMODnet Bathymetry (visualización; no análisis numérico)'});window.marineBathymetry=bathymetry;
  if(window.marineLayerControl)window.marineLayerControl.remove();window.marineLayerControl=L.control.layers({}, {'Batimetría EMODnet (visual)':bathymetry},{position:'topright'}).addTo(m);applyForecastVisibility();
 }
@@ -334,7 +334,7 @@ async function boot(){
   spot=spots.find(s=>s.id===new URLSearchParams(location.hash.slice(1)).get('spot'))||spots.find(s=>s.id==='mundaka-pilot')||spots[0];
   exposure=spot?exposureSectors(spot,geography):{sectors:[],method:'Sin ubicación'};if(spot){$('marine-spot').value=spot.id;editFields();}renderSpotOptions();mapMarkers();initThresholds();initForecastMap();
   window.addEventListener('focus',()=>{if(!locationDialog.open&&!pickingForecast)refreshForecastSpots().catch(error=>{$('forecast-database-state').textContent='No se pudo actualizar la base compartida.';});});
-  if(location.hash.includes('spot='))view('forecast');
+  if(location.hash.includes('spot=')||header.querySelector('[data-view="forecast"]').getAttribute('aria-current')==='page')view('forecast');
  }catch(e){message(e);}
 }
 boot();

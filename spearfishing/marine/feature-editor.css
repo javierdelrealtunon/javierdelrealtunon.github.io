@@ -24,8 +24,6 @@
 .geometry-small{color:#93b5c5}
 .geometry-map-control button{background:#183e46;color:#cffff1;border:1px solid #559e8b;border-radius:7px;padding:10px 12px;min-height:40px;cursor:pointer;font:600 12px system-ui}
 .geometry-editor-open .sidebar,.geometry-editor-open #sidebar-toggle,.geometry-editor-open #fab-add,.geometry-editor-open .marine-map-location-control,.geometry-editor-open .geometry-map-control{display:none!important}
-.geometry-vertex-handle span{display:block;width:14px;height:14px;background:#fff3d6;border:2px solid #9a6717;border-radius:50%;box-shadow:0 0 3px #0008;cursor:grab}
-.geometry-point-handle span{display:grid;place-items:center;width:32px;height:32px;border:2px solid #ffd38b;background:#70531f;border-radius:50%;color:#fff;font-size:23px;cursor:grab}
 .geometry-vertex-handle:focus-visible,.geometry-point-handle:focus-visible{outline:3px solid #fff;outline-offset:4px}
 .zone-map-card .zone-card-heading{flex-wrap:wrap;gap:8px}
 .zone-popup-edit{font-size:10px!important;padding:5px 8px!important;min-height:28px!important;margin-bottom:6px}

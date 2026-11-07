@@ -43,9 +43,6 @@
 .zone-nearby-row{display:flex;align-items:center;gap:6px;min-width:0}
 .zone-nearby-row>input{flex-shrink:0;accent-color:#43e1bb}
 .zone-nearby-row>button{flex:1;min-width:0;width:100%}
-.zone-element-cluster{background:none;border:0}
-.zone-element-cluster>span{display:grid;place-items:center;width:26px;height:26px;border:2px dashed var(--point-color);border-radius:50%;background:#102736;color:#f4ffff;font:600 11px system-ui;box-shadow:0 1px 4px #001c}
-.zone-element-cluster>span.selected{border-style:solid;background:var(--point-color);color:#08202a}
 .zone-map-card .leaflet-popup-content-wrapper,.zone-map-card .leaflet-popup-tip{background:#112e3e;color:#dceef5}
 .zone-map-card .leaflet-popup-content{margin:12px;max-height:220px;overflow:auto}
 .zone-map-popup>strong{font-size:12px;display:block;margin-bottom:8px}

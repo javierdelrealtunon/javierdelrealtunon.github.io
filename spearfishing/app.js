@@ -5,14 +5,14 @@ const SHEET_API = 'https://script.google.com/macros/s/AKfycbzLA4Vwx8P92lj7nsKXRr
 
 // ── CONFIG DE TIPOS ──────────────────────────
 const TIPOS = {
-  'Sitio de pesca':   { color: '#5baaff', icon: '🤿' },
-  'Aparcamiento':     { color: '#62f0cf', icon: '🅿️' },
-  'Punto de entrada': { color: '#f06262', icon: '🚩' },
+  'Sitio de pesca': {color:MapSymbols.kinds.fishing.color,icon:MapSymbols.key('fishing')},
+  'Aparcamiento': {color:MapSymbols.kinds.parking.color,icon:MapSymbols.key('parking')},
+  'Punto de entrada': {color:MapSymbols.kinds.entry.color,icon:MapSymbols.key('entry')},
 };
 
 // ── LAYER CONFIG KML ─────────────────────────
 const LAYER_CONFIG = {
-  sitios: { file: 'kml/sitios.kml', color: '#5baaff', label: 'Sitio de pesca', icon: '🤿' },
+  sitios: { file: 'kml/sitios.kml', color:MapSymbols.kinds.fishing.color,label:'Sitio de pesca',icon:MapSymbols.key('fishing') },
 };
 
 // ── MAP INIT ─────────────────────────────────
@@ -125,14 +125,7 @@ const NauticalControl = L.Control.extend({
 new NauticalControl().addTo(map);
 
 // ── MARKER ICON ───────────────────────────────
-function makeIcon(color) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
-    <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21S26 22.75 26 13C26 5.82 20.18 0 13 0z"
-      fill="${color}" fill-opacity="0.92"/>
-    <circle cx="13" cy="13" r="5" fill="white" fill-opacity="0.9"/>
-  </svg>`;
-  return L.divIcon({ html: svg, className: '', iconSize: [26,34], iconAnchor: [13,34], popupAnchor: [0,-36] });
-}
+function makeIcon(type,options={}) {return MapSymbols.icon(type,options);}
 
 // ── SIDEBAR INFO ──────────────────────────────
 function showInfo(cfg, name, desc, sourceRef) {
@@ -221,7 +214,7 @@ function parseKML(xmlDoc, cfg) {
     if (pgs.length) {
       const coords = parseCoords(getText(pgs[0], 'coordinates'));
       if (coords.length >= 3) {
-        const p = L.polygon(coords, { color: cfg.color, weight: 2, opacity: 0.9, fillColor: cfg.color, fillOpacity: 0.25 });
+        const p = L.polygon(coords,{...MapSymbols.areaStyle});
         if (popup) p.bindPopup(popup, { maxWidth: 260 });
         const sourceRef=`${cfg.file}#placemark:${placemarkIndex}`;window.spearfishingEditableFeatures.set(sourceRef,{sourceRef,layer:p,base:{sourceRef,name:name||`Zona ${placemarkIndex+1}`,type:'Sitio de pesca',notes:desc,author:'',coordinateSource:'KML',geometry:{type:'Polygon',coordinates:[coords.map(([lat,lon])=>[lon,lat])]}}});
         p.on('click', () => {const feature=window.spearfishingEditableFeatures.get(sourceRef);showInfo(cfg,feature?.current?.name||name,feature?.current?.notes??desc,sourceRef);});
@@ -560,5 +553,14 @@ document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
 // ── MOBILE SIDEBAR ────────────────────────────
 const sidebar   = document.getElementById('sidebar');
 const toggleBtn = document.getElementById('sidebar-toggle');
-toggleBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
-map.on('click', () => { if (window.innerWidth <= 680) sidebar.classList.remove('open'); });
+function setSidebarOpen(open){
+  sidebar.classList.toggle('open',open);toggleBtn.setAttribute('aria-expanded',String(open));
+  toggleBtn.setAttribute('aria-label',open?'Cerrar panel de capas':'Abrir panel');
+  toggleBtn.querySelector('[data-layer-toggle-label]').textContent=open?'Cerrar':'Capas';
+  toggleBtn.querySelector('.map-layers-glyph').classList.toggle('is-close',open);
+  sidebar.inert=document.body.classList.contains('marine-open')||(innerWidth<=680&&!open);
+}
+toggleBtn.addEventListener('click',()=>setSidebarOpen(!sidebar.classList.contains('open')));
+map.on('click',()=>{if(innerWidth<=680)setSidebarOpen(false);});
+window.addEventListener('resize',()=>{sidebar.inert=document.body.classList.contains('marine-open')||(innerWidth<=680&&!sidebar.classList.contains('open'));});
+setSidebarOpen(false);

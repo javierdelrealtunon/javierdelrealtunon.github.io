@@ -25,6 +25,7 @@ El mapa de cada ficha muestra los 12 elementos más cercanos, además de todos l
 - [Fuentes, licencias, variables y metodología](docs/DATA-AND-METHOD.md)
 - [Contratos API](docs/API.md)
 - [Validación y limitaciones pendientes](docs/VALIDATION.md)
+- [Simbología de los visores y revisión visual](docs/SYMBOLOGY.md)
 
 La plataforma orienta la planificación, no certifica seguridad. No estima Hs local sin calibración, no resuelve las corrientes del canal de Urdaibai y no predice visibilidad submarina. No introducir coordenadas privadas en archivos públicos ni credenciales en JavaScript.
 

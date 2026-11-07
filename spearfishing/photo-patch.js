@@ -3,7 +3,7 @@
   function safePhotoURL(value) {
     try { const u = new URL(value); return u.protocol === 'https:' ? escapeHTML(u.href) : ''; } catch { return ''; }
   }
-  const fotoTipo = { color: '#f0b962', icon: '📷' };
+  const fotoTipo={color:MapSymbols.kinds.photo.color,icon:MapSymbols.key('photo')};
   TIPOS.Foto = fotoTipo;
 
   const tipoInput = document.getElementById('form-tipo');
@@ -18,7 +18,7 @@
 
     if (!draftMarker) {
       draftMarker = L.marker(point, {
-        icon: makeIcon(fotoTipo.color),
+        icon:MapSymbols.icon('editing',{size:38,className:'geometry-point-handle'}),title:'Punto propuesto: arrastra para ajustar',
         draggable: true,
         zIndexOffset: 1000,
       }).addTo(map);
@@ -174,28 +174,7 @@
     return !checkbox || checkbox.checked;
   }
 
-  function makePhotoAwareIcon(color, hasPhoto) {
-    if (!hasPhoto) return makeIcon(color);
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="40" viewBox="0 0 34 40">
-      <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21S26 22.75 26 13C26 5.82 20.18 0 13 0z"
-        fill="${color}" fill-opacity="0.94"/>
-      <circle cx="13" cy="13" r="5" fill="white" fill-opacity="0.9"/>
-      <g transform="translate(15 17)">
-        <circle cx="9" cy="9" r="8" fill="#07111e" stroke="white" stroke-opacity="0.9" stroke-width="1.4"/>
-        <path d="M4.8 7.1h2l.8-1.2h2.8l.8 1.2h2c.7 0 1.1.4 1.1 1.1v4.2c0 .7-.4 1.1-1.1 1.1H4.8c-.7 0-1.1-.4-1.1-1.1V8.2c0-.7.4-1.1 1.1-1.1z" fill="white" fill-opacity="0.92"/>
-        <circle cx="9" cy="10.3" r="1.8" fill="#07111e"/>
-      </g>
-    </svg>`;
-
-    return L.divIcon({
-      html: svg,
-      className: '',
-      iconSize: [34, 40],
-      iconAnchor: [13, 34],
-      popupAnchor: [0, -36],
-    });
-  }
+  function makePhotoAwareIcon(type,hasPhoto){return MapSymbols.icon(type,{photo:hasPhoto});}
 
   function buildPhotoPopup(row, tipo, fotoUrl, fotoThumb) {
     const title = escapeHTML(row.nombre) || '(sin nombre)';
@@ -269,8 +248,9 @@
           const fotoUrl = safePhotoURL(row.foto_url);
           const fotoThumb = safePhotoURL(row.foto_thumb);
           const marker = L.marker([lat, lng], {
-            icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl || fotoThumb)),
+            icon:makePhotoAwareIcon(row.tipo,Boolean(fotoUrl||fotoThumb)),title:row.nombre||row.tipo,alt:(row.nombre||row.tipo)+" · "+row.tipo,riseOnHover:true,
           });
+          marker.bindTooltip(escapeHTML(row.nombre||row.tipo)+'<br><small>'+escapeHTML(row.tipo)+'</small>',{direction:'top'});
           marker.bindPopup(buildPhotoPopup(row, tipo, fotoUrl, fotoThumb), { maxWidth: 280 });
           const id=String(row.registro_id||`legacy-${row.tipo}-${row.nombre}-${lat}-${lng}`),sourceRef=`sheets:${id}`;
           if(['Aparcamiento','Punto de entrada'].includes(row.tipo))window.spearfishingEditableFeatures.set(sourceRef,{sourceRef,layer:marker,container:sheetLayer,row,base:{sourceRef,name:row.nombre||row.tipo,type:row.tipo,notes:row.notas||'',author:row.autor||'',coordinateSource:row.coord_origen||'',geometry:{type:'Point',coordinates:[lng,lat]}}});

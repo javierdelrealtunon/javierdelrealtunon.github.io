@@ -14,7 +14,7 @@ for item in filter(None,files):
         if item not in ('.nojekyll','CNAME'):continue
     if path.parts[0]=='spearfishing':
         rel=path.relative_to('spearfishing').as_posix()
-        if rel not in allowed and not rel.startswith(('marine/','kml/')):continue
+        if rel not in allowed and not rel.startswith(('marine/','kml/','assets/lucide/')):continue
     if path.suffix.lower() in ('.sqlite','.sql','.toml') or 'node_modules' in path.parts:continue
     source=repo/path
     if source.is_file():
