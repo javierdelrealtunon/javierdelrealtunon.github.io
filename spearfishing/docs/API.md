@@ -1,5 +1,15 @@
 # API v1
 
+## Fichas compartidas de zonas
+
+`marine/zones.js` utiliza el mismo contrato de lectura y escritura de Apps Script. Cada guardado añade `tipo: Ficha de zona`, un `registro_id: zone-event-UUID` y notas JSON con `schema: spearfishing.zone.v1`, ID estable de zona, revisión, fecha ISO, nombre, tipo, coordenadas, notas, autor, origen de coordenadas, elementos asociados y fotografías `{id,url,caption}`. El lector aplica la última versión válida sobre la ficha de origen. Las filas originales y el KML se conservan; los eventos de ficha y foto se excluyen de los marcadores heredados. Una versión compartida se muestra en la nueva sección; no reescribe los archivos KML ni los puntos de previsión independientes.
+
+Antes de guardar, se compara la revisión leída con la que se está editando. Si ya cambió, el guardado se rechaza y el formulario se conserva. Esto detecta ediciones previas de otra sesión; el servicio heredado no dispone de una operación atómica de comparación y escritura para garantizar exclusión entre envíos simultáneos. Después de escribir se relee la revisión antes de confirmar éxito.
+
+Las subidas crean `tipo: Fotografía de zona` con `schema: spearfishing.zone-photo.v1`, zona y texto. La imagen JPEG se adjunta mediante el contrato existente POST `action=attach_photo`, `registro_id`, `foto_nombre`, `foto_tipo`, `foto_base64`. Una respuesta opaca no se considera prueba de guardado: se relee la fila hasta encontrar una URL HTTPS. Si no aparece tras los intentos acotados, se informa de que la subida sigue sin verificar. El navegador reduce las imágenes a 1600 px y elimina sus metadatos al convertirlas a JPEG. Límite de entrada: 20 MB; hasta 24 fotografías por ficha. Solo se aceptan enlaces HTTPS sin credenciales y textos de hasta 300 caracteres.
+
+La edición y la subida requieren una confirmación explícita en la ficha de que los cambios se comparten en este visor. No se escriben datos durante la consulta, navegación o cambio de intervalo. Los elementos iniciales se proponen por pertenencia al polígono o por un radio de 1 km para fichas puntuales; después puede guardarse una selección explícita.
+
 ## Adaptador de ubicaciones compartidas
 
 La configuración inicial `spotStorage:'sheets'` utiliza la URL Apps Script ya existente. Lectura: GET sin acción, con respuesta de filas en orden de inserción. Escritura: GET `action=write`, `registro_id=forecast-event-UUID`, `tipo=Ubicación de previsión`, nombre, coordenadas, notas JSON y metadatos de origen. No requiere cambios de esquema en la hoja actual. Se conserva este contrato heredado; el resto de rutas de esta página corresponde al Worker opcional.

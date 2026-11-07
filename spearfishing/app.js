@@ -134,7 +134,7 @@ function makeIcon(color) {
 }
 
 // ── SIDEBAR INFO ──────────────────────────────
-function showInfo(cfg, name, desc) {
+function showInfo(cfg, name, desc, sourceRef) {
   document.getElementById('info-empty').style.display = 'none';
   const content = document.getElementById('info-content');
   content.style.display = 'block';
@@ -146,6 +146,7 @@ function showInfo(cfg, name, desc) {
   const tmp = document.createElement('div');
   tmp.textContent = desc;
   document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
+  if(sourceRef){const button=document.createElement('button');button.className='zone-open-detail';button.textContent='Abrir ficha de zona ↗';button.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:open-zone',{detail:{sourceRef}}));document.getElementById('info-desc').append(button);}
 }
 
 // ── KML PARSER ──────────────────────────────
@@ -178,7 +179,7 @@ function parseKML(xmlDoc, cfg) {
   let placemarks = Array.from(xmlDoc.getElementsByTagNameNS(NS, 'Placemark'));
   if (placemarks.length === 0) placemarks = Array.from(xmlDoc.getElementsByTagName('Placemark'));
 
-  placemarks.forEach(pm => {
+  placemarks.forEach((pm, placemarkIndex) => {
     const name = getText(pm, 'name');
     const desc = getText(pm, 'description');
     const popup = name
@@ -193,7 +194,7 @@ function parseKML(xmlDoc, cfg) {
         const [lat, lng] = coords[0];
         const m = L.marker([lat, lng], { icon: makeIcon(cfg.color) });
         if (popup) m.bindPopup(popup, { maxWidth: 260 });
-        m.on('click', () => showInfo(cfg, name, desc));
+        m.on('click', () => showInfo(cfg, name, desc, `${cfg.file}#placemark:${placemarkIndex}`));
         layer.addLayer(m);
         bounds.push([lat, lng]);
       }
@@ -207,7 +208,7 @@ function parseKML(xmlDoc, cfg) {
       if (coords.length >= 2) {
         const l = L.polyline(coords, { color: cfg.color, weight: 2.5, opacity: 0.85 });
         if (popup) l.bindPopup(popup, { maxWidth: 260 });
-        l.on('click', () => showInfo(cfg, name, desc));
+        l.on('click', () => showInfo(cfg, name, desc, `${cfg.file}#placemark:${placemarkIndex}`));
         layer.addLayer(l);
         coords.forEach(c => bounds.push(c));
       }
@@ -221,7 +222,7 @@ function parseKML(xmlDoc, cfg) {
       if (coords.length >= 3) {
         const p = L.polygon(coords, { color: cfg.color, weight: 2, opacity: 0.9, fillColor: cfg.color, fillOpacity: 0.25 });
         if (popup) p.bindPopup(popup, { maxWidth: 260 });
-        p.on('click', () => showInfo(cfg, name, desc));
+        p.on('click', () => showInfo(cfg, name, desc, `${cfg.file}#placemark:${placemarkIndex}`));
         layer.addLayer(p);
         coords.forEach(c => bounds.push(c));
       }

@@ -14,6 +14,8 @@ Para añadir otro punto: en el mapa pulsar **Añadir ubicación de previsión**,
 
 El panel lateral permite activar la capa completa de previsiones, ocultar/mostrar el listado y activar cada ubicación por separado. Se han creado 36 previsiones: 9 fichas de pesca de Sheets y 27 zonas KML, reutilizando Mundaka. Las preferencias de capas permanecen en cada navegador; los datos están en la base compartida. En Previsiones, **Viento y rachas** abre velocidad, rachas y dirección.
 
+**Zonas de pesca** reúne las 36 fichas, con selector y botones **Anterior / Siguiente**. En consulta muestra una ficha compacta, un mapa centrado en el polígono y sus elementos, fotografías con texto y gráficas reales de oleaje y viento. El intervalo se ajusta de 2 horas a 7 días; las ausencias y la cobertura disponible se mantienen explícitas. El candado desbloquea los campos existentes, la selección de elementos y las aportaciones fotográficas. **Guardar cambios** está siempre visible y se activa al desbloquear; publica y verifica una versión compartida sin modificar las filas ni el KML originales. Los enlaces y textos se guardan con la ficha. **Subir fotografía a la base** usa el servicio existente y solo confirma éxito después de releer una URL de imagen. Se requiere confirmar que se comparten los cambios. Cambiar de ficha con cambios pendientes permite cancelarlo.
+
 La administración, destinatarios, persistencia y cron necesitan desplegar Worker, crear D1 y configurar Resend. Un correo aceptado por API requiere comprobar su recepción; no se ha enviado correo real ni activado producción durante esta implementación.
 
 - [Arquitectura y auditoría](docs/ARCHITECTURE.md)

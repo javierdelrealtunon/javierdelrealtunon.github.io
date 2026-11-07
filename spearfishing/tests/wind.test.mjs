@@ -33,3 +33,8 @@ test('calm wind is data; missing gusts and directions are counted separately',()
  assert.deepEqual(windCoverage([{wind:3,gust:null,windDirection:null},{wind:null,gust:4,windDirection:90}]),{total:2,speed:1,gust:1,direction:1,status:'partial'});
  assert.equal(windCoverage([]).status,'missing');
 });
+
+test('zone forecasts request only wind and wave sources and retain correct partial-source labels',async()=>{
+ const urls=[];const run=await getForecast(spot,{kinds:['wave','weather'],fetcher:async url=>{urls.push(url);return isWeather(url)?new Response('',{status:429}):marine();}});
+ assert.equal(urls.length,2);assert.ok(urls.every(u=>!u.includes('meteofrance_currents')));assert.equal(run.sources.length,1);assert.equal(run.sources[0].kind,'wave');assert.equal(run.errors[0].kind,'weather');
+});

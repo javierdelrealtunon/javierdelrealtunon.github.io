@@ -36,11 +36,12 @@ export function normalize(body,kind,spot,downloadedAt,model) {
   if(!rows.some(r=>Object.entries(r).some(([k,v])=>k!=='time' && finite(v)))) throw new Error('Celda sin datos; posible máscara terrestre');
   return {provider:'Open-Meteo',model,kind,runCycle:null,generatedAt:null,downloadedAt,cell:{lat:body.latitude,lon:body.longitude,distanceKm:distanceKm([spot.lat,spot.lon],[body.latitude,body.longitude]),selection:kind==='weather'?'land':'sea',verifiedWater:null},nativeResolution:kind==='ocean'?'~8 km / 1 h (SST 6 h)':kind==='wave'?'~8 km / 3 h':'best_match: resolución variable; ciclo no publicado',outputResolution:'1 h',temporallyInterpolated:kind==='wave',units:body.hourly_units,rows};
 }
-export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='meteofrance_wave'}={}) {
+export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='meteofrance_wave',kinds=['wave','ocean','weather']}={}) {
   coordinates(spot.lat,spot.lon);
   const downloadedAt=iso(now);
   const specs=[['wave',url('https://marine-api.open-meteo.com/v1/marine',spot,marineVariables,{cell_selection:'sea',models:waveModel}),waveModel],['ocean',url('https://marine-api.open-meteo.com/v1/marine',spot,oceanVariables,{cell_selection:'sea',models:'meteofrance_currents'}),'meteofrance_currents / SMOC'],['weather',url('https://api.open-meteo.com/v1/forecast',spot,weatherVariables,{wind_speed_unit:'ms'}),'best_match']];
-  const results=await Promise.allSettled(specs.map(async ([kind,u,model])=>{
+  const selected=specs.filter(([kind])=>kinds.includes(kind));
+  const results=await Promise.allSettled(selected.map(async ([kind,u,model])=>{
     let body;
     try {body=await jsonFetch(u,fetcher);} catch(error) {
       // One bounded retry for a transient weather failure; never retry quota/4xx errors.
@@ -50,7 +51,7 @@ export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='
     return normalize(body,kind,spot,downloadedAt,model);
   }));
   const sources=[],errors=[];
-  results.forEach((r,i)=>r.status==='fulfilled'?sources.push(r.value):errors.push({kind:specs[i][0],message:r.reason.message}));
+  results.forEach((r,i)=>r.status==='fulfilled'?sources.push(r.value):errors.push({kind:selected[i][0],message:r.reason.message}));
   const weather=sources.find(s=>s.kind==='weather');
   if(weather&&!weather.rows.some(r=>finite(r.wind)))errors.push({kind:'weather',message:'El proveedor no devolvió velocidad de viento; no se interpreta como calma.'});
   if(!sources.length) throw new Error(errors.map(x=>`${x.kind}: ${x.message}`).join('; '));

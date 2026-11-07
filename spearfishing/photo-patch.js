@@ -151,7 +151,7 @@
     if (!Number.isFinite(coordinate)) return null;
 
     const max = axis === 'lat' ? 90 : 180;
-    while (Math.abs(coordinate) > max && Math.abs(coordinate) >= 1000) coordinate /= 10;
+    if (Math.abs(coordinate) > max && Number.isInteger(coordinate) && Math.abs(coordinate) >= 1000) coordinate /= 1e6;
     return Math.abs(coordinate) <= max ? coordinate : null;
   }
 
@@ -240,6 +240,11 @@
       ${row.notas ? `<div>${escapeHTML(row.notas)}</div>` : '<div style="opacity:.7">Sin notas todavía.</div>'}
       ${row.autor ? `<div style="margin-top:10px;font-size:.78rem;opacity:.75">por ${escapeHTML(row.autor)}</div>` : ''}
     `;
+    if(row.tipo==='Sitio de pesca'){
+      const button=document.createElement('button');button.className='zone-open-detail';button.textContent='Abrir ficha de zona ↗';
+      button.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:open-zone',{detail:{recordId:row.registro_id,name:row.nombre,lat:parseSheetCoordinate(row.lat,'lat'),lon:parseSheetCoordinate(row.lng,'lng')}}));
+      document.getElementById('info-desc').append(button);
+    }
   }
 
   loadSheetMarkers = function loadSheetMarkersPatched() {
@@ -251,7 +256,7 @@
         window.dispatchEvent(new CustomEvent('spearfishing:records-loaded',{detail:{rows}}));
         sheetLayer.clearLayers();
         rows.forEach(row => {
-          if(row.tipo==='Ubicación de previsión')return;
+          if(['Ubicación de previsión','Ficha de zona','Fotografía de zona'].includes(row.tipo))return;
           if (!isSheetTipoVisible(row.tipo)) return;
 
           const lat = parseSheetCoordinate(row.lat, 'lat');

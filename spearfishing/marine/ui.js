@@ -7,6 +7,7 @@ import {exposureSectors,localEstimate,waterSide} from './exposure.js';
 import {windCoverage} from './wind.js';
 import {localSpot,readLocalSpots,writeLocalSpots,mergeSpots,nearbySpot} from './locations.js';
 import {ForecastStore,validateForecastSpot} from './forecast-store.js';
+import {createZoneSection} from './zone-ui.js';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=(v,n=2)=>finite(v)?v.toFixed(n):'—';
 const local=(t,opts={dateStyle:'short',timeStyle:'short'})=>new Intl.DateTimeFormat('es-ES',{timeZone:'Europe/Madrid',...opts}).format(new Date(t));
@@ -41,7 +42,9 @@ root.innerHTML=`<div class="marine-wrap"><div class="marine-top"><div><p class="
 <article class="marine-card"><h2>Ficha del lugar de previsión</h2><p>Independiente de puntos y fotografías de Google Sheets. Eliminar esta ficha no borra el KML ni registros originales.</p><form id="marine-edit" class="marine-form"><label>ID estable<input name="id" required pattern="[\\w-]{1,80}"></label><label>Nombre<input name="name" maxlength="160" required></label><label>Latitud<input name="lat" type="number" step="any" min="-90" max="90" required></label><label>Longitud<input name="lon" type="number" step="any" min="-180" max="180" required></label><label>Notas<textarea name="description"></textarea></label><label><input name="public" type="checkbox"> Lugar y coordenadas públicos</label><label>Parámetros locales / sectores manuales (JSON)<textarea name="localParameters" placeholder='{"sectors":[],"method":"manual","validationId":null}'></textarea></label><button>Guardar ficha en servidor</button><button type="button" id="marine-new">Nueva ficha</button><button type="button" id="marine-delete">Eliminar ficha seleccionada</button></form></article></div></section>
 <p class="marine-footer">Datos: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · Météo-France / Copernicus Marine · DWD · <a href="https://www.euskoos.eus/" target="_blank" rel="noopener">EuskOOS / Euskalmet-AZTI</a> · Costa © OpenStreetMap (ODbL). Sin validación observacional local.</p></div>`;
 document.body.append(root);
-const header=document.createElement('header');header.id='marine-nav';header.innerHTML=`<a class="marine-brand" href="#map">◉ <span>SPEARFISHING<small>FORECAST & ALERTS</small></span></a><nav aria-label="Secciones principales">${[['map','Mapa'],['forecast','Previsiones'],['compare','Comparador'],['alerts','Alertas'],['admin','Administración']].map(([id,label])=>`<button data-view="${id}" ${id==='map'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;document.body.prepend(header);
+const header=document.createElement('header');header.id='marine-nav';header.innerHTML=`<a class="marine-brand" href="#map">◉ <span>SPEARFISHING<small>FORECAST & ALERTS</small></span></a><nav aria-label="Secciones principales">${[['map','Mapa'],['zones','Zonas de pesca'],['forecast','Previsiones'],['compare','Comparador'],['alerts','Alertas'],['admin','Administración']].map(([id,label])=>`<button data-view="${id}" ${id==='map'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;document.body.prepend(header);
+const zoneSection=createZoneSection(root);
+window.addEventListener('spearfishing:open-zone',event=>{view('zones');zoneSection.open(event.detail);});
 const locationDialog=document.createElement('dialog');
 locationDialog.className='marine-wrap marine-location-dialog';locationDialog.setAttribute('aria-labelledby','marine-location-title');
 locationDialog.innerHTML=`<h2 id="marine-location-title">Nueva ubicación de previsión</h2><p>Elige el punto en el visor. Se guardará en la base de datos para consultarlo desde otros dispositivos.</p><form id="marine-location-form" class="marine-form"><input name="id" type="hidden"><input name="lat" type="hidden"><input name="lon" type="hidden"><label>Nombre de la ubicación<input name="name" maxlength="160" required placeholder="Ej.: Punta de…"></label><label>Notas<textarea name="description" maxlength="2000" placeholder="Referencia del lugar o acceso"></textarea></label><label><input name="shared" type="checkbox"> Compartir ubicación en este visor</label><p>La base compartida es visible para quienes acceden a este visor. Las ubicaciones privadas requieren el backend autenticado.</p><p id="marine-location-coordinates"></p><p id="marine-location-error" role="alert"></p><button type="button" id="marine-location-pick">Cambiar punto en el mapa</button><button type="submit">Guardar en la base y ver previsión</button><button type="button" id="marine-location-remove" hidden>Eliminar ubicación de previsión</button><button type="button" id="marine-location-cancel">Cancelar</button></form>`;
@@ -151,7 +154,9 @@ function view(name){
  document.getElementById('map').inert=name!=='map';document.getElementById('sidebar').inert=name!=='map';
  document.querySelectorAll('[data-marine-view]').forEach(s=>s.hidden=s.dataset.marineView!==name);
  header.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'page':'false'));
- $('marine-title').textContent=({forecast:'Previsión del lugar',compare:'Elegir la próxima salida',alerts:'Oportunidades y alertas',admin:'Administración'})[name]||'Mapa';
+ $('marine-title').textContent=({zones:'Zonas de pesca',forecast:'Previsión del lugar',compare:'Elegir la próxima salida',alerts:'Oportunidades y alertas',admin:'Administración'})[name]||'Mapa';
+ root.querySelector('.marine-toolbar').hidden=name==='zones';root.querySelector('.marine-notice').hidden=name==='zones';$('marine-status').hidden=name==='zones';$('marine-error').hidden=name==='zones';
+ if(name==='zones')zoneSection.open();
  if(name==='forecast') {if(!run&&!$('marine-refresh').disabled)load();else if(run)setTimeout(()=>charts.forEach(c=>c.resize()),0);}
  if(name==='map') setTimeout(()=>window.spearfishingMap.invalidateSize(),0);
 }

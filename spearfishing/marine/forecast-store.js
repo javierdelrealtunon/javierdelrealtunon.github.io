@@ -2,7 +2,7 @@ import {coordinates,finite} from './core.js';
 
 export const forecastRecordType='Ubicación de previsión';
 const schema='spearfishing.forecast.v1';
-const defaultSheetUrl='https://script.google.com/macros/s/AKfycbwM4miDG1ERYgKh3Sz5yUKWmvzULRhHsJZeCzqbRufDjamiUQiIBQs5zGgSbW8PwrkMqA/exec';
+export const defaultSheetUrl='https://script.google.com/macros/s/AKfycbwM4miDG1ERYgKh3Sz5yUKWmvzULRhHsJZeCzqbRufDjamiUQiIBQs5zGgSbW8PwrkMqA/exec';
 
 export function sheetCoordinate(value,axis){
  if(value==null||String(value).trim()==='')return null;
