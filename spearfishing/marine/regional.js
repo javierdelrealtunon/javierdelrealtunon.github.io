@@ -5,6 +5,9 @@ export async function getRegionalWave(spot,{fetcher=fetch,now=Date.now()}={}){
   const base='https://www.euskoos.eus/erddap/';
   const meta=await jsonFetch(base+'info/EuskalmetWAMBasqueCoast/index.json',fetcher);
   const attr=(name)=>meta.table.rows.find(r=>r[1]==='NC_GLOBAL'&&r[2]===name)?.[4];
+  const bounds=['geospatial_lat_min','geospatial_lat_max','geospatial_lon_min','geospatial_lon_max'].map(name=>Number(attr(name)));
+  if(!bounds.every(finite))throw new Error('WAM: cobertura geográfica no verificable');
+  if(spot.lat<bounds[0]||spot.lat>bounds[1]||spot.lon<bounds[2]||spot.lon>bounds[3])throw new Error('Ubicación fuera de la cobertura regional de WAM EuskOOS.');
   const end=Date.parse(attr('time_coverage_end')),start=Date.parse(attr('time_coverage_start'));
   if(end<now+6*3600000 || start<now-48*3600000 || start>now+6*3600000) throw new Error('WAM sin cobertura actual verificable');
   // Try nearest cell, then progressively offshore cells, preserving chosen coordinates.

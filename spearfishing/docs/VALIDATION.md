@@ -1,5 +1,7 @@
 # Validación de la primera versión
 
+Actualización del 7 de noviembre de 2026: 37 pruebas correctas. Añadida selección manual de ubicaciones sobre el mapa, almacenamiento local privado, edición del punto y comprobación de persistencia tras recargar. El adaptador regional rechaza ubicaciones fuera de su cobertura. El viento dispone de acceso directo, conteo de horas disponibles y un reintento acotado ante fallos transitorios. Las unidades de las gráficas de viento y corriente siguen el selector. Al cambiar de ubicación se retiran los valores de la selección anterior mientras llegan los nuevos datos.
+
 Comprobaciones del 25–26 de octubre de 2026. No se ha activado producción ni enviado correo a destinatarios reales.
 
 ## Evidencia

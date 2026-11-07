@@ -4,7 +4,7 @@ export const oceanVariables=['ocean_current_velocity','ocean_current_direction',
 const weatherVariables=['wind_speed_10m','wind_direction_10m','wind_gusts_10m','precipitation','is_day'];
 export async function jsonFetch(url,fetcher=fetch) {
   const response=await fetcher(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
-  if(!response.ok) throw new Error(`Proveedor HTTP ${response.status}`);
+  if(!response.ok) {const error=new Error(`Proveedor HTTP ${response.status}`);error.retryable=response.status>=500;throw error;}
   const body=await response.json();
   if(body.error) throw new Error(body.reason || 'Error del proveedor');
   return body;
@@ -40,9 +40,19 @@ export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='
   coordinates(spot.lat,spot.lon);
   const downloadedAt=iso(now);
   const specs=[['wave',url('https://marine-api.open-meteo.com/v1/marine',spot,marineVariables,{cell_selection:'sea',models:waveModel}),waveModel],['ocean',url('https://marine-api.open-meteo.com/v1/marine',spot,oceanVariables,{cell_selection:'sea',models:'meteofrance_currents'}),'meteofrance_currents / SMOC'],['weather',url('https://api.open-meteo.com/v1/forecast',spot,weatherVariables,{wind_speed_unit:'ms'}),'best_match']];
-  const results=await Promise.allSettled(specs.map(async ([kind,u,model])=>normalize(await jsonFetch(u,fetcher),kind,spot,downloadedAt,model)));
+  const results=await Promise.allSettled(specs.map(async ([kind,u,model])=>{
+    let body;
+    try {body=await jsonFetch(u,fetcher);} catch(error) {
+      // One bounded retry for a transient weather failure; never retry quota/4xx errors.
+      if(kind!=='weather'||!(error.retryable||error.name==='TypeError'||error.name==='TimeoutError'))throw error;
+      body=await jsonFetch(u,fetcher);
+    }
+    return normalize(body,kind,spot,downloadedAt,model);
+  }));
   const sources=[],errors=[];
   results.forEach((r,i)=>r.status==='fulfilled'?sources.push(r.value):errors.push({kind:specs[i][0],message:r.reason.message}));
+  const weather=sources.find(s=>s.kind==='weather');
+  if(weather&&!weather.rows.some(r=>finite(r.wind)))errors.push({kind:'weather',message:'El proveedor no devolvió velocidad de viento; no se interpreta como calma.'});
   if(!sources.length) throw new Error(errors.map(x=>`${x.kind}: ${x.message}`).join('; '));
   const byTime=new Map();
   for(const source of sources) for(const row of source.rows) byTime.set(row.time,{...byTime.get(row.time),...row});

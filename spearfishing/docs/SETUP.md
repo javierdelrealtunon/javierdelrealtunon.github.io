@@ -66,6 +66,8 @@ Rollback frontend: volver al commit anterior desde GitHub, o restaurar los archi
 
 ## Añadir un lugar / proveedor
 
+Consulta local sin backend: en el visor, **Añadir ubicación de previsión** → tocar el punto → asignar nombre → **Guardar y ver previsión**. La ficha queda únicamente en el almacenamiento de este navegador y aparece en el selector y el comparador. **Editar ubicación local** permite cambiar el nombre o volver a elegir el punto sobre el mapa. No modifica Google Sheets ni publica coordenadas en el repositorio. Para habilitar alertas, guardar la ficha en el servidor mediante el formulario administrativo del párrafo siguiente.
+
 Lugar: Administración → nueva ficha → identificador estable, coordenadas, notas y visibilidad explícita. Verificar el punto en ortofoto y costa antes de usarlo. Sectores manuales: `localParameters.sectors`, objetos con `bearing` (grados), `fetchM`, `classification` y `censored`, acompañados de método y fuente. Sin geometría disponible se muestra incertidumbre. Se pueden conservar en el JSON geometría, profundidad, acceso, restricciones e identificadores originales. No guardar puntos privados en `data/spots.json`.
 
 Proveedor: crear adaptador que devuelva el contrato de `normalize()` (`provider`, `model`, `kind`, `downloadedAt`, celda, resoluciones, unidades, `rows`). Comprobar cobertura, máscara marina, unidades, ausencias, convención angular y fecha de ejecución. Registrar proveedor, probar fixtures etiquetados y comparar con observaciones representativas antes de darle prioridad. No basta con que un catálogo responda HTTP 200.
