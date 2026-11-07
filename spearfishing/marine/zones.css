@@ -40,6 +40,20 @@
 .zone-element-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:145px;overflow:auto}
 .zone-element-list button{text-align:left;font-size:11px;padding:8px 10px}
 .zone-element-list small{display:block;font-size:9px;color:#8caabb;margin-top:4px}
+.zone-nearby-row{display:flex;align-items:center;gap:6px;min-width:0}
+.zone-nearby-row>input{flex-shrink:0;accent-color:#43e1bb}
+.zone-nearby-row>button{flex:1;min-width:0;width:100%}
+.zone-element-cluster{background:none;border:0}
+.zone-element-cluster>span{display:grid;place-items:center;width:26px;height:26px;border:2px dashed var(--point-color);border-radius:50%;background:#102736;color:#f4ffff;font:600 11px system-ui;box-shadow:0 1px 4px #001c}
+.zone-element-cluster>span.selected{border-style:solid;background:var(--point-color);color:#08202a}
+.zone-map-card .leaflet-popup-content-wrapper,.zone-map-card .leaflet-popup-tip{background:#112e3e;color:#dceef5}
+.zone-map-card .leaflet-popup-content{margin:12px;max-height:220px;overflow:auto}
+.zone-map-popup>strong{font-size:12px;display:block;margin-bottom:8px}
+.zone-map-popup label{display:flex;flex-direction:row;align-items:start;gap:8px;margin:9px 0;color:#dceef5;font-size:12px;line-height:1.5}
+.zone-map-popup small{display:block;color:#92b7c9;font-size:10px}
+.zone-map-popup p{font-size:10px;line-height:1.5;margin:8px 0 0}
+.zone-map-popup input{flex-shrink:0;accent-color:#43e1bb;margin-top:2px}
+.zone-map-popup span{overflow-wrap:anywhere}
 .zone-gallery{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,1fr);gap:24px}
 .zone-gallery figure{min-width:0;margin:0}
 .zone-photo-stage{height:330px;display:flex;align-items:center;justify-content:center;background:#091b27;border:1px solid #294757;border-radius:10px;overflow:hidden}

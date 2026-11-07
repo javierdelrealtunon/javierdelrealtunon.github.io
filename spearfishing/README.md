@@ -18,6 +18,8 @@ El panel lateral permite activar la capa completa de previsiones, ocultar/mostra
 
 La administración, destinatarios, persistencia y cron necesitan desplegar Worker, crear D1 y configurar Resend. Un correo aceptado por API requiere comprobar su recepción; no se ha enviado correo real ni activado producción durante esta implementación.
 
+El mapa de cada ficha muestra los 12 elementos más cercanos, además de todos los seleccionados. En zonas KML se calcula la cercanía al polígono. El nombre se lee al pasar el cursor o enfocar un punto; al pulsarlo aparecen las casillas de asignación. Los números agrupan elementos superpuestos. El contorno indica un candidato y el relleno indica selección. Abre el candado, marca los elementos y pulsa **Guardar cambios**. El listado bajo el mapa ofrece las mismas casillas y permite localizar cada elemento. Las asignaciones son independientes por zona: un aparcamiento, acceso o fotografía puede pertenecer a varias zonas.
+
 - [Arquitectura y auditoría](docs/ARCHITECTURE.md)
 - [Configuración, despliegue, copias y rollback](docs/SETUP.md)
 - [Fuentes, licencias, variables y metodología](docs/DATA-AND-METHOD.md)

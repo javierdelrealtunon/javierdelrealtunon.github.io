@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ZoneStore,buildZones,zoneElements,nearbyElements,decodeZoneRows,zoneRecordType,zonePhotoType,zoneForecastRows,validateZone,photoURL} from '../marine/zones.js';
+import {ZoneStore,buildZones,zoneElements,nearbyElements,closestZoneElements,elementDistance,decodeZoneRows,zoneRecordType,zonePhotoType,zoneForecastRows,validateZone,photoURL} from '../marine/zones.js';
 
 const fishing={registro_id:'fish-fixture',nombre:'Zona sintética',tipo:'Sitio de pesca',lat:43321436,lng:-3032386,notas:'Fondo de roca',autor:'Test',foto_url:'https://example.test/original.jpg'};
 const fixture={id:'zone-fixture',name:'Ficha sintética',type:'Sitio de pesca',lat:43.3,lon:-3,notes:'Notas',author:'Test',coordinateSource:'manual',elementIds:['fish-fixture'],photos:[{id:'photo-fixture',url:'https://example.test/photo.jpg',caption:'Acceso'}]};
@@ -48,4 +48,16 @@ test('forecast windows cover exactly 2 hours or 7 days with boundary points and 
 });
 test('zone validation rejects unsafe images, duplicate photo IDs and invalid coordinates',()=>{
  assert.equal(photoURL('javascript:alert(1)'),'');assert.equal(photoURL('https://user:pass@example.test/'),'');assert.throws(()=>validateZone({...fixture,lat:91}));assert.throws(()=>validateZone({...fixture,photos:[fixture.photos[0],fixture.photos[0]]}));assert.throws(()=>validateZone({...fixture,photos:[{...fixture.photos[0],url:'http://example.test/'}]}));
+});
+
+test('map discovers nearby unassigned elements while retaining distant selections without assigning them',()=>{
+ const zone={lat:43,lon:-3,ring:[]},elements=[{id:'far-selected',lat:44,lon:-3},{id:'next',lat:43.02,lon:-3},{id:'nearest',lat:43.001,lon:-3},{id:'outside-limit',lat:43.5,lon:-3}],selected=new Set(['far-selected']);
+ const shown=closestZoneElements(zone,elements,selected,2);assert.deepEqual(shown.map(e=>e.id),['nearest','next','far-selected']);assert.deepEqual([...selected],['far-selected']);assert.ok(shown[0].distance<shown[1].distance);assert.equal(elements[0].distance,undefined);
+ const polygon={lat:43.5,lon:-3.5,ring:[[43,-4],[44,-4],[44,-3],[43,-3]]};assert.equal(elementDistance(polygon,{lat:43.1,lon:-3.01}),0);assert.ok(elementDistance(polygon,{lat:43.5,lon:-2.999})<.1);
+});
+test('one parking element can serve several zones and unassigning it from one preserves the others',async()=>{
+ const db=database(),store=new ZoneStore({fetcher:db.fetcher});
+ const a={...fixture,id:'zone-a',elementIds:['shared-parking']},b={...fixture,id:'zone-b',elementIds:['shared-parking']};
+ await store.save(a,{publicConsent:true});let data=await store.save(b,{publicConsent:true});const savedA=data.records.get(a.id);
+ await store.save({...savedA,elementIds:[]},{publicConsent:true,baseRevision:savedA.revision});data=await new ZoneStore({fetcher:db.fetcher}).load();assert.deepEqual(data.records.get(a.id).elementIds,[]);assert.deepEqual(data.records.get(b.id).elementIds,['shared-parking']);
 });

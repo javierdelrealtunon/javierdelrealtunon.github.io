@@ -14,6 +14,22 @@ export function insideRing(lat,lon,ring){let inside=false;for(let i=0,j=ring.len
  const [y,x]=ring[i],[py,px]=ring[j];if((y>lat)!==(py>lat)&&lon<(px-x)*(lat-y)/(py-y)+x)inside=!inside;
 }return inside;}
 export function nearbyElements(zone,elements){return elements.filter(e=>e.id===zone.sourceRecordId||(zone.ring?.length?insideRing(e.lat,e.lon,zone.ring):distanceKm([zone.lat,zone.lon],[e.lat,e.lon])<=1));}
+export function elementDistance(zone,element){
+ if(zone.ring?.length&&insideRing(element.lat,element.lon,zone.ring))return 0;
+ let distance=distanceKm([zone.lat,zone.lon],[element.lat,element.lon]);
+ const scale=Math.cos(element.lat*Math.PI/180),ring=zone.ring||[];
+ for(let i=0;i<ring.length;i++){
+  const a=ring[i],b=ring[(i+1)%ring.length],x=(b[1]-a[1])*scale,y=b[0]-a[0],den=x*x+y*y;
+  const t=den?Math.max(0,Math.min(1,((element.lon-a[1])*scale*x+(element.lat-a[0])*y)/den)):0;
+  distance=Math.min(distance,distanceKm([element.lat,element.lon],[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]));
+ }
+ return distance;
+}
+// Discovery does not assign anything. Selected elements remain visible even when far away.
+export function closestZoneElements(zone,elements,selectedIds=new Set(),limit=12){
+ const ranked=elements.map(element=>({...element,distance:elementDistance(zone,element)})).sort((a,b)=>a.distance-b.distance||a.id.localeCompare(b.id));
+ const nearest=new Set(ranked.slice(0,limit).map(e=>e.id));return ranked.filter(e=>nearest.has(e.id)||selectedIds.has(e.id));
+}
 export function validateZone(input){
  coordinates(input.lat,input.lon);
  const text=(key,max,required=false)=>{const s=String(input[key]??'').trim();if(s.length>max||(required&&!s))throw Error(`Campo ${key} inválido (máximo ${max} caracteres).`);return s;};

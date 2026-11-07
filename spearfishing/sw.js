@@ -1,5 +1,5 @@
 // Only explicit same-origin shell files may enter this cache. APIs always use network.
-const CACHE='spearfishing-shell-v8';
+const CACHE='spearfishing-shell-v9';
 const ROOT=new URL('./',self.location).pathname;
 const FILES=['','index.html','app.js','photo-patch.js','style.css','marine/marine.css','marine/zones.css','marine/ui.js','marine/zone-ui.js','marine/zones.js','marine/core.js','marine/providers.js','marine/regional.js','marine/exposure.js','marine/conditions.js','marine/wind.js','marine/locations.js','marine/forecast-store.js','marine/fishing-sites.js','config.js','manifest.json','icon-192.png','icon-512.png','kml/sitios.kml','data/spots.json','data/coast.geojson','data/forecast-sites.json'].map(p=>ROOT+p);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
