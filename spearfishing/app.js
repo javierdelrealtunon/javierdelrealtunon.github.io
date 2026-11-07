@@ -43,6 +43,7 @@ const BASEMAPS = {
 let activeBasemap = 'osm';
 BASEMAPS.osm.layer.addTo(map);
 window.spearfishingMap = map;
+window.spearfishingEditableFeatures=new Map();
 
 const BasemapControl = L.Control.extend({
   options: { position: 'bottomright' },
@@ -146,7 +147,7 @@ function showInfo(cfg, name, desc, sourceRef) {
   const tmp = document.createElement('div');
   tmp.textContent = desc;
   document.getElementById('info-desc').textContent = tmp.textContent?.trim() || '';
-  if(sourceRef){const button=document.createElement('button');button.className='zone-open-detail';button.textContent='Abrir ficha de zona ↗';button.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:open-zone',{detail:{sourceRef}}));document.getElementById('info-desc').append(button);}
+  if(sourceRef){const button=document.createElement('button');button.className='zone-open-detail';button.textContent='Abrir ficha de zona ↗';button.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:open-zone',{detail:{sourceRef}}));document.getElementById('info-desc').append(button);const edit=document.createElement('button');edit.className='zone-open-detail';edit.textContent='✎ Editar polígono en el visor';edit.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:edit-feature',{detail:{sourceRef}}));document.getElementById('info-desc').append(edit);}
 }
 
 // ── KML PARSER ──────────────────────────────
@@ -222,7 +223,8 @@ function parseKML(xmlDoc, cfg) {
       if (coords.length >= 3) {
         const p = L.polygon(coords, { color: cfg.color, weight: 2, opacity: 0.9, fillColor: cfg.color, fillOpacity: 0.25 });
         if (popup) p.bindPopup(popup, { maxWidth: 260 });
-        p.on('click', () => showInfo(cfg, name, desc, `${cfg.file}#placemark:${placemarkIndex}`));
+        const sourceRef=`${cfg.file}#placemark:${placemarkIndex}`;window.spearfishingEditableFeatures.set(sourceRef,{sourceRef,layer:p,base:{sourceRef,name:name||`Zona ${placemarkIndex+1}`,type:'Sitio de pesca',notes:desc,author:'',coordinateSource:'KML',geometry:{type:'Polygon',coordinates:[coords.map(([lat,lon])=>[lon,lat])]}}});
+        p.on('click', () => {const feature=window.spearfishingEditableFeatures.get(sourceRef);showInfo(cfg,feature?.current?.name||name,feature?.current?.notes??desc,sourceRef);});
         layer.addLayer(p);
         coords.forEach(c => bounds.push(c));
       }
@@ -250,6 +252,7 @@ keys.forEach(key => {
       const { layer, bounds } = parseKML(xmlDoc, cfg);
       leafletLayers[key] = layer;
       layer.addTo(map);
+      window.dispatchEvent(new CustomEvent('spearfishing:features-loaded'));
       bounds.forEach(b => allBounds.push(b));
     })
     .catch(err => console.error(`[kml] ${cfg.file}:`, err.message))

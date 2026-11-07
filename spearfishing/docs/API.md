@@ -1,5 +1,15 @@
 # API v1
 
+## Edición geográfica compartida
+
+`FeatureStore` añade eventos `tipo: Edición de elemento`, con `schema: spearfishing.feature.v1`, referencia estable `sourceRef` al punto original de Sheets o placemark KML, nombre, tipo, notas, autor, origen, geometría GeoJSON, revisión y fecha. Los puntos editables son Aparcamiento y Punto de entrada; los polígonos conservan el tipo Sitio de pesca. Se admiten contornos simples cerrados de 3 a 1000 vértices, sin cruces ni vértices repetidos. El transporte heredado limita la URL codificada a 28 000 caracteres; un exceso devuelve un error explícito sin escribir.
+
+Las ediciones se aplican al mapa principal, a los elementos próximos y al contorno mostrado en las fichas. El identificador original permanece aunque cambien nombre y coordenadas, incluidas las filas heredadas sin registro_id. Las asignaciones a varias zonas no se reescriben. El campo `zoneRevision` conserva la relación con los textos de la ficha usados al abrir el editor; una edición posterior de esa ficha conserva sus textos y mantiene el contorno actualizado. Las filas y archivos KML originales permanecen intactos. Como las fichas, el guardado comprueba la revisión y verifica la relectura; Apps Script no ofrece comparación y escritura atómicas.
+
+## Variables meteorológicas adicionales
+
+`airTemp` y `sst` se normalizan a °C; `rain` es precipitación total de la hora anterior en mm y `pressure` es presión reducida al nivel medio del mar en hPa. Se solicitan unidades explícitas para meteorología, se convierten unidades equivalentes conocidas y las ausencias se conservan como null. Las fichas piden una fuente SST independiente con solo temperatura superficial; las previsiones generales reutilizan la fuente oceánica. `variablesVersion:2` invalida cachés de pronósticos anteriores que no incluían estos campos. D1 almacena airTemp/sst como degC, rain como mm y pressure como hPa. No se añaden automáticamente estos campos a los criterios de favorabilidad existentes.
+
 ## Fichas compartidas de zonas
 
 `marine/zones.js` utiliza el mismo contrato de lectura y escritura de Apps Script. Cada guardado añade `tipo: Ficha de zona`, un `registro_id: zone-event-UUID` y notas JSON con `schema: spearfishing.zone.v1`, ID estable de zona, revisión, fecha ISO, nombre, tipo, coordenadas, notas, autor, origen de coordenadas, elementos asociados y fotografías `{id,url,caption}`. El lector aplica la última versión válida sobre la ficha de origen. Las filas originales y el KML se conservan; los eventos de ficha y foto se excluyen de los marcadores heredados. Una versión compartida se muestra en la nueva sección; no reescribe los archivos KML ni los puntos de previsión independientes.

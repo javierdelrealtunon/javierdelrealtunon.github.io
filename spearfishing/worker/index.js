@@ -1,4 +1,4 @@
-import {getForecast,providerRegistry} from '../marine/providers.js';
+import {getForecast,providerRegistry,forecastVersion} from '../marine/providers.js';
 import {getRegionalWave} from '../marine/regional.js';
 import {validateThresholds,defaults,assess} from '../marine/conditions.js';
 import {alertDecision} from '../marine/alerts.js';
@@ -27,15 +27,15 @@ export async function ensurePilot(env){
 }
 async function forecast(env,spot,force=false){
  const last=await query(env,'SELECT * FROM forecast_runs WHERE spot_id=? ORDER BY downloaded_at DESC LIMIT 1',spot.id).first();
- if(!force && last && Date.parse(last.downloaded_at)>Date.now()-3*3600000){const run=JSON.parse(last.payload);if(fresh(run))return run;}
+ if(!force && last && Date.parse(last.downloaded_at)>Date.now()-3*3600000){const run=JSON.parse(last.payload);if(fresh(run)&&run.variablesVersion===forecastVersion)return run;}
  const run=await getForecast(spot);
  try{const regional=await getRegionalWave(spot);run.comparison=regional;run.notes.push('Comparación WAM en tiempos nativos; no fusionada con la serie Open-Meteo.');}catch(e){run.errors.push({kind:'regional-wave',message:e.message});}
  const id=uid();await query(env,'INSERT INTO forecast_runs VALUES(?,?,?,?,?)',id,spot.id,run.downloadedAt,new Date(Date.parse(run.downloadedAt)+6*3600000).toISOString(),JSON.stringify(run)).run();
  await query(env,'INSERT INTO forecast_quality VALUES(?,?)',id,JSON.stringify({quality:run.quality,errors:run.errors})).run();
- const groups={wave:['hs','tm','tp','waveDirection','windWave','windWaveDirection','windWavePeriod','swell','swellDirection','swellPeriod','swellPeakPeriod','secondarySwell','secondarySwellDirection','secondarySwellPeriod'],weather:['wind','gust','windDirection','rain','day'],ocean:['current','currentDirection','level','sst','u','v']};
+ const groups={wave:['hs','tm','tp','waveDirection','windWave','windWaveDirection','windWavePeriod','swell','swellDirection','swellPeriod','swellPeakPeriod','secondarySwell','secondarySwellDirection','secondarySwellPeriod'],weather:['wind','gust','windDirection','rain','day','airTemp','pressure'],ocean:['current','currentDirection','level','sst','u','v']};
  for(const source of run.sources){
   const fields=groups[source.kind];
-  await query(env,`INSERT INTO forecast_values SELECT ?,json_extract(r.value,'$.time'),v.key,CASE WHEN v.type IN ('integer','real') THEN v.value ELSE NULL END,CASE WHEN v.key IN ('wind','gust','current','u','v') THEN 'm/s' WHEN v.key LIKE '%Direction' THEN 'degree' WHEN v.key IN ('tm','tp','windWavePeriod','swellPeriod','swellPeakPeriod','secondarySwellPeriod') THEN 's' WHEN v.key='sst' THEN 'degC' WHEN v.key='day' THEN 'boolean' WHEN v.key='rain' THEN 'mm' ELSE 'm' END,? FROM json_each(?,'$.rows') r,json_each(r.value) v WHERE v.key IN (SELECT value FROM json_each(?))`,id,source.provider+' / '+source.model,JSON.stringify(run),JSON.stringify(fields)).run();
+  await query(env,`INSERT INTO forecast_values SELECT ?,json_extract(r.value,'$.time'),v.key,CASE WHEN v.type IN ('integer','real') THEN v.value ELSE NULL END,CASE WHEN v.key IN ('wind','gust','current','u','v') THEN 'm/s' WHEN v.key LIKE '%Direction' THEN 'degree' WHEN v.key IN ('tm','tp','windWavePeriod','swellPeriod','swellPeakPeriod','secondarySwellPeriod') THEN 's' WHEN v.key IN ('sst','airTemp') THEN 'degC' WHEN v.key='pressure' THEN 'hPa' WHEN v.key='day' THEN 'boolean' WHEN v.key='rain' THEN 'mm' ELSE 'm' END,? FROM json_each(?,'$.rows') r,json_each(r.value) v WHERE v.key IN (SELECT value FROM json_each(?))`,id,source.provider+' / '+source.model,JSON.stringify(run),JSON.stringify(fields)).run();
  }
  await query(env,`INSERT INTO local_estimates SELECT ?,json_extract(value,'$.time'),'regional-only',json_object('regionalHs',json_extract(value,'$.hs'),'localHs',NULL,'calibrated',0) FROM json_each(?,'$.rows')`,id,JSON.stringify(run)).run();
  // Retain seven days. Full normalized payload carries per-source provenance.

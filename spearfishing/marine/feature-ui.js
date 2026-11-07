@@ -1,0 +1,82 @@
+import {FeatureStore} from './feature-store.js';
+import {validateGeometry,closestSegment} from './geometry.js';
+import {decodeZoneRows} from './zones.js';
+const copy=value=>structuredClone(value);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function createFeatureEditor(){
+ const dialog=document.createElement('dialog');dialog.id='geometry-dialog';dialog.className='marine-wrap geometry-dialog';dialog.setAttribute('aria-labelledby','geometry-title');dialog.setAttribute('aria-modal','false');
+ dialog.innerHTML=`<div class="geometry-heading"><h2 id="geometry-title">Editar en el visor</h2><button type="button" id="geometry-close" aria-label="Cerrar editor">×</button></div>
+ <div id="geometry-chooser"><label>Elemento<select id="geometry-target"></select></label><button type="button" id="geometry-start">Editar seleccionado</button></div>
+ <form id="geometry-form" hidden><fieldset id="geometry-fields"><label>Nombre<input name="name" maxlength="160" required></label><label>Tipo<select name="type"><option>Aparcamiento</option><option>Punto de entrada</option><option>Sitio de pesca</option></select></label>
+ <div id="geometry-point-fields" class="geometry-coordinates"><label>Latitud<input name="lat" type="number" min="-90" max="90" step="any" required></label><label>Longitud<input name="lon" type="number" min="-180" max="180" step="any" required></label></div>
+ <p id="geometry-instructions"></p><div id="geometry-tools"><button type="button" data-geometry-mode="drag">Arrastrar</button><button type="button" data-geometry-mode="place">Situar con un clic</button><button type="button" data-geometry-mode="add">＋ Vértice</button><button type="button" data-geometry-mode="remove">− Vértice</button><button type="button" id="geometry-undo">Deshacer geometría</button></div>
+ <p id="geometry-shape-state" role="status"></p><label>Notas<textarea name="notes" maxlength="2000" rows="2"></textarea></label><div class="geometry-coordinates"><label>Autor<input name="author" maxlength="160"></label><label>Origen de coordenadas<input name="coordinateSource" maxlength="160"></label></div>
+ <label class="geometry-consent"><input id="geometry-share" type="checkbox" required> Compartir esta edición en la base del visor.</label><p class="geometry-small">Los cambios se verán desde otros dispositivos. Las asignaciones a zonas se conservan.</p></fieldset>
+ <div class="geometry-actions"><button id="geometry-save" type="submit">Guardar cambios</button><button id="geometry-cancel" type="button">Cancelar edición</button></div></form><p id="geometry-status" role="status" aria-live="polite"></p>`;
+ document.body.append(dialog);
+ const result=document.createElement('div');result.id='geometry-result';result.hidden=true;result.setAttribute('role','status');const resultText=document.createElement('span'),dismissResult=document.createElement('button');dismissResult.type='button';dismissResult.textContent='×';dismissResult.setAttribute('aria-label','Cerrar confirmación');dismissResult.onclick=()=>result.hidden=true;result.append(resultText,dismissResult);document.body.append(result);
+ const discard=document.createElement('dialog');discard.className='marine-wrap marine-location-dialog';discard.id='geometry-discard-dialog';discard.setAttribute('aria-labelledby','geometry-discard-title');discard.innerHTML='<h2 id="geometry-discard-title">Cambios sin guardar</h2><p>¿Quieres descartar los cambios del elemento y cerrar su edición?</p><div class="geometry-actions"><button id="geometry-keep" type="button">Seguir editando</button><button id="geometry-discard" type="button">Descartar y cerrar</button></div>';document.body.append(discard);
+ const $=id=>dialog.querySelector(`#${id}`),form=$('geometry-form'),map=window.spearfishingMap,store=new FeatureStore(),registry=window.spearfishingEditableFeatures;
+ let records=new Map(),zoneProperties=new Map(),active=null,draft=null,preview=null,outline=null,history=[],mode='drag',dirty=false,busy=false,originalVisible=false,initialized=false,valid=false,openTicket=0;
+ const templates=fetch('data/forecast-sites.json').then(r=>r.ok?r.json():[]).catch(()=>[]);
+ const status=(message,error=false)=>{$('geometry-status').textContent=message;$('geometry-status').classList.toggle('marine-warning',error);};
+ function targets(){const old=$('geometry-target').value;$('geometry-target').innerHTML=[...registry.values()].map(entry=>{const f=entry.current||entry.base;return `<option value="${esc(entry.sourceRef)}">${esc(f.name)} · ${esc(f.geometry.type==='Polygon'?'Polígono':f.type)}</option>`;}).join('');if(registry.has(old))$('geometry-target').value=old;}
+ function apply(){for(const entry of registry.values()){
+  if(active?.sourceRef===entry.sourceRef)continue;const feature=records.get(entry.sourceRef)||entry.base;entry.current=copy(feature);const zone=zoneProperties.get(entry.sourceRef);if(zone){if(feature.zoneRevision!==zone.revision)for(const key of ['name','notes','author','coordinateSource'])entry.current[key]=zone[key];entry.current.zoneRevision=zone.revision;}
+  if(feature.geometry.type==='Point'){const [lon,lat]=feature.geometry.coordinates;entry.layer.setLatLng([lat,lon]);if(records.has(entry.sourceRef)&&entry.container){const name=feature.type==='Aparcamiento'?'parking':'entrada',checkbox=document.querySelector('#layer-list input[data-layer="'+name+'"]');if(!checkbox||checkbox.checked)entry.container.addLayer(entry.layer);else entry.container.removeLayer(entry.layer);}if(feature.type!==entry.base.type&&window.makeIcon)entry.layer.setIcon(window.makeIcon(feature.type==='Aparcamiento'?'#62f0cf':'#f06262'));}
+  else entry.layer.setLatLngs(feature.geometry.coordinates.map(ring=>ring.map(([lon,lat])=>[lat,lon])));
+  if(records.has(entry.sourceRef)||zone){const display=entry.current,content=document.createElement('div'),heading=document.createElement('strong'),notes=document.createElement('p'),label=document.createElement('span');heading.textContent=display.name;notes.textContent=display.notes;label.textContent=display.name;content.append(heading,notes);entry.layer.bindPopup(content);entry.layer.bindTooltip(label);}
+ }targets();}
+ async function refresh(){if(active)return;try{const [data,sites]=await Promise.all([store.load(),templates]);records=data.records;const zones=decodeZoneRows(data.rows).records;zoneProperties=new Map(sites.flatMap(site=>zones.has(site.id)?[[site.sourceRefs[0],zones.get(site.id)]]:[]));initialized=true;apply();return data;}catch(e){status(e.message,true);}}
+ const ready=refresh();window.addEventListener('spearfishing:features-loaded',apply);window.addEventListener('focus',()=>{if(!dialog.open)refresh();});
+ function setBusy(value){busy=value;$('geometry-fields').disabled=value;for(const id of ['geometry-close','geometry-cancel'])$(id).disabled=value;$('geometry-save').disabled=value||!valid;$('geometry-save').textContent=value?'Guardando…':'Guardar cambios';}
+ function remember(){history.push(copy(draft.geometry));if(history.length>30)history.shift();dirty=true;}
+ function updateCoordinates(){if(draft.geometry.type==='Point'){const [lon,lat]=draft.geometry.coordinates;form.elements.lat.value=lat.toFixed(7);form.elements.lon.value=lon.toFixed(7);}}
+ function shapeState(){try{validateGeometry(draft.geometry);valid=true;$('geometry-shape-state').textContent=draft.geometry.type==='Point'?'Arrastra el marcador o escribe sus coordenadas.':`${draft.geometry.coordinates[0].length-1} vértices · ${preview.getLayers().filter(layer=>layer instanceof L.Marker).length} tiradores visibles. Acerca el mapa para ajustar.`;$('geometry-shape-state').classList.remove('marine-warning');}catch(e){valid=false;$('geometry-shape-state').textContent=e.message;$('geometry-shape-state').classList.add('marine-warning');}
+  $('geometry-save').disabled=busy||!valid;$('geometry-undo').disabled=!history.length;outline?.setStyle({color:valid?'#ffce69':'#ff7777'});
+ }
+ function setMode(value){mode=value;map.getContainer().style.cursor=['place','add'].includes(mode)?'crosshair':'';dialog.querySelectorAll('[data-geometry-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.geometryMode===mode)));}
+ function renderGeometry(){if(!active)return;preview.clearLayers();outline=null;updateCoordinates();
+  if(draft.geometry.type==='Point'){
+   const [lon,lat]=draft.geometry.coordinates,marker=L.marker([lat,lon],{draggable:true,icon:L.divIcon({className:'geometry-point-handle',html:'<span>↔</span>',iconSize:[32,32],iconAnchor:[16,16]})}).addTo(preview);
+   marker.bindTooltip('Arrastra para mover el punto');marker.on('dragstart',remember);marker.on('drag',()=>{const p=marker.getLatLng();draft.geometry.coordinates=[p.lng,p.lat];updateCoordinates();});marker.on('dragend',shapeState);
+  }else{
+   const ring=draft.geometry.coordinates[0];outline=L.polygon(ring.map(([lon,lat])=>[lat,lon]),{color:'#ffce69',weight:3,fillOpacity:.12}).addTo(preview);
+   const indices=ring.slice(0,-1).map((_,i)=>i),visible=indices.filter(i=>map.getBounds().contains([ring[i][1],ring[i][0]])),step=Math.max(1,Math.ceil(visible.length/(innerWidth<=800?45:120)));
+   for(const i of visible.filter((_,n)=>n%step===0)){
+    const marker=L.marker([ring[i][1],ring[i][0]],{draggable:mode!=='remove',icon:L.divIcon({className:'geometry-vertex-handle',html:'<span></span>',iconSize:[14,14],iconAnchor:[7,7]})}).bindTooltip(`Vértice ${i+1}`).addTo(preview);
+    marker.on('dragstart',remember);marker.on('drag',()=>{const p=marker.getLatLng();ring[i]=[p.lng,p.lat];if(i===0)ring[ring.length-1]=[...ring[0]];outline.setLatLngs(ring.map(([lon,lat])=>[lat,lon]));});marker.on('dragend',()=>{shapeState();renderGeometry();});
+    marker.on('click',()=>{if(mode!=='remove')return;if(ring.length<=4){status('El polígono necesita al menos tres vértices.',true);return;}remember();ring.splice(i,1);ring[ring.length-1]=[...ring[0]];renderGeometry();});
+   }
+  }shapeState();
+ }
+ function fit(){if(!active)return;map.invalidateSize();const mobile=innerWidth<=800,padding=mobile?{paddingTopLeft:[24,24],paddingBottomRight:[24,Math.min(dialog.offsetHeight+24,map.getSize().y-140)]}:{paddingTopLeft:[24,24],paddingBottomRight:[dialog.offsetWidth+40,24]};
+  if(draft.geometry.type==='Point'){const [lon,lat]=draft.geometry.coordinates;map.fitBounds([[lat-.001,lon-.001],[lat+.001,lon+.001]],{...padding,maxZoom:17,animate:false});}else map.fitBounds(L.latLngBounds(draft.geometry.coordinates[0].map(([lon,lat])=>[lat,lon])),{...padding,maxZoom:17,animate:false});renderGeometry();
+ }
+ function begin(ref){const entry=registry.get(ref);if(!entry){status('El elemento aún no está cargado. Actualiza el visor y vuelve a seleccionarlo.',true);return;}
+  active=entry;draft=copy(entry.current||entry.base);history=[];dirty=false;originalVisible=map.hasLayer(entry.layer);entry.layer.remove();preview=L.featureGroup().addTo(map);$('geometry-chooser').hidden=true;form.hidden=false;$('geometry-title').textContent=draft.geometry.type==='Point'?'Editar punto':'Editar polígono';
+  for(const key of ['name','type','notes','author','coordinateSource'])form.elements[key].value=draft[key]||'';
+  const polygon=draft.geometry.type==='Polygon';form.elements.type.disabled=polygon;$('geometry-point-fields').hidden=polygon;for(const key of ['lat','lon'])form.elements[key].disabled=polygon;
+  for(const b of dialog.querySelectorAll('[data-geometry-mode]'))b.hidden=polygon?b.dataset.geometryMode==='place':['add','remove'].includes(b.dataset.geometryMode);
+  $('geometry-share').checked=false;$('geometry-instructions').textContent=polygon?'Arrastra los vértices. Con ＋ pulsa el mapa para insertar uno; con − pulsa un vértice para retirarlo.':'Mueve el marcador arrastrándolo o activa «Situar con un clic» y toca el mapa.';status('Edición en borrador. Guarda para compartir o cancela para restaurar.');setMode('drag');requestAnimationFrame(fit);
+ }
+ async function open(ref){window.dispatchEvent(new CustomEvent('spearfishing:geometry-opening'));if(active){dialog.focus();status('Termina esta edición: guarda o cancela antes de abrir otro elemento.',true);return;}const ticket=++openTicket;$('geometry-start').disabled=true;$('geometry-target').disabled=true;result.hidden=true;document.body.classList.add('geometry-editor-open');if(!dialog.open)dialog.show();$('geometry-chooser').hidden=false;form.hidden=true;$('geometry-title').textContent='Editar en el visor';status('Selecciona un elemento del mapa o del listado.');await ready;await refresh();if(ticket!==openTicket||!dialog.open)return;targets();$('geometry-start').disabled=false;$('geometry-target').disabled=false;if(ref)begin(ref);map.invalidateSize();}
+ function close(){if(busy)return;openTicket++;const old=active;preview?.remove();preview=null;active=null;draft=null;history=[];dirty=false;setMode('drag');if(old&&originalVisible){const entry=registry.get(old.sourceRef)||old;entry.layer.addTo(map);}apply();dialog.close();document.body.classList.remove('geometry-editor-open');map.invalidateSize();}
+ function requestClose(){if(busy)return;if(dirty){discard.showModal();return;}close();}
+ $('geometry-start').onclick=()=>begin($('geometry-target').value);$('geometry-close').onclick=requestClose;$('geometry-cancel').onclick=requestClose;
+ dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();requestClose();}});
+ discard.querySelector('#geometry-keep').onclick=()=>discard.close();discard.querySelector('#geometry-discard').onclick=()=>{discard.close();close();};discard.addEventListener('cancel',e=>{e.preventDefault();discard.close();});dialog.addEventListener('cancel',event=>{event.preventDefault();requestClose();});
+ for(const button of dialog.querySelectorAll('[data-geometry-mode]'))button.onclick=()=>{setMode(button.dataset.geometryMode);renderGeometry();};
+ $('geometry-undo').onclick=()=>{if(history.length){draft.geometry=history.pop();renderGeometry();}};
+ map.on('click',event=>{if(!active||busy)return;const point=[Number(event.latlng.lng.toFixed(7)),Number(event.latlng.lat.toFixed(7))];
+  if(mode==='place'&&draft.geometry.type==='Point'){remember();draft.geometry.coordinates=point;setMode('drag');renderGeometry();}
+  if(mode==='add'&&draft.geometry.type==='Polygon'){remember();const ring=draft.geometry.coordinates[0];ring.splice(closestSegment(ring,point)+1,0,point);renderGeometry();}
+ });
+ map.on('zoomend moveend',()=>{if(active?.base.geometry.type==='Polygon'&&!busy)renderGeometry();});
+ for(const key of ['lat','lon'])form.elements[key].onchange=()=>{if(!draft||draft.geometry.type!=='Point')return;if(!form.elements.lat.value.trim()||!form.elements.lon.value.trim()){status('Escribe ambas coordenadas antes de mover el punto.',true);return;}const geometry={type:'Point',coordinates:[Number(form.elements.lon.value),Number(form.elements.lat.value)]};try{validateGeometry(geometry);remember();draft.geometry=geometry;renderGeometry();}catch(e){status(e.message,true);}};
+ form.addEventListener('input',()=>{dirty=true;});form.onsubmit=async event=>{event.preventDefault();if(!active||busy)return;const values=Object.fromEntries(new FormData(form));setBusy(true);status('Guardando y verificando los cambios…');try{
+  const input={...draft,...values,type:draft.geometry.type==='Polygon'?'Sitio de pesca':values.type,geometry:draft.geometry};const data=await store.save(input,{baseRevision:records.get(active.sourceRef)?.revision||null,publicConsent:$('geometry-share').checked});records=data.records;setBusy(false);dirty=false;close();resultText.textContent='Elemento guardado y verificado en la base compartida.';result.hidden=false;window.dispatchEvent(new CustomEvent('spearfishing:geometry-saved',{detail:{rows:data.rows}}));
+ }catch(e){status(e.message,true);}finally{setBusy(false);}};
+ const control=L.control({position:'topleft'});control.onAdd=()=>{const element=L.DomUtil.create('div','geometry-map-control leaflet-bar'),button=document.createElement('button');button.type='button';button.textContent='✎ Editar puntos / polígonos';button.onclick=()=>open();element.append(button);L.DomEvent.disableClickPropagation(element);return element;};control.addTo(map);
+ return {open,refresh,cancel:requestClose,get isEditing(){return !!active;},get isOpen(){return dialog.open;},warn(){status('Guarda o cancela esta edición antes de cambiar de sección.',true);}};
+}

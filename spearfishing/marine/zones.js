@@ -1,13 +1,14 @@
 import {sheetCoordinate,defaultSheetUrl} from './forecast-store.js';
 import {fishingForecasts} from './fishing-sites.js';
 import {coordinates,distanceKm} from './core.js';
+import {applyFeatureRows,featureRowId,decodeFeatureRows} from './geometry.js';
 
 export const zoneRecordType='Ficha de zona';
 export const zonePhotoType='Fotografía de zona';
 const schema='spearfishing.zone.v1',photoSchema='spearfishing.zone-photo.v1';
 export function photoURL(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return '';}}
-export function rowId(row){return String(row.registro_id||`legacy-${row.tipo}-${row.nombre}-${sheetCoordinate(row.lat,'lat')}-${sheetCoordinate(row.lng,'lon')}`);}
-export function zoneElements(rows){return rows.filter(r=>['Sitio de pesca','Aparcamiento','Punto de entrada','Foto'].includes(r.tipo)).flatMap(r=>{
+export function rowId(row){return featureRowId(row);}
+export function zoneElements(rows){return applyFeatureRows(rows).filter(r=>['Sitio de pesca','Aparcamiento','Punto de entrada','Foto'].includes(r.tipo)).flatMap(r=>{
  const lat=sheetCoordinate(r.lat,'lat'),lon=sheetCoordinate(r.lng,'lon');return lat===null||lon===null?[]:[{id:rowId(r),name:String(r.nombre||r.tipo),type:r.tipo,lat,lon,notes:String(r.notas||''),author:String(r.autor||''),url:photoURL(r.foto_url)||photoURL(r.foto_thumb),thumb:photoURL(r.foto_thumb)}];
 });}
 export function insideRing(lat,lon,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
@@ -51,10 +52,12 @@ export function decodeZoneRows(rows){
  return {records,uploads};
 }
 export function buildZones(rows,templates,kml,decoded=decodeZoneRows(rows)){
+ const featureRecords=decodeFeatureRows(rows);
  const siteForecasts=fishingForecasts(rows);
  const bases=[...templates.map(s=>{const index=Number(s.originalId?.split(':')[1]),source=kml[index]||{},name=source.name&&!/sin t[ií]tulo|untitled/i.test(source.name)?source.name:s.name.replace(/ — Previsión$/,'');return {id:s.id,name,type:'Sitio de pesca',lat:s.lat,lon:s.lon,notes:source.notes||'',author:'',coordinateSource:'KML',sourceRecordId:null,sourceRef:s.sourceRefs?.[0],ring:source.ring||[],forecast:s,photos:[],elementIds:null,revision:null};}),
  ...siteForecasts.map(s=>{const row=rows.find(r=>r.tipo==='Sitio de pesca'&&fishingForecasts([r])[0]?.id===s.id);return {id:s.id,name:String(row.nombre||'Sitio de pesca'),type:row.tipo,lat:s.lat,lon:s.lon,notes:String(row.notas||''),author:String(row.autor||''),coordinateSource:String(row.coord_origen||''),sourceRecordId:rowId(row),sourceRef:s.sourceRefs?.[0],ring:[],forecast:s,photos:(photoURL(row.foto_url)||photoURL(row.foto_thumb))?[{id:`original-${rowId(row)}`,url:photoURL(row.foto_url)||photoURL(row.foto_thumb),thumb:photoURL(row.foto_thumb),caption:String(row.notas||'').slice(0,300)}]:[],elementIds:null,revision:null};})];
- return bases.map(base=>{const overlay=decoded.records.get(base.id),zone={...base,...overlay};
+ return bases.map(base=>{const overlay=decoded.records.get(base.id),zone={...base,...overlay},feature=featureRecords.get(base.sourceRef);
+  if(feature?.geometry.type==='Polygon'){zone.ring=feature.geometry.coordinates[0].map(([lon,lat])=>[lat,lon]);if(!overlay||feature.zoneRevision===overlay.revision)for(const key of ['name','notes','author','coordinateSource'])zone[key]=feature[key];}
   const photos=new Map([...base.photos,...(decoded.uploads.get(base.id)||[]),...(overlay?.photos||[])].map(p=>[p.id,p]));return {...zone,photos:[...photos.values()]};
  }).sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));
 }

@@ -1,7 +1,9 @@
 import {coordinates,distanceKm,finite,iso,speedMS,toUV} from './core.js';
+import {environmentalValue} from './environment.js';
+export const forecastVersion=2;
 export const marineVariables=['wave_height','wave_direction','wave_period','wave_peak_period','wind_wave_height','wind_wave_direction','wind_wave_period','swell_wave_height','swell_wave_direction','swell_wave_period','swell_wave_peak_period','secondary_swell_wave_height','secondary_swell_wave_direction','secondary_swell_wave_period'];
 export const oceanVariables=['ocean_current_velocity','ocean_current_direction','sea_level_height_msl','sea_surface_temperature'];
-const weatherVariables=['wind_speed_10m','wind_direction_10m','wind_gusts_10m','precipitation','is_day'];
+const weatherVariables=['wind_speed_10m','wind_direction_10m','wind_gusts_10m','precipitation','temperature_2m','pressure_msl','is_day'];
 export async function jsonFetch(url,fetcher=fetch) {
   const response=await fetcher(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
   if(!response.ok) {const error=new Error(`Proveedor HTTP ${response.status}`);error.retryable=response.status>=500;throw error;}
@@ -16,7 +18,7 @@ function url(base,spot,vars,extra={}) {
 export function normalize(body,kind,spot,downloadedAt,model) {
   if(!body.hourly || !Array.isArray(body.hourly.time) || !body.hourly.time.length) throw new Error('Serie horaria ausente');
   coordinates(body.latitude,body.longitude);
-  const fields=kind==='weather'?weatherVariables:kind==='ocean'?oceanVariables:marineVariables;
+  const fields=kind==='weather'?weatherVariables:kind==='sst'?['sea_surface_temperature']:kind==='ocean'?oceanVariables:marineVariables;
   for(const key of fields) if(body.hourly[key] && body.hourly[key].length!==body.hourly.time.length) throw new Error(`Longitud incoherente: ${key}`);
   const value=(key,i)=>finite(body.hourly[key]?.[i])?body.hourly[key][i]:null;
   const rows=body.hourly.time.map((t,i)=>{
@@ -27,6 +29,9 @@ export function normalize(body,kind,spot,downloadedAt,model) {
       if(key==='ocean_current_velocity') row.current=speedMS(value(key,i),body.hourly_units?.[key]);
       else if(key==='wind_speed_10m') row.wind=speedMS(value(key,i),body.hourly_units?.[key]);
       else if(key==='wind_gusts_10m') row.gust=speedMS(value(key,i),body.hourly_units?.[key]);
+      else if(key==='temperature_2m'||key==='sea_surface_temperature')row[key==='temperature_2m'?'airTemp':'sst']=environmentalValue(value(key,i),body.hourly_units?.[key],'temperature');
+      else if(key==='pressure_msl')row.pressure=environmentalValue(value(key,i),body.hourly_units?.[key],'pressure');
+      else if(key==='precipitation')row.rain=environmentalValue(value(key,i),body.hourly_units?.[key],'precipitation');
       else row[names[key]]=value(key,i);
     }
     if(kind==='ocean') Object.assign(row,toUV(row.current,row.currentDirection));
@@ -34,13 +39,14 @@ export function normalize(body,kind,spot,downloadedAt,model) {
   });
   for(let i=1;i<rows.length;i++) if(rows[i].time<=rows[i-1].time) throw new Error('Tiempo duplicado o desordenado');
   if(!rows.some(r=>Object.entries(r).some(([k,v])=>k!=='time' && finite(v)))) throw new Error('Celda sin datos; posible máscara terrestre');
-  return {provider:'Open-Meteo',model,kind,runCycle:null,generatedAt:null,downloadedAt,cell:{lat:body.latitude,lon:body.longitude,distanceKm:distanceKm([spot.lat,spot.lon],[body.latitude,body.longitude]),selection:kind==='weather'?'land':'sea',verifiedWater:null},nativeResolution:kind==='ocean'?'~8 km / 1 h (SST 6 h)':kind==='wave'?'~8 km / 3 h':'best_match: resolución variable; ciclo no publicado',outputResolution:'1 h',temporallyInterpolated:kind==='wave',units:body.hourly_units,rows};
+  return {provider:'Open-Meteo',model,kind,runCycle:null,generatedAt:null,downloadedAt,cell:{lat:body.latitude,lon:body.longitude,distanceKm:distanceKm([spot.lat,spot.lon],[body.latitude,body.longitude]),selection:kind==='weather'?'land':'sea',verifiedWater:null},nativeResolution:['ocean','sst'].includes(kind)?'~8 km / 1 h (SST 6 h)':kind==='wave'?'~8 km / 3 h':'best_match: resolución variable; ciclo no publicado',outputResolution:'1 h',temporallyInterpolated:['wave','sst'].includes(kind),units:body.hourly_units,rows};
 }
 export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='meteofrance_wave',kinds=['wave','ocean','weather']}={}) {
   coordinates(spot.lat,spot.lon);
   const downloadedAt=iso(now);
-  const specs=[['wave',url('https://marine-api.open-meteo.com/v1/marine',spot,marineVariables,{cell_selection:'sea',models:waveModel}),waveModel],['ocean',url('https://marine-api.open-meteo.com/v1/marine',spot,oceanVariables,{cell_selection:'sea',models:'meteofrance_currents'}),'meteofrance_currents / SMOC'],['weather',url('https://api.open-meteo.com/v1/forecast',spot,weatherVariables,{wind_speed_unit:'ms'}),'best_match']];
-  const selected=specs.filter(([kind])=>kinds.includes(kind));
+  const specs=[['wave',url('https://marine-api.open-meteo.com/v1/marine',spot,marineVariables,{cell_selection:'sea',models:waveModel}),waveModel],['ocean',url('https://marine-api.open-meteo.com/v1/marine',spot,oceanVariables,{cell_selection:'sea',models:'meteofrance_currents'}),'meteofrance_currents / SMOC'],['weather',url('https://api.open-meteo.com/v1/forecast',spot,weatherVariables,{wind_speed_unit:'ms',temperature_unit:'celsius',precipitation_unit:'mm'}),'best_match']];
+  specs.push(['sst',url('https://marine-api.open-meteo.com/v1/marine',spot,['sea_surface_temperature'],{cell_selection:'sea',models:'meteofrance_currents'}),'meteofrance_currents / SMOC']);
+  const selected=specs.filter(([kind])=>kinds.includes(kind)&&!(kind==='sst'&&kinds.includes('ocean')));
   const results=await Promise.allSettled(selected.map(async ([kind,u,model])=>{
     let body;
     try {body=await jsonFetch(u,fetcher);} catch(error) {
@@ -57,7 +63,7 @@ export async function getForecast(spot,{fetcher=fetch,now=Date.now(),waveModel='
   if(!sources.length) throw new Error(errors.map(x=>`${x.kind}: ${x.message}`).join('; '));
   const byTime=new Map();
   for(const source of sources) for(const row of source.rows) byTime.set(row.time,{...byTime.get(row.time),...row});
-  return {spotId:spot.id,downloadedAt,sources:sources.map(({rows,...meta})=>meta),errors,rows:[...byTime.values()].sort((a,b)=>a.time.localeCompare(b.time)),quality:errors.length?'partial':'regional',notes:['Consulta real; el ciclo de modelo no se publica en esta respuesta.','Serie de oleaje horaria interpolada desde 3 h; no es una simulación horaria independiente.','SMOC no resuelve corrientes del canal de Urdaibai. Nivel referido a MSL, no a cero hidrográfico.']};
+  return {variablesVersion:forecastVersion,spotId:spot.id,downloadedAt,sources:sources.map(({rows,...meta})=>meta),errors,rows:[...byTime.values()].sort((a,b)=>a.time.localeCompare(b.time)),quality:errors.length?'partial':'regional',notes:['Consulta real; el ciclo de modelo no se publica en esta respuesta.','Serie de oleaje horaria interpolada desde 3 h; no es una simulación horaria independiente.','SMOC no resuelve corrientes del canal de Urdaibai. Nivel referido a MSL, no a cero hidrográfico.']};
 }
 // Independent provider contract: return the same normalized source object as normalize().
 // Regional ERDDAP adapters must pass metadata/freshness/unit validation before selection.

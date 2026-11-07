@@ -10,6 +10,7 @@
   const mapPickBtn = document.getElementById('btn-map-pick');
   let draftMarker = null;
   let pickingPoint = false;
+  window.addEventListener('spearfishing:geometry-opening',()=>{pickingPoint=false;mapPickBtn?.classList.remove('active');});
 
   function setDraftMarker(lat, lng) {
     const point = [Number(lat), Number(lng)];
@@ -221,7 +222,7 @@
     `;
   }
 
-  function showSheetInfo(row, tipo, fotoUrl, fotoThumb) {
+  function showSheetInfo(row, tipo, fotoUrl, fotoThumb, sourceRef) {
     document.getElementById('info-empty').style.display = 'none';
     const content = document.getElementById('info-content');
     content.style.display = 'block';
@@ -240,6 +241,7 @@
       ${row.notas ? `<div>${escapeHTML(row.notas)}</div>` : '<div style="opacity:.7">Sin notas todavía.</div>'}
       ${row.autor ? `<div style="margin-top:10px;font-size:.78rem;opacity:.75">por ${escapeHTML(row.autor)}</div>` : ''}
     `;
+    if(sourceRef&&['Aparcamiento','Punto de entrada'].includes(row.tipo)){const edit=document.createElement('button');edit.className='zone-open-detail';edit.textContent='✎ Editar punto en el visor';edit.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:edit-feature',{detail:{sourceRef}}));document.getElementById('info-desc').append(edit);}
     if(row.tipo==='Sitio de pesca'){
       const button=document.createElement('button');button.className='zone-open-detail';button.textContent='Abrir ficha de zona ↗';
       button.onclick=()=>window.dispatchEvent(new CustomEvent('spearfishing:open-zone',{detail:{recordId:row.registro_id,name:row.nombre,lat:parseSheetCoordinate(row.lat,'lat'),lon:parseSheetCoordinate(row.lng,'lng')}}));
@@ -253,11 +255,11 @@
       .then(rows => {
         // Forecast locations use their own layer/list and never become generic pins.
         window.spearfishingRecords=rows;
-        window.dispatchEvent(new CustomEvent('spearfishing:records-loaded',{detail:{rows}}));
         sheetLayer.clearLayers();
+        for(const ref of window.spearfishingEditableFeatures.keys())if(ref.startsWith('sheets:'))window.spearfishingEditableFeatures.delete(ref);
         rows.forEach(row => {
-          if(['Ubicación de previsión','Ficha de zona','Fotografía de zona'].includes(row.tipo))return;
-          if (!isSheetTipoVisible(row.tipo)) return;
+          if(['Ubicación de previsión','Ficha de zona','Fotografía de zona','Edición de elemento'].includes(row.tipo))return;
+          const visible=isSheetTipoVisible(row.tipo);
 
           const lat = parseSheetCoordinate(row.lat, 'lat');
           const lng = parseSheetCoordinate(row.lng, 'lng');
@@ -270,9 +272,13 @@
             icon: makePhotoAwareIcon(tipo.color, Boolean(fotoUrl || fotoThumb)),
           });
           marker.bindPopup(buildPhotoPopup(row, tipo, fotoUrl, fotoThumb), { maxWidth: 280 });
-          marker.on('click', () => showSheetInfo(row, tipo, fotoUrl, fotoThumb));
-          sheetLayer.addLayer(marker);
+          const id=String(row.registro_id||`legacy-${row.tipo}-${row.nombre}-${lat}-${lng}`),sourceRef=`sheets:${id}`;
+          if(['Aparcamiento','Punto de entrada'].includes(row.tipo))window.spearfishingEditableFeatures.set(sourceRef,{sourceRef,layer:marker,container:sheetLayer,row,base:{sourceRef,name:row.nombre||row.tipo,type:row.tipo,notes:row.notas||'',author:row.autor||'',coordinateSource:row.coord_origen||'',geometry:{type:'Point',coordinates:[lng,lat]}}});
+          marker.on('click', () => {const current=window.spearfishingEditableFeatures.get(sourceRef)?.current;showSheetInfo(current?{...row,nombre:current.name,tipo:current.type,notas:current.notes,autor:current.author}:row, current?(TIPOS[current.type]||tipo):tipo, fotoUrl, fotoThumb, sourceRef);});
+          if(visible)sheetLayer.addLayer(marker);
         });
+        window.dispatchEvent(new CustomEvent('spearfishing:records-loaded',{detail:{rows}}));
+        window.dispatchEvent(new CustomEvent('spearfishing:features-loaded'));
       })
       .catch(err => console.warn('[sheet]', err.message));
   };

@@ -5,6 +5,7 @@ node_modules/
 backups/
 test-results/
 .worker-dist/
+.worker-dryrun/
 data/*.osm
 data/check-*.json
 data/euskoos.json

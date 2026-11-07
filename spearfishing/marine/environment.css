@@ -1,0 +1,10 @@
+.marine-environment{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.marine-environment>article,.marine-environment>button{display:flex;flex-direction:column;align-items:start;justify-content:space-between;gap:5px;min-width:0;background:#102b39;border:1px solid #2b4959;border-radius:7px;padding:9px 10px;text-align:left}
+.marine-environment span{font-size:10px;line-height:1.4;color:#9ebdcb}
+.marine-environment strong{font-size:19px;font-weight:500;line-height:1.3;color:#dcf9f0;white-space:nowrap}
+.marine-environment small{font-size:10px;color:#a5bfcc;font-weight:400}
+.marine-environment>button:hover{border-color:#5abda8;background:#173c43}
+.zone-chart-picker{margin:12px 0 6px;min-width:0}
+.zone-chart-picker>span{font-size:10px;color:#96b4c4}
+.zone-chart-picker select{width:100%;min-width:0;font-size:12px}
+@media(max-width:480px){.marine-environment{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.marine-environment strong{font-size:18px}}
