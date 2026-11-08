@@ -14,6 +14,23 @@ export function zoneElements(rows){return applyFeatureRows(rows).filter(r=>['Sit
 export function insideRing(lat,lon,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
  const [y,x]=ring[i],[py,px]=ring[j];if((y>lat)!==(py>lat)&&lon<(px-x)*(lat-y)/(py-y)+x)inside=!inside;
 }return inside;}
+export function validateForecastPoint(point,ring=[]){
+ coordinates(point?.lat,point?.lon);
+ if(ring.length&&!insideRing(point.lat,point.lon,ring))throw Error('Selecciona un punto de previsión dentro del polígono de pesca.');
+ return {lat:point.lat,lon:point.lon};
+}
+export function zoneForecastPoint(zone){
+ for(const point of [zone.forecastPoint,zone,zone.forecast]){try{return validateForecastPoint(point,zone.ring);}catch{}}
+ // A scan line through a pair of vertex heights always supplies an interior point,
+ // including for concave polygons whose centroid lies outside the area.
+ const heights=[...new Set((zone.ring||[]).map(p=>p[0]))].sort((a,b)=>a-b);
+ for(let h=1;h<heights.length;h++){
+  const lat=(heights[h-1]+heights[h])/2,cuts=[],ring=zone.ring;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [y,x]=ring[i],[py,px]=ring[j];if((y>lat)!==(py>lat))cuts.push(x+(px-x)*(lat-y)/(py-y));}
+  cuts.sort((a,b)=>a-b);if(cuts.length>=2)return {lat,lon:(cuts[0]+cuts[1])/2};
+ }
+ throw Error('Esta zona no tiene un punto de previsión válido.');
+}
 export function nearbyElements(zone,elements){return elements.filter(e=>e.id===zone.sourceRecordId||(zone.ring?.length?insideRing(e.lat,e.lon,zone.ring):distanceKm([zone.lat,zone.lon],[e.lat,e.lon])<=1));}
 export function elementDistance(zone,element){
  if(zone.ring?.length&&insideRing(element.lat,element.lon,zone.ring))return 0;
@@ -33,12 +50,13 @@ export function closestZoneElements(zone,elements,selectedIds=new Set(),limit=12
 }
 export function validateZone(input){
  coordinates(input.lat,input.lon);
+ const forecastPoint=input.forecastPoint==null?null:validateForecastPoint(input.forecastPoint,input.ring||[]);
  const text=(key,max,required=false)=>{const s=String(input[key]??'').trim();if(s.length>max||(required&&!s))throw Error(`Campo ${key} inválido (máximo ${max} caracteres).`);return s;};
  const id=text('id',80,true);if(!/^[\w-]+$/.test(id))throw Error('Identificador de zona inválido.');
  const photos=(input.photos||[]).map(p=>{const url=photoURL(p.url);if(!url||url.length>1500||!p.id||String(p.id).length>200||String(p.caption||'').length>300)throw Error('Fotografía inválida: usa una URL HTTPS y un texto de hasta 300 caracteres.');return {id:String(p.id),url,caption:String(p.caption||'').trim(),...(photoURL(p.thumb)?{thumb:photoURL(p.thumb)}:{})};});
  if(photos.length>24||new Set(photos.map(p=>p.id)).size!==photos.length)throw Error('La ficha admite hasta 24 fotografías diferentes.');
  if(input.elementIds!==null&&(!Array.isArray(input.elementIds)||input.elementIds.length>200||input.elementIds.some(x=>typeof x!=='string'||x.length>300)))throw Error('Lista de elementos inválida.');
- return {id,name:text('name',160,true),type:text('type',80,true),lat:input.lat,lon:input.lon,notes:text('notes',2000),author:text('author',160),coordinateSource:text('coordinateSource',160),photos,elementIds:input.elementIds===null?null:[...new Set(input.elementIds)]};
+ return {id,name:text('name',160,true),type:text('type',80,true),lat:input.lat,lon:input.lon,forecastPoint,notes:text('notes',2000),author:text('author',160),coordinateSource:text('coordinateSource',160),photos,elementIds:input.elementIds===null?null:[...new Set(input.elementIds)]};
 }
 export function decodeZoneRows(rows){
  const records=new Map(),uploads=new Map();
@@ -58,6 +76,7 @@ export function buildZones(rows,templates,kml,decoded=decodeZoneRows(rows)){
  ...siteForecasts.map(s=>{const row=rows.find(r=>r.tipo==='Sitio de pesca'&&fishingForecasts([r])[0]?.id===s.id);return {id:s.id,name:String(row.nombre||'Sitio de pesca'),type:row.tipo,lat:s.lat,lon:s.lon,notes:String(row.notas||''),author:String(row.autor||''),coordinateSource:String(row.coord_origen||''),sourceRecordId:rowId(row),sourceRef:s.sourceRefs?.[0],ring:[],forecast:s,photos:(photoURL(row.foto_url)||photoURL(row.foto_thumb))?[{id:`original-${rowId(row)}`,url:photoURL(row.foto_url)||photoURL(row.foto_thumb),thumb:photoURL(row.foto_thumb),caption:String(row.notas||'').slice(0,300)}]:[],elementIds:null,revision:null};})];
  return bases.map(base=>{const overlay=decoded.records.get(base.id),zone={...base,...overlay},feature=featureRecords.get(base.sourceRef);
   if(feature?.geometry.type==='Polygon'){zone.ring=feature.geometry.coordinates[0].map(([lon,lat])=>[lat,lon]);if(!overlay||feature.zoneRevision===overlay.revision)for(const key of ['name','notes','author','coordinateSource'])zone[key]=feature[key];}
+  const point=zoneForecastPoint(zone);zone.forecastPointAdjusted=!!zone.forecastPoint&&(zone.forecastPoint.lat!==point.lat||zone.forecastPoint.lon!==point.lon);zone.forecastPoint=point;
   const photos=new Map([...base.photos,...(decoded.uploads.get(base.id)||[]),...(overlay?.photos||[])].map(p=>[p.id,p]));return {...zone,photos:[...photos.values()]};
  }).sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));
 }
@@ -72,7 +91,9 @@ export class ZoneStore{
  async write(parameters){const url=`${this.url}?${new URLSearchParams({action:'write',...parameters})}`;if(url.length>28000)throw Error('La ficha es demasiado grande. Reduce los textos o los enlaces de fotografías.');const r=await this.fetcher(url,{cache:'no-store',signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error(`Guardado HTTP ${r.status}`);const b=await r.json();if(b.ok!==true)throw Error(b.error||'La base no confirmó el guardado.');}
  async save(input,{baseRevision=null,publicConsent=false}={}){
   const zone=validateZone(input);if(!publicConsent)throw Error('Confirma que quieres compartir los cambios en este visor.');
-  const current=(await this.load()).records.get(zone.id);if((current?.revision||null)!==baseRevision)throw Error('Otra sesión ha editado esta zona. Tus cambios siguen en el formulario; recarga la ficha antes de guardar una nueva versión.');
+  const latest=await this.load(),current=latest.records.get(zone.id);if((current?.revision||null)!==baseRevision)throw Error('Otra sesión ha editado esta zona. Tus cambios siguen en el formulario; recarga la ficha antes de guardar una nueva versión.');
+  const geometry=decodeFeatureRows(latest.rows).get(input.sourceRef)?.geometry;
+  if(zone.forecastPoint&&geometry?.type==='Polygon')validateForecastPoint(zone.forecastPoint,geometry.coordinates[0].map(([lon,lat])=>[lat,lon]));
   const revision=crypto.randomUUID();await this.write({registro_id:`zone-event-${revision}`,tipo:zoneRecordType,nombre:/^[=+@-]/.test(zone.name)?"'"+zone.name:zone.name,lat:String(zone.lat).replace('.',','),lng:String(zone.lon).replace('.',','),notas:JSON.stringify({schema,...zone,revision,updatedAt:new Date().toISOString()}),autor:'Spearfishing / Zonas',foto_url:'',coord_origen:zone.coordinateSource});
   for(let i=0;i<3;i++){if(i)await this.sleep(600*i);const snapshot=await this.load();if(snapshot.records.get(zone.id)?.revision===revision)return snapshot;}
   throw Error('Guardado aceptado, pero la lectura aún no está verificada. Recarga la ficha para comprobarlo antes de repetir.');

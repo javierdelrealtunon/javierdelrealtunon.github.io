@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ZoneStore,buildZones,zoneElements,nearbyElements,closestZoneElements,elementDistance,decodeZoneRows,zoneRecordType,zonePhotoType,zoneForecastRows,validateZone,photoURL} from '../marine/zones.js';
+import {ZoneStore,buildZones,zoneElements,nearbyElements,closestZoneElements,elementDistance,decodeZoneRows,zoneRecordType,zonePhotoType,zoneForecastRows,validateZone,photoURL,validateForecastPoint,zoneForecastPoint,insideRing} from '../marine/zones.js';
 
 const fishing={registro_id:'fish-fixture',nombre:'Zona sintética',tipo:'Sitio de pesca',lat:43321436,lng:-3032386,notas:'Fondo de roca',autor:'Test',foto_url:'https://example.test/original.jpg'};
 const fixture={id:'zone-fixture',name:'Ficha sintética',type:'Sitio de pesca',lat:43.3,lon:-3,notes:'Notas',author:'Test',coordinateSource:'manual',elementIds:['fish-fixture'],photos:[{id:'photo-fixture',url:'https://example.test/photo.jpg',caption:'Acceso'}]};
@@ -60,4 +60,31 @@ test('one parking element can serve several zones and unassigning it from one pr
  const a={...fixture,id:'zone-a',elementIds:['shared-parking']},b={...fixture,id:'zone-b',elementIds:['shared-parking']};
  await store.save(a,{publicConsent:true});let data=await store.save(b,{publicConsent:true});const savedA=data.records.get(a.id);
  await store.save({...savedA,elementIds:[]},{publicConsent:true,baseRevision:savedA.revision});data=await new ZoneStore({fetcher:db.fetcher}).load();assert.deepEqual(data.records.get(a.id).elementIds,[]);assert.deepEqual(data.records.get(b.id).elementIds,['shared-parking']);
+});
+
+const forecastRing=[[43,-4],[44,-4],[44,-2],[43,-2]];
+test('forecast points must be valid coordinates inside the fishing polygon',()=>{
+ assert.deepEqual(validateForecastPoint({lat:43.5,lon:-3},forecastRing),{lat:43.5,lon:-3});
+ for(const point of [{lat:42,lon:-3},{lat:43.5,lon:-1},{lat:NaN,lon:-3},{lat:91,lon:-3}])assert.throws(()=>validateForecastPoint(point,forecastRing));
+ assert.throws(()=>validateZone({...fixture,ring:forecastRing,forecastPoint:{lat:42,lon:-3}}),/dentro/);
+});
+test('a saved forecast point survives an independent reload without moving the zone or other zones',async()=>{
+ const db=database(),store=new ZoneStore({fetcher:db.fetcher}),point={lat:43.7,lon:-3.5};
+ await store.save({...fixture,ring:forecastRing,forecastPoint:point},{publicConsent:true});
+ const snapshot=await new ZoneStore({fetcher:db.fetcher}).load(),template={id:fixture.id,name:'Zona',lat:43.3,lon:-3,originalId:'placemark:0'};
+ const zones=buildZones(snapshot.rows,[template],[{ring:forecastRing}]),zone=zones.find(z=>z.id===fixture.id);
+ assert.deepEqual(zone.forecastPoint,point);assert.equal(zone.lat,fixture.lat);assert.equal(zone.lon,fixture.lon);assert.deepEqual(zone.ring,forecastRing);assert.deepEqual(db.rows[0],fishing);
+ assert.deepEqual(snapshot.records.get(fixture.id).forecastPoint,point);assert.notDeepEqual(zones.find(z=>z.id!==fixture.id).forecastPoint,point);
+});
+test('older zones get an interior reference and changed concave polygons repair exterior points',()=>{
+ const ring=[[0,0],[0,4],[1,4],[1,1],[4,1],[4,0]];
+ const point=zoneForecastPoint({lat:2,lon:2,forecastPoint:{lat:3,lon:3},ring});assert.ok(insideRing(point.lat,point.lon,ring));
+ assert.deepEqual(zoneForecastPoint({lat:43.5,lon:-3,ring:forecastRing}),{lat:43.5,lon:-3});
+ const rows=[{tipo:zoneRecordType,notas:JSON.stringify({schema:'spearfishing.zone.v1',...fixture,forecastPoint:{lat:42,lon:-3},revision:'old',updatedAt:new Date().toISOString()})}];
+ const zone=buildZones(rows,[{...fixture,originalId:'placemark:0'}],[{ring:forecastRing}])[0];assert.ok(zone.forecastPointAdjusted);assert.ok(insideRing(zone.forecastPoint.lat,zone.forecastPoint.lon,forecastRing));
+});
+test('a concurrent polygon change prevents publishing an exterior forecast point',async()=>{
+ const db=database(),store=new ZoneStore({fetcher:db.fetcher}),sourceRef='kml/sitios.kml#placemark:0';
+ db.rows.push({tipo:'Edición de elemento',notas:JSON.stringify({schema:'spearfishing.feature.v1',sourceRef,name:'Nueva zona',type:'Sitio de pesca',geometry:{type:'Polygon',coordinates:[[[-4,43],[-3.8,43],[-3.8,43.2],[-4,43.2],[-4,43]]]},revision:'new-geometry',updatedAt:new Date().toISOString()})});
+ await assert.rejects(store.save({...fixture,sourceRef,ring:forecastRing,forecastPoint:{lat:43.5,lon:-3}},{publicConsent:true}),/dentro/);assert.equal(db.writes,0);
 });

@@ -1,6 +1,7 @@
 import {coordinates,distanceKm,finite,iso,speedMS,toUV} from './core.js';
 import {environmentalValue} from './environment.js';
 export const forecastVersion=2;
+export const zoneForecastKinds=Object.freeze(['wave','ocean','weather']);
 export const marineVariables=['wave_height','wave_direction','wave_period','wave_peak_period','wind_wave_height','wind_wave_direction','wind_wave_period','swell_wave_height','swell_wave_direction','swell_wave_period','swell_wave_peak_period','secondary_swell_wave_height','secondary_swell_wave_direction','secondary_swell_wave_period'];
 export const oceanVariables=['ocean_current_velocity','ocean_current_direction','sea_level_height_msl','sea_surface_temperature'];
 const weatherVariables=['wind_speed_10m','wind_direction_10m','wind_gusts_10m','precipitation','temperature_2m','pressure_msl','is_day'];

@@ -109,12 +109,46 @@ body:has(#zone-section:not([hidden])) .marine-top .marine-kicker{display:none}
 #zone-hours-label{justify-self:end;font-size:14px;margin:0}
 #zone-hours{grid-column:1/-1;min-height:32px}
 #zone-section .marine-chart{height:235px}
-@media(min-width:1100px){
- #zone-section{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:0 14px;align-items:start}
- #zone-section>.zone-toolbar,#zone-section>#zone-status{grid-column:1/-1}
- #zone-section>.zone-layout{display:block;grid-column:1}
- #zone-section>.zone-secondary{grid-column:2}
- #zone-section .marine-charts{gap:8px}
- #zone-section .marine-chart{height:230px}
-}
 @media(max-width:680px){.zone-layout{grid-template-columns:1fr}#zone-section:not(.zone-editing) .zone-photo-stage{height:160px}#zone-section:not(.zone-editing) .zone-gallery figure{grid-template-columns:1fr}#zone-section:not(.zone-editing) .zone-photo-stage{grid-row:auto}#zone-map{height:220px}.zone-forecast-controls>label:first-child{min-width:0}#zone-hours{width:100%}}
+
+.zone-point-controls{margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px}
+.zone-point-controls p{flex-basis:100%;margin:0;color:#a8c5d4;font-size:12px}
+#zone-map.zone-picking-point,#zone-map.zone-picking-point .leaflet-interactive{cursor:crosshair}
+
+/* Forecast is a subsection of the selected fishing zone. */
+.zone-secondary{min-width:0}
+#zone-section .zone-forecast-card{margin-top:4px;padding:22px;border-top:2px solid #438f84;scroll-margin-top:20px}
+.zone-forecast-reference{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid #294453;color:#9ebac8;font-size:12px;flex-wrap:wrap}
+#zone-forecast-map{padding:4px 0;min-height:32px;border:0;background:transparent;color:#72d9c3;font-size:12px}
+.zone-forecast-tabs{display:flex;gap:8px;border-bottom:1px solid #355061;margin:12px 0 0;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#355061 transparent}
+#zone-section .zone-forecast-tabs button{flex-shrink:0;background:transparent;border:0;border-bottom:2px solid transparent;border-radius:0;padding:13px 16px;color:#a9c1ce;white-space:nowrap;min-height:46px}
+#zone-section .zone-forecast-tabs button[aria-selected=true]{border-bottom-color:#6ce7ca;color:#b3ffed;background:#60dfc408}
+#zone-section .zone-forecast-tabs button:hover{color:#d4fff4;background:#60dfc408}
+#zone-forecast-panel{padding-top:2px;outline-offset:4px}
+#zone-forecast-description{margin:14px 0;font-size:12px}
+.zone-forecast-metrics{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.zone-forecast-metrics>div{flex:1 1 140px;background:#0b202d;border:1px solid #294453;border-radius:8px;padding:12px 14px;min-width:0}
+.zone-forecast-metrics span{display:block;font-size:11px;color:#a2bfcd;line-height:1.5}
+.zone-forecast-metrics strong{display:block;font-size:23px;font-weight:500;color:#e5fff8;margin-top:5px;font-variant-numeric:tabular-nums}
+.zone-forecast-metrics small{font-size:12px;color:#98b7c6;font-weight:400}
+#zone-section .zone-forecast-charts{gap:24px}
+#zone-section .zone-forecast-charts h3{margin:0 0 10px;font-size:13px;color:#c7dfe9}
+#zone-section .zone-forecast-charts .marine-chart{height:290px}
+.zone-forecast-charts.zone-single-chart{grid-template-columns:minmax(0,1fr)}
+#zone-forecast-state{font-size:11px;line-height:1.7}
+.zone-forecast-data{border-top:1px solid #294453;padding:9px 0}
+.zone-forecast-data summary{color:#a9c6d3;font-size:12px}
+@media(max-width:680px){
+ .zone-layout{grid-template-columns:minmax(0,1fr)}
+ #zone-section .zone-forecast-card{padding:16px}
+ #zone-section .zone-forecast-tabs button{padding:12px 13px}
+ .zone-forecast-tabs{gap:0}
+ .zone-forecast-metrics{gap:8px}
+ .zone-forecast-metrics>div{flex-basis:calc(50% - 8px);padding:10px;box-sizing:border-box}
+ .zone-forecast-metrics strong{font-size:21px}
+ #zone-section .zone-forecast-charts{grid-template-columns:minmax(0,1fr);gap:18px}
+ #zone-section .zone-forecast-charts .marine-chart{height:250px}
+ .zone-forecast-reference{gap:2px}
+}
+
+#zone-tide-events{margin:16px 0}#zone-tide-events h3{font-size:13px}#zone-tide-events ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;list-style:none;padding:0;max-height:260px;overflow:auto}#zone-tide-events li{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;border:1px solid #294453;border-radius:7px;font-size:12px}#zone-tide-events li span{color:#89e0cb}#zone-tide-events li strong{font-weight:500;color:#d7eaf1}

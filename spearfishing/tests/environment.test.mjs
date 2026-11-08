@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {environmentalValue,environmentSummary} from '../marine/environment.js';
-import {getForecast,normalize,forecastVersion} from '../marine/providers.js';
+import {getForecast,normalize,forecastVersion,zoneForecastKinds} from '../marine/providers.js';
 const spot={id:'fixture',lat:43.4,lon:-2.7},time=[1794052800,1794056400];
 const weather=()=>({latitude:43.4,longitude:-2.7,hourly:{time,temperature_2m:[-2,0],pressure_msl:[1019.8,null],precipitation:[0,.7],wind_speed_10m:[3,4]},hourly_units:{temperature_2m:'°C',pressure_msl:'hPa',precipitation:'mm',wind_speed_10m:'m/s'}});
 test('environmental normalization preserves freezing temperatures, dry hours and missing pressure',()=>{
@@ -17,4 +17,20 @@ test('zone temperature source requests only SST and includes full weather variab
 test('missing water temperature remains unavailable while weather survives; ragged temperature arrays are rejected',async()=>{
  const run=await getForecast(spot,{kinds:['weather','sst'],fetcher:async url=>Response.json(new URL(url).hostname==='api.open-meteo.com'?weather():{latitude:43.5,longitude:-2.7,hourly:{time,sea_surface_temperature:[null,null]}})});
  assert.equal(run.rows[0].sst,undefined);assert.equal(run.rows[0].airTemp,-2);assert.ok(run.errors.some(e=>e.kind==='sst'));const body=weather();body.hourly.temperature_2m=[1];assert.throws(()=>normalize(body,'weather',spot,new Date().toISOString(),'fixture'),/Longitud incoherente/);
+});
+
+
+test('zone forecasts share one ocean request for currents, signed sea level and SST',async()=>{
+ const urls=[];const run=await getForecast(spot,{kinds:zoneForecastKinds,fetcher:async input=>{
+  const u=new URL(input);urls.push(u);if(u.hostname==='api.open-meteo.com')return Response.json(weather());
+  return Response.json({latitude:43.4,longitude:-2.7,hourly:u.searchParams.get('hourly').includes('ocean_current_velocity')?{time,ocean_current_velocity:[.36,0],ocean_current_direction:[90,0],sea_level_height_msl:[-.8,1.2],sea_surface_temperature:[16.8,16.9]}:{time,wave_height:[1,1.2]},hourly_units:{ocean_current_velocity:'km/h',sea_surface_temperature:'°C'}});
+ }});
+ assert.equal(urls.length,3);assert.equal(urls.filter(u=>u.searchParams.get('hourly').includes('ocean_current_velocity')).length,1);assert.ok(!urls.some(u=>u.searchParams.get('hourly')==='sea_surface_temperature'));
+ assert.ok(Math.abs(run.rows[0].current-.1)<1e-12);assert.equal(run.rows[0].currentDirection,90);assert.equal(run.rows[0].level,-.8);assert.equal(run.rows[0].sst,16.8);assert.equal(run.rows[1].current,0);assert.ok(run.sources.some(s=>s.kind==='ocean'));
+});
+test('missing ocean data does not invent currents or tides or discard weather',async()=>{
+ const run=await getForecast(spot,{kinds:zoneForecastKinds,fetcher:async input=>{
+  const u=new URL(input);return u.hostname==='api.open-meteo.com'?Response.json(weather()):new Response('',{status:429});
+ }});
+ assert.equal(run.rows[0].current,undefined);assert.equal(run.rows[0].level,undefined);assert.equal(run.rows[0].airTemp,-2);assert.equal(run.quality,'partial');assert.ok(run.errors.some(e=>e.kind==='ocean'));
 });

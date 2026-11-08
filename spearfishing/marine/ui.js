@@ -17,7 +17,7 @@ const labels={favorable:'Favorable según umbrales',unfavorable:'Desfavorable',u
 let spots=[],spot,run,geography,exposure,token='',adminState=null,charts=[],requestId=0;
 let chartFilter='all';
 let localSpots=[],serverSpots=[],pickingForecast=false;
-let sharedSpots=[],backendSpots=[],kmlSources=[];
+let sharedSpots=[],backendSpots=[],kmlSources=[],zoneSpots=[];
 let deletedForecastIds=new Set();
 let forecastLayers={enabled:true,listVisible:true,hiddenIds:[]};
 try{forecastLayers={...forecastLayers,...JSON.parse(localStorage.getItem('marine.forecastLayers.v1')||'{}')};if(!Array.isArray(forecastLayers.hiddenIds))forecastLayers.hiddenIds=[];}catch{}
@@ -37,14 +37,13 @@ root.innerHTML=`<div class="marine-wrap"><div class="marine-top"><div><p class="
 <div class="marine-grid"><article class="marine-card"><h2>Ventanas según tus criterios</h2><div id="marine-windows">Carga una previsión para evaluar.</div><details><summary>Configurar umbrales y pesos</summary><form id="marine-thresholds" class="marine-form"></form></details></article><article class="marine-card"><h2>Exposición local</h2><div id="marine-exposure"></div></article></div>
 <details class="marine-card"><summary>Procedencia, celdas y vigencia</summary><div id="marine-sources"></div></details>
 <details class="marine-card"><summary>Tabla horaria accesible · tiempos Europe/Madrid</summary><div class="marine-scroll" id="marine-table"></div></details></section>
-<section data-marine-view="compare" hidden><article class="marine-card"><h2>Comparador de lugares</h2><p>Ordenado por mejor ventana continua; los datos incompletos quedan sin puntuación.</p><button id="marine-compare">Comparar las ubicaciones visibles</button><div id="marine-ranking"></div></article></section>
 <section data-marine-view="alerts" hidden><article class="marine-card"><h2>Alertas del servidor</h2><p>Las comprobaciones programadas se ejecutan cada tres horas con la web cerrada. Es necesario configurar Worker, D1 y correo. Solo se envían oportunidades con datos completos y vigentes.</p><button id="marine-check">Comprobar ahora</button><div id="marine-alert-state">Conecta el backend e inicia sesión en Administración para consultar reglas e historial.</div><form id="marine-rule" class="marine-form"><h3>Guardar regla de aviso</h3><label>Tipo<select name="type"><option value="opportunity">Nueva oportunidad</option><option value="daily">Resumen diario</option><option value="weekly">Resumen semanal (lunes)</option><option value="deterioration">Empeoramiento significativo</option></select></label><label>Hora preferida (Madrid; resúmenes)<input name="preferredHour" type="number" min="0" max="21" value="9" required></label><p>Los resúmenes salen en la primera comprobación de las tres horas siguientes a la hora indicada.</p><label>Lista<select name="listId" id="marine-rule-list" required></select></label><label>Espera mínima entre avisos (h)<input name="cooldownHours" type="number" min="3" max="168" value="24" required></label><label><input name="enabled" type="checkbox" checked> Activada</label><p>Usa el lugar seleccionado, el horizonte y tus umbrales actuales.</p><button>Guardar en servidor</button></form></article></section>
 <section data-marine-view="admin" hidden><div class="marine-grid"><article class="marine-card"><h2>Conexión administrativa</h2><form id="marine-login" class="marine-form"><label>URL del Worker<input id="marine-api" type="url" placeholder="https://spearfishing-forecast.…workers.dev" required></label><label>Credencial administrativa<input id="marine-token" type="password" autocomplete="off" minlength="32" required></label><p>La credencial permanece solo en memoria hasta cerrar o desconectar esta página.</p><button>Conectar</button><button type="button" id="marine-logout">Desconectar</button></form><pre id="marine-diagnostics">Backend no configurado.</pre></article>
 <article class="marine-card"><h2>Listas y destinatarios</h2><form id="marine-list" class="marine-form"><label>Nombre de nueva lista<input name="name" maxlength="120" required></label><button>Crear lista</button></form><form id="marine-subscriber" class="marine-form"><label>Lista<select name="listId" id="marine-subscriber-list" required></select></label><label>Correo<input name="email" type="email" required></label><label><input name="consent" type="checkbox" required> Tengo autorización del destinatario para estos avisos.</label><button>Añadir destinatario</button></form><div id="marine-subscribers"></div><p>Los destinatarios se almacenan en D1 y solo son accesibles mediante autenticación. Cada aviso incluye baja con confirmación.</p></article>
 <article class="marine-card"><h2>Ficha del lugar de previsión</h2><p>Independiente de puntos y fotografías de Google Sheets. Eliminar esta ficha no borra el KML ni registros originales.</p><form id="marine-edit" class="marine-form"><label>ID estable<input name="id" required pattern="[\\w-]{1,80}"></label><label>Nombre<input name="name" maxlength="160" required></label><label>Latitud<input name="lat" type="number" step="any" min="-90" max="90" required></label><label>Longitud<input name="lon" type="number" step="any" min="-180" max="180" required></label><label>Notas<textarea name="description"></textarea></label><label><input name="public" type="checkbox"> Lugar y coordenadas públicos</label><label>Parámetros locales / sectores manuales (JSON)<textarea name="localParameters" placeholder='{"sectors":[],"method":"manual","validationId":null}'></textarea></label><button>Guardar ficha en servidor</button><button type="button" id="marine-new">Nueva ficha</button><button type="button" id="marine-delete">Eliminar ficha seleccionada</button></form></article></div></section>
 <p class="marine-footer">Datos: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · Météo-France / Copernicus Marine · DWD · <a href="https://www.euskoos.eus/" target="_blank" rel="noopener">EuskOOS / Euskalmet-AZTI</a> · Costa © OpenStreetMap (ODbL). Sin validación observacional local.</p></div>`;
 document.body.append(root);
-const header=document.createElement('header');header.id='marine-nav';header.innerHTML=`<a class="marine-brand" href="#map">◉ <span>SPEARFISHING<small>FORECAST & ALERTS</small></span></a><nav aria-label="Secciones principales">${[['map','Mapa'],['zones','Zonas de pesca'],['forecast','Previsiones'],['compare','Comparador'],['alerts','Alertas'],['admin','Administración']].map(([id,label])=>`<button data-view="${id}" ${id==='map'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;document.body.prepend(header);
+const header=document.createElement('header');header.id='marine-nav';header.innerHTML=`<a class="marine-brand" href="#map">◉ <span>SPEARFISHING<small>FORECAST & ALERTS</small></span></a><nav aria-label="Secciones principales">${[['map','Mapa'],['zones','Zonas de pesca'],['alerts','Alertas'],['admin','Administración']].map(([id,label])=>`<button data-view="${id}" ${id==='map'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>`;document.body.prepend(header);
 const zoneSection=createZoneSection(root);
 const featureEditor=createFeatureEditor();
 window.addEventListener('spearfishing:geometry-opening',()=>{if(pickingForecast)stopForecastPick();});
@@ -61,7 +60,13 @@ const editLocationButton=document.createElement('button');editLocationButton.id=
 root.querySelector('.marine-toolbar').append(addLocationButton,editLocationButton);
 const forecastLayerPanel=document.createElement('section');forecastLayerPanel.className='forecast-layer-section';forecastLayerPanel.setAttribute('aria-label','Capas de previsión');
 forecastLayerPanel.innerHTML=`<div class="forecast-layer-heading"><span class="section-label">Previsiones <span id="forecast-layer-count"></span></span><button type="button" id="forecast-list-refresh" aria-label="Actualizar ubicaciones desde la base">↻</button></div><label class="layer-item"><span class="map-layer-symbol" aria-hidden="true">${window.MapSymbols.key('forecast')}</span><span class="layer-name">Ubicaciones de previsión</span><input id="forecast-layer-enabled" type="checkbox"><span class="toggle-track"><span class="toggle-thumb"></span></span></label><label class="forecast-list-switch"><input id="forecast-list-enabled" type="checkbox"> Mostrar listado de previsiones</label><p id="forecast-database-state" role="status">Conectando con la base compartida…</p><div id="forecast-location-list"><label class="forecast-search-label">Buscar ubicación<input id="forecast-location-search" type="search" placeholder="Nombre del sitio…"></label><div id="forecast-location-items"></div></div>`;
-document.getElementById('info-panel').before(forecastLayerPanel);
+forecastLayerPanel.hidden=true;document.getElementById('info-panel').before(forecastLayerPanel);
+addLocationButton.hidden=true;editLocationButton.hidden=true;$('marine-edit').closest('article').hidden=true;
+window.addEventListener('spearfishing:zone-selected',event=>{spot=spots.find(s=>s.id===event.detail.id)||spot;renderSpotOptions();});
+window.addEventListener('spearfishing:zones-updated',event=>{
+ const previous=spot;spots=zoneSpots=event.detail.zones.map(z=>({...z.forecast,id:z.id,name:z.name,...z.forecastPoint,public:true,local:false,database:null,sourceRefs:[z.sourceRef]}));
+ spot=spots.find(s=>s.id===previous?.id)||spots[0];if(previous&&spot&&(previous.lat!==spot.lat||previous.lon!==spot.lon)){runs.delete(spot.id);run=null;}renderSpotOptions();
+});
 $('forecast-layer-enabled').checked=forecastLayers.enabled;$('forecast-list-enabled').checked=forecastLayers.listVisible;
 $('forecast-layer-enabled').onchange=event=>{forecastLayers.enabled=event.target.checked;persistForecastLayers();applyForecastVisibility();renderForecastList();};
 $('forecast-list-enabled').onchange=event=>{forecastLayers.listVisible=event.target.checked;persistForecastLayers();renderForecastList();};
@@ -80,15 +85,12 @@ function renderForecastList(){
 }
 function combineForecastSpots(){
  const previous=spot;
- serverSpots=mergeSpots(sharedSpots,backendSpots.filter(s=>!deletedForecastIds.has(s.id)));spots=mergeSpots(serverSpots,localSpots.filter(s=>!deletedForecastIds.has(s.id))).sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));
+ spots=zoneSpots;
  spot=spots.find(s=>s.id===previous?.id)||spots.find(s=>s.id==='mundaka-pilot')||spots[0];renderSpotOptions();mapMarkers();
  if(previous&&spot&&(spot.id!==previous.id||spot.lat!==previous.lat||spot.lon!==previous.lon)){runs.delete(spot.id);run=null;clearForecastForSelection();if(!root.hidden&&!root.querySelector('[data-marine-view="forecast"]').hidden)load();}
 }
-async function refreshForecastSpots(){
- const button=$('forecast-list-refresh');button.disabled=true;
- try{const snapshot=await forecastStore.load();sharedSpots=snapshot.spots;deletedForecastIds=new Set(snapshot.records.filter(s=>s.deleted).map(s=>s.id));combineForecastSpots();$('forecast-database-state').textContent=`Base compartida · ${sharedSpots.length} ubicaciones guardadas`;return snapshot;}
- finally{button.disabled=false;}
-}
+async function refreshForecastSpots(){await zoneSection.init();}
+
 function applyForecastVisibility(){
  const map=window.spearfishingMap,group=window.marineSpotsLayer;if(!group)return;
  for(const [id,marker] of forecastMarkers){if(forecastLayers.hiddenIds.includes(id))group.removeLayer(marker);else if(!group.hasLayer(marker))group.addLayer(marker);}
@@ -99,7 +101,7 @@ function applyForecastVisibility(){
 function renderSpotOptions(){
  $('marine-spot').innerHTML=spots.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}${s.local?' · este navegador':s.public?'':' · privado'}</option>`).join('');
  if(spot&&spots.some(s=>s.id===spot.id))$('marine-spot').value=spot.id;
- editLocationButton.hidden=!spot||(!spot.local&&!spot.database);renderForecastList();for(const [id,marker] of forecastMarkers)marker.setIcon(window.MapSymbols.icon('forecast',{active:id===spot?.id}));
+ editLocationButton.hidden=true;renderForecastList();for(const [id,marker] of forecastMarkers)marker.setIcon(window.MapSymbols.icon('forecast',{active:id===spot?.id}));
 }
 function resetLocationForm(){
  locationForm.reset();locationForm.elements.id.value='';locationForm.elements.lat.value='';locationForm.elements.lon.value='';
@@ -154,6 +156,7 @@ $('marine-location-remove').onclick=async()=>{
 function serverSpotId(){if(!backendSpots.some(s=>s.id===spot?.id&&s.database==='d1'))throw new Error('La ubicación está en la base compartida. Para alertas automáticas, importa su ficha al backend D1 desde Administración.');return spot.id;}
 
 function view(name){
+ const forecastView=name==='forecast';if(forecastView)name='zones';
  if(name!=='map'&&featureEditor.isEditing){featureEditor.warn();return;}
  if(name!=='map'&&featureEditor.isOpen)featureEditor.cancel();
  if(name!=='map'&&pickingForecast)stopForecastPick();
@@ -161,9 +164,9 @@ function view(name){
  document.getElementById('map').inert=name!=='map';document.getElementById('sidebar').inert=name!=='map'||(innerWidth<=680&&!document.getElementById('sidebar').classList.contains('open'));
  document.querySelectorAll('[data-marine-view]').forEach(s=>s.hidden=s.dataset.marineView!==name);
  header.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'page':'false'));
- $('marine-title').textContent=({zones:'Zonas de pesca',forecast:'Previsión del lugar',compare:'Elegir la próxima salida',alerts:'Oportunidades y alertas',admin:'Administración'})[name]||'Mapa';
+ $('marine-title').textContent=({zones:'Zonas de pesca',forecast:'Previsión del lugar',alerts:'Oportunidades y alertas',admin:'Administración'})[name]||'Mapa';
  root.querySelector('.marine-toolbar').hidden=name==='zones';root.querySelector('.marine-notice').hidden=name==='zones';$('marine-status').hidden=name==='zones';$('marine-error').hidden=name==='zones';
- if(name==='zones')zoneSection.open();
+ if(name==='zones')zoneSection.open(forecastView?{id:spot?.id,forecast:true}:undefined);
  if(name==='forecast') {if(!run&&!$('marine-refresh').disabled)load();else if(run)setTimeout(()=>charts.forEach(c=>c.resize()),0);}
  if(name==='map') setTimeout(()=>window.spearfishingMap.invalidateSize(),0);
 }
@@ -269,8 +272,7 @@ function updateMapVectors(r){
 function mapMarkers(){
  const m=window.spearfishingMap;if(!m)return;
  window.marineSpotsLayer?.remove();forecastMarkers.clear();const layer=L.layerGroup();
- for(const s of spots){const marker=L.marker([s.lat,s.lon],{icon:window.MapSymbols.icon('forecast',{active:s.id===spot?.id}),title:'Previsión: '+s.name,alt:'Previsión: '+s.name,riseOnHover:true}).bindTooltip(esc(s.name)+'<br><small>Previsión meteorológica y marina</small>').on('click',()=>{if(pickingForecast)return;selectSpot(s.id);view('forecast');});forecastMarkers.set(s.id,marker);if(!forecastLayers.hiddenIds.includes(s.id))marker.addTo(layer);}
- window.marineSpotsLayer=layer;if(forecastLayers.enabled)layer.addTo(m);
+ window.marineSpotsLayer=layer;
  if(!window.marineCoastLayer && geography?.features?.length)window.marineCoastLayer=L.geoJSON(geography,{style:{color:'#718595',weight:1.1,opacity:.4,fillOpacity:0,dashArray:'2 5',className:'map-reference-coast'},interactive:false}).addTo(m);
  const bathymetry=window.marineBathymetry||L.tileLayer.wms('https://ows.emodnet-bathymetry.eu/wms',{layers:'emodnet:mean_atlas_land',format:'image/png',transparent:true,opacity:.6,attribution:'EMODnet Bathymetry (visualización; no análisis numérico)'});window.marineBathymetry=bathymetry;
  if(window.marineLayerControl)window.marineLayerControl.remove();window.marineLayerControl=L.control.layers({}, {'Batimetría EMODnet (visual)':bathymetry},{position:'topright'}).addTo(m);applyForecastVisibility();
@@ -321,20 +323,19 @@ formAction('marine-edit','/admin/spots',b=>({...((b.id===spot.id)?spot:{}),...b,
 $('marine-new').onclick=()=>{$('marine-edit').reset();$('marine-edit').elements.id.value=crypto.randomUUID();$('marine-edit').elements.localParameters.value='{}';};
 $('marine-delete').onclick=async()=>{try{await api('/admin/spots',{method:'DELETE',data:{id:$('marine-edit').elements.id.value}});await refreshAdmin();mapMarkers();message('Ficha eliminada; registros originales conservados.');}catch(e){message(e);}};
 $('marine-check').onclick=async()=>{try{message('Comprobando…');const r=await api('/admin/check',{method:'POST'});await refreshAdmin();message(r.status);}catch(e){message(e);}};
-$('marine-compare').onclick=async()=>{try{message('Comparando datos reales…');const results=[];for(const s of spots.filter(s=>s.public||s.local)){try{const r=await fetchRun(s),a=assess(r,rules,{hours:Number($('marine-hours').value)});results.push({s,run:r,best:a.windows.sort((a,b)=>b.score-a.score)[0]});}catch{results.push({s});}}results.sort((a,b)=>(b.best?.score??-1)-(a.best?.score??-1));$('marine-ranking').innerHTML=results.map(({s,best,run:r})=>`<article class="marine-window"><button data-select="${esc(s.id)}">${esc(s.name)} ↗</button><p>${best?`${best.score}/100 · ${esc(local(best.start))} · ${best.hours} h · Hs ${format(best.rows[0].hs)} m · viento ${format(best.rows[0].wind)} m/s · corriente ${format(best.rows[0].current)} m/s`:'Sin ventana favorable verificable'}</p><small>${esc(r?.quality||'sin datos')} · corrientes costeras sin resolver</small></article>`).join('');$('marine-ranking').querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>{selectSpot(b.dataset.select);view('forecast');});message('');}catch(e){message(e);}};
 $('marine-spot').onchange=e=>selectSpot(e.target.value);$('marine-refresh').onclick=()=>load(true);$('marine-map').onclick=()=>{view('map');window.spearfishingMap.setView([spot.lat,spot.lon],15);};$('marine-csv').onclick=downloadCSV;
 for(const id of ['marine-date','marine-hours','marine-unit'])$(id).onchange=()=>render();
 window.addEventListener('resize',()=>charts.forEach(c=>c.resize()));setInterval(()=>{if(run&&!fresh(run))render();},60000);
 async function boot(){
  try{
-  const [s,g,kml]=await Promise.all([fetch('data/spots.json').then(r=>r.json()),fetch('data/coast.geojson').then(r=>r.json()),fetch('data/forecast-sites.json').then(r=>r.json())]);backendSpots=s.map(s=>({...s,database:null}));geography=g;kmlSources=kml;
-  if(apiBase)try{backendSpots=(await api('/spots',{auth:false})).map(s=>({...s,database:'d1'}));}catch(e){message(e);}
-  localSpots=readLocalSpots(localStorage);$('marine-api').value=apiBase;
-  try{await refreshForecastSpots();}catch(error){$('forecast-database-state').textContent='Base compartida no disponible. Pulsa ↻ para reintentar.';message(error);combineForecastSpots();}
+  geography=await fetch('data/coast.geojson').then(r=>r.json());
+
+  $('marine-api').value=apiBase;
+  try{await refreshForecastSpots();}catch(error){$('forecast-database-state').textContent='Base compartida no disponible. Pulsa ↻ para reintentar.';message(error);}
   spot=spots.find(s=>s.id===new URLSearchParams(location.hash.slice(1)).get('spot'))||spots.find(s=>s.id==='mundaka-pilot')||spots[0];
-  exposure=spot?exposureSectors(spot,geography):{sectors:[],method:'Sin ubicación'};if(spot){$('marine-spot').value=spot.id;editFields();}renderSpotOptions();mapMarkers();initThresholds();initForecastMap();
-  window.addEventListener('focus',()=>{if(!locationDialog.open&&!pickingForecast)refreshForecastSpots().catch(error=>{$('forecast-database-state').textContent='No se pudo actualizar la base compartida.';});});
-  if(location.hash.includes('spot=')||header.querySelector('[data-view="forecast"]').getAttribute('aria-current')==='page')view('forecast');
+  exposure=spot?exposureSectors(spot,geography):{sectors:[],method:'Sin ubicación'};if(spot){$('marine-spot').value=spot.id;editFields();}renderSpotOptions();mapMarkers();initThresholds();
+
+  if(location.hash.includes('spot=')||header.querySelector('[data-view="zones"]').getAttribute('aria-current')==='page')view('forecast');
  }catch(e){message(e);}
 }
 boot();
